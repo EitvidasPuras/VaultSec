@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">VaultSec</string>
+
+    <string name="login_email_hint">Email</string>
+    <string name="login_password_hint">Password</string>
+    <string name="login_button_text">Login</string>
+    <string name="login_create_new_user">Not a member? Create an account.</string>
 </resources>
