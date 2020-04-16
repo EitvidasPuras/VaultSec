@@ -5,26 +5,24 @@ import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_registration.*
 
-class MainActivity : AppCompatActivity() {
+class RegistrationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-//        window.setFlags(WindowManager.LayoutParams.FLAG_SECURE,
-//            WindowManager.LayoutParams.FLAG_SECURE)
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_registration)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             window.attributes.layoutInDisplayCutoutMode =
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
-        openRegistrationActivity()
+        openLoginActivity()
     }
 
-    private fun openRegistrationActivity() {
-        textview_login_create.setOnClickListener {
-            val registrationIntent = Intent(this, RegistrationActivity::class.java)
-            startActivity(registrationIntent)
+    private fun openLoginActivity() {
+        textview_registration_login.setOnClickListener {
+            val loginIntent = Intent(this, MainActivity::class.java)
+            startActivity(loginIntent)
         }
     }
 }
