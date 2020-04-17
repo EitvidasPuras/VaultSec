@@ -1,6 +1,9 @@
 package com.vaultsec.vaultsec
 
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -26,6 +29,13 @@ class MainActivity : AppCompatActivity() {
         openRegistrationActivity()
         logUserIn()
         clearInputErrors()
+    }
+
+    private fun hasInternetConnection(): Boolean {
+        val connectivityManager =
+            this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork: NetworkInfo? = connectivityManager.activeNetworkInfo
+        return activeNetwork?.isConnected == true
     }
 
     private fun clearInputErrors() {
@@ -58,10 +68,18 @@ class MainActivity : AppCompatActivity() {
             val emailInput: String = textfield_login_email.text.toString()
             val passInput: String = textfield_login_password.text.toString()
 
-            if (loginCredentialsValidation(emailInput, passInput))
+            if (hasInternetConnection()) {
+                if (loginCredentialsValidation(emailInput, passInput))
+                    Toast.makeText(
+                        this, "email: $emailInput password: $passInput", Toast.LENGTH_SHORT
+                    ).show()
+            } else {
                 Toast.makeText(
-                    this, "email: $emailInput password: $passInput", Toast.LENGTH_SHORT
+                    this,
+                    "No internet connection",
+                    Toast.LENGTH_SHORT
                 ).show()
+            }
         }
     }
 
