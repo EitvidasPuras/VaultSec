@@ -20,7 +20,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.15" />
+        app:layout_constraintVertical_bias="0.12" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textfield_login_email_layout"
@@ -32,6 +32,7 @@
         app:boxStrokeColor="@color/color_accent"
         app:helperTextTextColor="@color/color_accent"
         app:hintTextColor="@color/color_accent"
+        app:errorEnabled="true"
         android:textAlignment="center"
         app:layout_constraintHorizontal_bias="0.50"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -59,7 +60,10 @@
         app:boxStrokeColor="@color/color_accent"
         app:helperTextTextColor="@color/color_accent"
         app:hintTextColor="@color/color_accent"
+        app:errorEnabled="true"
         android:textAlignment="center"
+        app:endIconTint="@color/color_accent"
+        app:endIconMode="password_toggle"
         app:layout_constraintHorizontal_bias="0.50"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -97,6 +101,7 @@
         android:textColor="@color/color_login_create_new_user"
         android:textSize="16sp"
         app:layout_constraintHorizontal_bias="0.50"
+        app:layout_constraintVertical_bias="0.2"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button_login"
