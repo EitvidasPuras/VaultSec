@@ -9,8 +9,12 @@ import android.util.Patterns
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_registration.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
+import java.util.regex.Pattern
 
 class RegistrationActivity : AppCompatActivity() {
 
@@ -27,6 +31,17 @@ class RegistrationActivity : AppCompatActivity() {
         openLoginActivity()
         registerUser()
         clearInputErrors()
+
+        // Google bug:
+        // After clicking the password visibility toggling icon, textfield's helper text disappears
+//        textfield_registration_password_layout.setEndIconOnClickListener {
+//            textfield_registration_password_layout.helperText =
+//                getString(R.string.registration_password_helper_text)
+//        }
+//        textfield_registration_password_retype_layout.setEndIconOnClickListener {
+//            textfield_registration_password_retype_layout.helperText =
+//                getString(R.string.registration_password_helper_text_retype)
+//        }
     }
 
     private fun clearInputErrors() {
@@ -75,15 +90,22 @@ class RegistrationActivity : AppCompatActivity() {
             val passInput: String = textfield_registration_password.text.toString()
             val passRetypeInput: String = textfield_registration_password_retype.text.toString()
 
-            if (registrationCredentialsValidation(
-                    firstNameInput, lastNameInput, emailInput, passInput, passRetypeInput
-                )
-            ) {
-                Toast.makeText(
-                    this,
-                    "length: ${firstNameInput.length}",
-                    Toast.LENGTH_SHORT
-                ).show()
+            GlobalScope.async(Dispatchers.Main) {
+                if (registrationCredentialsValidation(
+                        firstNameInput,
+                        lastNameInput,
+                        emailInput,
+                        passInput,
+                        passRetypeInput
+                    )
+                ) {
+                    Toast.makeText(
+                        this@RegistrationActivity,
+                        "IT IS REGISTER",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                GlobalScope.cancel()
             }
         }
     }
@@ -95,34 +117,55 @@ class RegistrationActivity : AppCompatActivity() {
     ): Boolean {
         if (firstNameInput.length > 30
             || lastNameInput.length > 30
-            || passInput.length > 30
-            || passRetypeInput.length > 30
+            || passInput.length > 40
+            || passRetypeInput.length > 40
         ) {
             return false
         }
 
+        val letterLowercase = Pattern.compile("[a-z]")
+        val letterUppercase = Pattern.compile("[A-Z]")
+        val digit = Pattern.compile("[0-9]")
+        val specialChar = Pattern.compile("[!@#$%^&*()_+=|<>?{}\\[\\]~`-]")
+
         if (firstNameInput.isEmpty()) {
             textfield_registration_firstname_layout.error = "First name is required"
         } else if (!firstNameInput.chars().allMatch(Character::isLetter)) {
-            textfield_registration_firstname_layout.error = "First name must only contain letters"
+            textfield_registration_firstname_layout.error =
+                "First name must only contain letters"
         }
         if (lastNameInput.isEmpty()) {
             textfield_registration_lastname_layout.error = "Last name is required"
         } else if (!lastNameInput.chars().allMatch(Character::isLetter)) {
-            textfield_registration_lastname_layout.error = "First name must only contain letters"
+            textfield_registration_lastname_layout.error =
+                "Last name must only contain letters"
         }
         if (emailInput.isEmpty()) {
-            textfield_login_email_layout.error = "Email is required"
+            textfield_registration_email_layout.error = "Email is required"
         } else if (!Patterns.EMAIL_ADDRESS.matcher(emailInput).matches()) {
-            textfield_registration_email_layout.error = "Email not valid"
+            textfield_registration_email_layout.error = "Invalid email address"
         }
         if (passInput.isEmpty()) {
             textfield_registration_password_layout.error = "Password is required"
+        } else if (passInput.length < 10) {
+            textfield_registration_password_layout.error =
+                "Must be at least 10 characters long"
+        } else if (!letterLowercase.matcher(passInput).find()
+            || !letterUppercase.matcher(passInput).find()
+            || !digit.matcher(passInput).find()
+            || !specialChar.matcher(passInput).find()
+        ) {
+            textfield_registration_password_layout.error = "A stronger password is required"
         }
-        if (passRetypeInput.isEmpty()) {
-            textfield_registration_password_retype_layout.error = "Field is required"
+        if (!passRetypeInput.equals(passInput) && passInput.isNotEmpty()) {
+            textfield_registration_password_retype_layout.error = "Passwords do not match"
         }
-        return true
+
+        return textfield_registration_firstname_layout.error.isNullOrEmpty()
+                && textfield_registration_lastname_layout.error.isNullOrEmpty()
+                && textfield_registration_email_layout.error.isNullOrEmpty()
+                && textfield_registration_password_layout.error.isNullOrEmpty()
+                && textfield_registration_password_retype_layout.error.isNullOrEmpty()
     }
 
     private fun openLoginActivity() {

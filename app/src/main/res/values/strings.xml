@@ -13,4 +13,6 @@
     <string name="registration_password_retype_hint">Retype password</string>
     <string name="registration_button_text">Register</string>
     <string name="registration_existing_login"><u>Already a member? Login.</u></string>
+    <string name="registration_password_helper_text">At least 10 characters long</string>
+    <string name="registration_password_helper_text_retype">Passwords must match</string>
 </resources>
