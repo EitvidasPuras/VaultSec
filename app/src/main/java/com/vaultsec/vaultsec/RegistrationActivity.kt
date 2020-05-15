@@ -1,51 +1,54 @@
 package com.vaultsec.vaultsec
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.os.Build
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Patterns
+import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import com.vaultsec.vaultsec.databinding.ActivityRegistrationBinding
+import com.vaultsec.vaultsec.network.PasswordManagerService
+import com.vaultsec.vaultsec.network.entity.ApiResponse
+import com.vaultsec.vaultsec.network.entity.ApiUser
+import com.vaultsec.vaultsec.network.entity.ErrorTypes
+import com.vaultsec.vaultsec.viewmodel.TokenViewModel
 import kotlinx.android.synthetic.main.activity_registration.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.cancel
 import java.net.SocketException
 import java.util.regex.Pattern
 
 class RegistrationActivity : AppCompatActivity() {
+
+    private lateinit var tokenViewModel: TokenViewModel
+    private var api = PasswordManagerService().apiService
+    private lateinit var binding: ActivityRegistrationBinding
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Remove these comments to prevent taking screenshots
 //        window.setFlags(WindowManager.LayoutParams.FLAG_SECURE,
 //            WindowManager.LayoutParams.FLAG_SECURE)
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_registration)
+        binding = ActivityRegistrationBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
+        tokenViewModel =
+            ViewModelProvider(this@RegistrationActivity).get(TokenViewModel::class.java)
+
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             window.attributes.layoutInDisplayCutoutMode =
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
         openLoginActivity()
         registerUser()
-        clearInputErrors()
-
-        // Google bug:
-        // After clicking the password visibility toggling icon, textfield's helper text disappears
-//        textfield_registration_password_layout.setEndIconOnClickListener {
-//            textfield_registration_password_layout.helperText =
-//                getString(R.string.registration_password_helper_text)
-//        }
-//        textfield_registration_password_retype_layout.setEndIconOnClickListener {
-//            textfield_registration_password_retype_layout.helperText =
-//                getString(R.string.registration_password_helper_text_retype)
-//        }
     }
 
     private fun hasInternetConnection(): Boolean {
@@ -56,80 +59,86 @@ class RegistrationActivity : AppCompatActivity() {
     }
 
     private fun clearInputErrors() {
-        textfield_registration_firstname.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable) {}
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                textfield_registration_firstname_layout.error = null
-            }
-        })
-        textfield_registration_lastname.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable) {}
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                textfield_registration_lastname_layout.error = null
-            }
-        })
-        textfield_registration_email.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable) {}
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                textfield_registration_email_layout.error = null
-            }
-        })
-        textfield_registration_password.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable) {}
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                textfield_registration_password_layout.error = null
-            }
-        })
-        textfield_registration_password_retype.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable) {}
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                textfield_registration_password_retype_layout.error = null
-            }
-        })
+        if (!binding.textfieldRegistrationFirstnameLayout.error.isNullOrEmpty()) {
+            binding.textfieldRegistrationFirstnameLayout.error = null
+        }
+        if (!binding.textfieldRegistrationLastnameLayout.error.isNullOrEmpty()) {
+            binding.textfieldRegistrationLastnameLayout.error = null
+        }
+        if (!binding.textfieldRegistrationEmailLayout.error.isNullOrEmpty()) {
+            binding.textfieldRegistrationEmailLayout.error = null
+        }
+        if (!binding.textfieldRegistrationPasswordLayout.error.isNullOrEmpty()) {
+            binding.textfieldRegistrationPasswordLayout.error = null
+        }
+        if (!binding.textfieldRegistrationPasswordRetypeLayout.error.isNullOrEmpty()) {
+            binding.textfieldRegistrationPasswordRetypeLayout.error = null
+        }
     }
 
     private fun registerUser() {
-        button_registration.setOnClickListener() {
-            val firstNameInput: String = textfield_registration_firstname.text.toString()
-            val lastNameInput: String = textfield_registration_lastname.text.toString()
-            val emailInput: String = textfield_registration_email.text.toString()
-            val passInput: String = textfield_registration_password.text.toString()
-            val passRetypeInput: String = textfield_registration_password_retype.text.toString()
-
+        button_registration.setOnClickListener {
+            val firstNameInput: String = binding.textfieldRegistrationFirstname.text.toString()
+            val lastNameInput: String = binding.textfieldRegistrationLastname.text.toString()
+            val emailInput: String = binding.textfieldRegistrationEmail.text.toString()
+            val passInput: String = binding.textfieldRegistrationPassword.text.toString()
+            val passRetypeInput: String =
+                binding.textfieldRegistrationPasswordRetype.text.toString()
+            clearInputErrors()
             if (hasInternetConnection()) {
-                GlobalScope.async(Dispatchers.Main) {
-                    if (registrationCredentialsValidation(
-                            firstNameInput,
-                            lastNameInput,
-                            emailInput,
-                            passInput,
-                            passRetypeInput
-                        )
-                    ) {
-                        Toast.makeText(
-                            this@RegistrationActivity,
-                            "IT IS REGISTER",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    GlobalScope.cancel()
+                if (isRegistrationDataValid(
+                        firstNameInput,
+                        lastNameInput,
+                        emailInput,
+                        passInput,
+                        passRetypeInput
+                    )
+                ) {
+                    binding.progressbarRegistration.visibility = View.VISIBLE
+                    val user = ApiUser(
+                        firstNameInput,
+                        lastNameInput,
+                        emailInput,
+                        passInput,
+                        passRetypeInput
+                    )
+                    tokenViewModel.postRegister(user).observe(this, Observer<ApiResponse> {
+                        binding.progressbarRegistration.visibility = View.INVISIBLE
+                        if (!it.isError) {
+                            setResult(Activity.RESULT_OK)
+                            finish()
+                        } else {
+                            when (it.type) {
+                                ErrorTypes.HTTP_ERROR -> Toast.makeText(
+                                    this,
+                                    it.message,
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                ErrorTypes.SOCKET_TIMEOUT -> Toast.makeText(
+                                    this,
+                                    getString(R.string.error_connection_timed_out),
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                ErrorTypes.GENERAL -> Toast.makeText(
+                                    this,
+                                    getString(R.string.error_generic_connection),
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    })
                 }
             } else {
                 Toast.makeText(
                     this@RegistrationActivity,
-                    "No internet connection",
+                    R.string.error_no_internet_connection,
                     Toast.LENGTH_SHORT
                 ).show()
             }
         }
     }
 
-    private fun registrationCredentialsValidation(
+    private fun isRegistrationDataValid(
         firstNameInput: String, lastNameInput: String,
         emailInput: String, passInput: String,
         passRetypeInput: String
@@ -149,48 +158,59 @@ class RegistrationActivity : AppCompatActivity() {
             val specialChar = Pattern.compile("[!@#$%^&*()_+=|<>?{}\\[\\]~`-]")
 
             if (firstNameInput.isEmpty()) {
-                textfield_registration_firstname_layout.error = "First name is required"
+                binding.textfieldRegistrationFirstnameLayout.error =
+                    getString(R.string.error_first_name_required)
             } else if (!firstNameInput.chars().allMatch(Character::isLetter)) {
-                textfield_registration_firstname_layout.error =
-                    "First name must only contain letters"
+                binding.textfieldRegistrationFirstnameLayout.error =
+                    getString(R.string.error_first_name_format)
             }
             if (lastNameInput.isEmpty()) {
-                textfield_registration_lastname_layout.error = "Last name is required"
+                binding.textfieldRegistrationLastnameLayout.error =
+                    getString(R.string.error_last_name_required)
             } else if (!lastNameInput.chars().allMatch(Character::isLetter)) {
-                textfield_registration_lastname_layout.error =
-                    "Last name must only contain letters"
+                binding.textfieldRegistrationLastnameLayout.error =
+                    getString(R.string.error_last_name_format)
             }
             if (emailInput.isEmpty()) {
-                textfield_registration_email_layout.error = "Email is required"
+                binding.textfieldRegistrationEmailLayout.error =
+                    getString(R.string.error_email_required)
             } else if (!Patterns.EMAIL_ADDRESS.matcher(emailInput).matches()) {
-                textfield_registration_email_layout.error = "Invalid email address"
+                binding.textfieldRegistrationEmailLayout.error =
+                    getString(R.string.error_email_format)
             }
             if (passInput.isEmpty()) {
-                textfield_registration_password_layout.error = "Password is required"
+                binding.textfieldRegistrationPasswordLayout.error =
+                    getString(R.string.error_password_required)
             } else if (passInput.length < 10) {
-                textfield_registration_password_layout.error =
-                    "Must be at least 10 characters long"
+                binding.textfieldRegistrationPasswordLayout.error =
+                    getString(R.string.error_password_length)
             } else if (!letterLowercase.matcher(passInput).find()
                 || !letterUppercase.matcher(passInput).find()
                 || !digit.matcher(passInput).find()
                 || !specialChar.matcher(passInput).find()
             ) {
-                textfield_registration_password_layout.error = "A stronger password is required"
+                binding.textfieldRegistrationPasswordLayout.error =
+                    getString(R.string.error_password_format)
             }
-            if (!passRetypeInput.equals(passInput) && passInput.isNotEmpty()) {
-                textfield_registration_password_retype_layout.error = "Passwords do not match"
+            if (passRetypeInput != passInput && passInput.isNotEmpty()) {
+                binding.textfieldRegistrationPasswordRetypeLayout.error =
+                    getString(R.string.error_password_match)
             }
         } catch (e: SocketException) {
-            Toast.makeText(this@RegistrationActivity, "No network available", Toast.LENGTH_SHORT)
+            Toast.makeText(
+                this@RegistrationActivity,
+                R.string.error_no_internet_connection,
+                Toast.LENGTH_SHORT
+            )
                 .show()
             return false
         }
 
-        return textfield_registration_firstname_layout.error.isNullOrEmpty()
-                && textfield_registration_lastname_layout.error.isNullOrEmpty()
-                && textfield_registration_email_layout.error.isNullOrEmpty()
-                && textfield_registration_password_layout.error.isNullOrEmpty()
-                && textfield_registration_password_retype_layout.error.isNullOrEmpty()
+        return binding.textfieldRegistrationFirstnameLayout.error.isNullOrEmpty()
+                && binding.textfieldRegistrationLastnameLayout.error.isNullOrEmpty()
+                && binding.textfieldRegistrationEmailLayout.error.isNullOrEmpty()
+                && binding.textfieldRegistrationPasswordLayout.error.isNullOrEmpty()
+                && binding.textfieldRegistrationPasswordRetypeLayout.error.isNullOrEmpty()
     }
 
     private fun openLoginActivity() {

@@ -15,4 +15,20 @@
     <string name="registration_existing_login"><u>Already a member? Login.</u></string>
     <string name="registration_password_helper_text">At least 10 characters long</string>
     <string name="registration_password_helper_text_retype">Passwords must match</string>
+
+    <string name="error_no_internet_connection">No internet connection</string>
+    <string name="error_email_required">Email is required</string>
+    <string name="error_password_required">Password is required</string>
+    <string name="error_first_name_required">First name is required</string>
+    <string name="error_last_name_required">Last name is required</string>
+    <string name="error_first_name_format">First name must only contain letters</string>
+    <string name="error_last_name_format">Last name must only contain letters</string>
+    <string name="error_email_format">Invalid email address</string>
+    <string name="error_password_length">Must be at least 10 characters long</string>
+    <string name="error_password_format">A stronger password is required</string>
+    <string name="error_password_match">Passwords do not match</string>
+    <string name="error_connection_timed_out">Could not connect to the server</string>
+    <string name="error_generic_connection">Something went wrong. Please try again</string>
+
+    <string name="successful_registration">Account created successfully</string>
 </resources>

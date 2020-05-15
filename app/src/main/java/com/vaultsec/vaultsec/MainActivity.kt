@@ -1,5 +1,6 @@
 package com.vaultsec.vaultsec
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
@@ -9,12 +10,18 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Patterns
+import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        const val REGISTRATION_REQUEST_CODE = 1
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Remove these comments to prevent taking screenshots
@@ -22,6 +29,7 @@ class MainActivity : AppCompatActivity() {
 //            WindowManager.LayoutParams.FLAG_SECURE)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             window.attributes.layoutInDisplayCutoutMode =
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
@@ -59,7 +67,7 @@ class MainActivity : AppCompatActivity() {
     private fun openRegistrationActivity() {
         textview_login_create.setOnClickListener {
             val registrationIntent = Intent(this, RegistrationActivity::class.java)
-            startActivity(registrationIntent)
+            startActivityForResult(registrationIntent, REGISTRATION_REQUEST_CODE)
         }
     }
 
@@ -76,7 +84,7 @@ class MainActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(
                     this,
-                    "No internet connection",
+                    R.string.error_no_internet_connection,
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -85,12 +93,22 @@ class MainActivity : AppCompatActivity() {
 
     private fun loginCredentialsValidation(emailInput: String, passInput: String): Boolean {
         if (emailInput.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(emailInput).matches()) {
-            textfield_login_email_layout.error = "Email is required"
+            textfield_login_email_layout.error = getString(R.string.error_email_required)
         }
         if (passInput.isEmpty()) {
-            textfield_login_password_layout.error = "Password is required"
+            textfield_login_password_layout.error = getString(R.string.error_password_required)
         }
         return textfield_login_email_layout.error.isNullOrEmpty()
                 && textfield_login_password_layout.error.isNullOrEmpty()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REGISTRATION_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            val contextView = findViewById<View>(R.id.constraintlayout_main_activity)
+            Snackbar.make(contextView, R.string.successful_registration, Snackbar.LENGTH_LONG)
+                .setBackgroundTint(getColor(R.color.color_successful_registration)).show()
+        }
     }
 }

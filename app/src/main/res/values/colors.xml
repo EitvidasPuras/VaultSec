@@ -8,4 +8,6 @@
 
     <color name="mtrl_textinput_default_box_stroke_color" tools:override="true">#546E7A</color>
 
+    <color name="color_successful_registration">#388e3c</color>
+
 </resources>
