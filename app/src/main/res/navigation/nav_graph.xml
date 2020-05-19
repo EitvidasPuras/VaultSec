@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/fragment_notes">
+
+    <fragment
+        android:id="@+id/fragment_notes"
+        android:name="com.vaultsec.vaultsec.NotesFragment"
+        android:label="Notes"
+        tools:layout="@layout/fragment_notes" />
+    <fragment
+        android:id="@+id/fragment_passwords"
+        android:name="com.vaultsec.vaultsec.PasswordsFragment"
+        android:label="Passwords"
+        tools:layout="@layout/fragment_passwords" />
+    <fragment
+        android:id="@+id/fragment_files"
+        android:name="com.vaultsec.vaultsec.FilesFragment"
+        android:label="Files"
+        tools:layout="@layout/fragment_files" />
+    <fragment
+        android:id="@+id/fragment_generator"
+        android:name="com.vaultsec.vaultsec.GeneratorFragment"
+        android:label="Generator"
+        tools:layout="@layout/fragment_generator" />
+</navigation>

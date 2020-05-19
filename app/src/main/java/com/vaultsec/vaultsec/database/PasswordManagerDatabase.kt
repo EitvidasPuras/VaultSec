@@ -46,7 +46,8 @@ abstract class PasswordManagerDatabase : RoomDatabase() {
                     "vaultsec-database"
                 )
                     .fallbackToDestructiveMigration()
-                    .addCallback(ManagerDatabaseCallback(scope))
+                    // Uncomment the line below to populate the DB with a random token
+//                    .addCallback(ManagerDatabaseCallback(scope))
                     .build()
                 INSTANCE = instance
                 instance

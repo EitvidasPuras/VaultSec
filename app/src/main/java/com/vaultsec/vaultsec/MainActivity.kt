@@ -7,20 +7,30 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Patterns
 import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
+import com.vaultsec.vaultsec.databinding.ActivityMainBinding
+import com.vaultsec.vaultsec.network.entity.ApiResponse
+import com.vaultsec.vaultsec.network.entity.ApiUser
+import com.vaultsec.vaultsec.network.entity.ErrorTypes
+import com.vaultsec.vaultsec.viewmodel.TokenViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var tokenViewModel: TokenViewModel
+
     companion object {
         const val REGISTRATION_REQUEST_CODE = 1
+
+        const val EXTRA_LOGOUT = "com.vaultsec.vaultsec.EXTRA_LOGOUT"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,15 +38,32 @@ class MainActivity : AppCompatActivity() {
 //        window.setFlags(WindowManager.LayoutParams.FLAG_SECURE,
 //            WindowManager.LayoutParams.FLAG_SECURE)
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
+        tokenViewModel =
+            ViewModelProvider(this@MainActivity).get(TokenViewModel::class.java)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             window.attributes.layoutInDisplayCutoutMode =
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
+
+        if (intent.hasExtra(EXTRA_LOGOUT) && intent.getBooleanExtra(EXTRA_LOGOUT, false)) {
+            Snackbar.make(binding.root, R.string.successful_logout, Snackbar.LENGTH_LONG)
+                .setBackgroundTint(getColor(R.color.color_successful_snackbar)).show()
+        }
+        isUserLoggedIn()
         openRegistrationActivity()
         logUserIn()
-        clearInputErrors()
+    }
+
+    private fun isUserLoggedIn() {
+        try {
+            tokenViewModel.getToken().token
+            openBottomNavigationActivity()
+        } catch (e: NullPointerException) {
+        }
     }
 
     private fun hasInternetConnection(): Boolean {
@@ -52,21 +79,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun clearInputErrors() {
-        textfield_login_email.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable) {}
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                textfield_login_email_layout.error = null
-            }
-        })
-
-        textfield_login_password.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable) {}
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                textfield_login_password_layout.error = null
-            }
-        })
+        if (!binding.textfieldLoginEmailLayout.error.isNullOrEmpty()) {
+            binding.textfieldLoginEmailLayout.error = null
+        }
+        if (!binding.textfieldLoginPasswordLayout.error.isNullOrEmpty()) {
+            binding.textfieldLoginPasswordLayout.error = null
+        }
     }
 
     private fun openRegistrationActivity() {
@@ -76,16 +94,49 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun openBottomNavigationActivity() {
+        val bottomNavIntent = Intent(this, BottomNavigationActivity::class.java)
+        startActivity(bottomNavIntent)
+        finish()
+    }
+
     private fun logUserIn() {
         button_login.setOnClickListener {
-            val emailInput: String = textfield_login_email.text.toString()
-            val passInput: String = textfield_login_password.text.toString()
-
+            val emailInput: String = binding.textfieldLoginEmail.text.toString()
+            val passInput: String = binding.textfieldLoginPassword.text.toString()
+            clearInputErrors()
             if (hasInternetConnection()) {
-                if (loginCredentialsValidation(emailInput, passInput))
-                    Toast.makeText(
-                        this, "email: $emailInput password: $passInput", Toast.LENGTH_SHORT
-                    ).show()
+                if (isLoginDataValid(emailInput, passInput)) {
+                    binding.progressbarLogin.visibility = View.VISIBLE
+                    val user = ApiUser(
+                        email = emailInput,
+                        password = passInput
+                    )
+                    tokenViewModel.postLogin(user).observe(this, Observer<ApiResponse> {
+                        binding.progressbarLogin.visibility = View.INVISIBLE
+                        if (!it.isError) {
+                            openBottomNavigationActivity()
+                        } else {
+                            when (it.type) {
+                                ErrorTypes.HTTP_ERROR -> Toast.makeText(
+                                    this,
+                                    it.message,
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                ErrorTypes.SOCKET_TIMEOUT -> Toast.makeText(
+                                    this,
+                                    getString(R.string.error_connection_timed_out),
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                ErrorTypes.GENERAL -> Toast.makeText(
+                                    this,
+                                    getString(R.string.error_generic_connection),
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    })
+                }
             } else {
                 Toast.makeText(
                     this,
@@ -96,24 +147,25 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun loginCredentialsValidation(emailInput: String, passInput: String): Boolean {
-        if (emailInput.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(emailInput).matches()) {
-            textfield_login_email_layout.error = getString(R.string.error_email_required)
+    private fun isLoginDataValid(emailInput: String, passInput: String): Boolean {
+        if (emailInput.isEmpty()) {
+            binding.textfieldLoginEmailLayout.error = getString(R.string.error_email_required)
+        } else if (!Patterns.EMAIL_ADDRESS.matcher(emailInput).matches()) {
+            binding.textfieldLoginEmailLayout.error = getString(R.string.error_email_format)
         }
         if (passInput.isEmpty()) {
-            textfield_login_password_layout.error = getString(R.string.error_password_required)
+            binding.textfieldLoginPasswordLayout.error = getString(R.string.error_password_required)
         }
-        return textfield_login_email_layout.error.isNullOrEmpty()
-                && textfield_login_password_layout.error.isNullOrEmpty()
+        return binding.textfieldLoginEmailLayout.error.isNullOrEmpty() &&
+                binding.textfieldLoginPasswordLayout.error.isNullOrEmpty()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == REGISTRATION_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            val contextView = findViewById<View>(R.id.constraintlayout_main_activity)
-            Snackbar.make(contextView, R.string.successful_registration, Snackbar.LENGTH_LONG)
-                .setBackgroundTint(getColor(R.color.color_successful_registration)).show()
+            Snackbar.make(binding.root, R.string.successful_registration, Snackbar.LENGTH_LONG)
+                .setBackgroundTint(getColor(R.color.color_successful_snackbar)).show()
         }
     }
 }

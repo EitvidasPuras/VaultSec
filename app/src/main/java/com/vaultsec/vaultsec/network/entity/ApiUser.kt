@@ -1,9 +1,9 @@
 package com.vaultsec.vaultsec.network.entity
 
 data class ApiUser(
-    val first_name: String,
-    val last_name: String,
+    val first_name: String? = null,
+    val last_name: String? = null,
     val email: String,
     val password: String,
-    val password_confirmation: String
+    val password_confirmation: String? = null
 )

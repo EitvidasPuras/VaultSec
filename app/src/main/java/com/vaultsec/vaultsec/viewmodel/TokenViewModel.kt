@@ -11,16 +11,18 @@ import com.vaultsec.vaultsec.network.entity.ApiUser
 import com.vaultsec.vaultsec.repository.TokenRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class TokenViewModel(application: Application) : AndroidViewModel(application) {
     private val tokenRepository: TokenRepository = TokenRepository(application)
-    private lateinit var token: Token
+//    private var token: Token
+//
+//    init {
+//        viewModelScope.launch(Dispatchers.IO) {
+//            token = tokenRepository.getToken()
+//        }
+//    }
 
-    init {
-        viewModelScope.launch(Dispatchers.IO) {
-            token = tokenRepository.getToken()
-        }
-    }
 
     fun insert(token: Token) = viewModelScope.launch(Dispatchers.IO) {
         tokenRepository.insert(token)
@@ -31,12 +33,28 @@ class TokenViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun getToken(): Token {
-        return token
+        return runBlocking {
+            tokenRepository.getToken()
+        }
     }
 
     fun postRegister(user: ApiUser): LiveData<ApiResponse> {
         return liveData(Dispatchers.IO) {
             val response = tokenRepository.postRegister(user)
+            emit(response)
+        }
+    }
+
+    fun postLogin(user: ApiUser): LiveData<ApiResponse> {
+        return liveData(Dispatchers.IO) {
+            val response = tokenRepository.postLogin(user)
+            emit(response)
+        }
+    }
+
+    fun postLogout(header: String): LiveData<ApiResponse> {
+        return liveData(Dispatchers.IO) {
+            val response = tokenRepository.postLogout(header)
             emit(response)
         }
     }

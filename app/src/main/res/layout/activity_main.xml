@@ -4,8 +4,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"
-    android:id="@+id/constraintlayout_main_activity">
+    tools:context=".MainActivity">
+
+    <ProgressBar
+        android:id="@+id/progressbar_login"
+        android:layout_width="104dp"
+        android:layout_height="104dp"
+        android:elevation="10dp"
+        android:indeterminate="true"
+        android:indeterminateDrawable="@drawable/custom_progress_bar"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/textview_login_app_logo"
@@ -25,59 +37,59 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textfield_login_email_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="88dp"
         android:layout_marginLeft="48dp"
+        android:layout_marginTop="88dp"
         android:layout_marginRight="48dp"
+        android:textAlignment="center"
         app:boxStrokeColor="@color/color_accent"
+        app:errorEnabled="true"
         app:helperTextTextColor="@color/color_accent"
         app:hintTextColor="@color/color_accent"
-        app:errorEnabled="true"
-        android:textAlignment="center"
         app:layout_constraintHorizontal_bias="0.50"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textview_login_app_logo"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        app:layout_constraintTop_toBottomOf="@+id/textview_login_app_logo">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/textfield_login_email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textEmailAddress"
             android:autofillHints="@string/login_email_hint"
-            android:hint="@string/login_email_hint" />
+            android:hint="@string/login_email_hint"
+            android:inputType="textEmailAddress" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textfield_login_password_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="48dp"
         android:layout_marginTop="32dp"
         android:layout_marginRight="48dp"
+        android:textAlignment="center"
         app:boxStrokeColor="@color/color_accent"
+        app:endIconMode="password_toggle"
+        app:endIconTint="@color/color_accent"
+        app:errorEnabled="true"
         app:helperTextTextColor="@color/color_accent"
         app:hintTextColor="@color/color_accent"
-        app:errorEnabled="true"
-        android:textAlignment="center"
-        app:endIconTint="@color/color_accent"
-        app:endIconMode="password_toggle"
         app:layout_constraintHorizontal_bias="0.50"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textfield_login_email_layout"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        app:layout_constraintTop_toBottomOf="@+id/textfield_login_email_layout">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/textfield_login_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textPassword"
             android:autofillHints="@string/login_password_hint"
-            android:hint="@string/login_password_hint" />
+            android:hint="@string/login_password_hint"
+            android:inputType="textPassword" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -101,11 +113,11 @@
         android:text="@string/login_create_new_user"
         android:textColor="@color/color_login_create_new_user"
         android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.50"
-        app:layout_constraintVertical_bias="0.2"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button_login"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintVertical_bias="0.2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

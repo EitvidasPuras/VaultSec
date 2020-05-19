@@ -15,7 +15,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.vaultsec.vaultsec.databinding.ActivityRegistrationBinding
-import com.vaultsec.vaultsec.network.PasswordManagerService
 import com.vaultsec.vaultsec.network.entity.ApiResponse
 import com.vaultsec.vaultsec.network.entity.ApiUser
 import com.vaultsec.vaultsec.network.entity.ErrorTypes
@@ -27,7 +26,6 @@ import java.util.regex.Pattern
 class RegistrationActivity : AppCompatActivity() {
 
     private lateinit var tokenViewModel: TokenViewModel
-    private var api = PasswordManagerService().apiService
     private lateinit var binding: ActivityRegistrationBinding
 
 
@@ -47,9 +45,19 @@ class RegistrationActivity : AppCompatActivity() {
             window.attributes.layoutInDisplayCutoutMode =
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
+
         openLoginActivity()
         registerUser()
+//        populateFormWithDataForTesting()
     }
+
+//    private fun populateFormWithDataForTesting() {
+//        binding.textfieldRegistrationFirstname.setText("Nu")
+//        binding.textfieldRegistrationLastname.setText("Nu")
+//        binding.textfieldRegistrationEmail.setText("nu@nu.com")
+//        binding.textfieldRegistrationPassword.setText("123456789*aA")
+//        binding.textfieldRegistrationPasswordRetype.setText("123456789*aA")
+//    }
 
     private fun hasInternetConnection(): Boolean {
         val connectivityManager =

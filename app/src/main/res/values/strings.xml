@@ -31,4 +31,12 @@
     <string name="error_generic_connection">Something went wrong. Please try again</string>
 
     <string name="successful_registration">Account created successfully</string>
+    <string name="successful_logout">Logged out successfully</string>
+
+    <string name="title_notes_fragment">Notes</string>
+    <string name="title_passwords_fragment">Passwords</string>
+    <string name="title_files_fragment">Files</string>
+    <string name="title_generator_fragment">Password generator</string>
+
+    <string name="title_logout_dropdown_menu">Logout</string>
 </resources>

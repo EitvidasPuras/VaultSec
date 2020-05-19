@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/fragment_notes"
+        android:icon="@drawable/ic_note"
+        android:title="@string/title_notes_fragment"
+        android:menuCategory="secondary" />
+    <item
+        android:id="@+id/fragment_passwords"
+        android:icon="@drawable/ic_layers"
+        android:title="@string/title_passwords_fragment"
+        android:menuCategory="secondary" />
+    <item
+        android:id="@+id/fragment_files"
+        android:icon="@drawable/ic_attach_file"
+        android:title="@string/title_files_fragment"
+        android:menuCategory="secondary" />
+    <item
+        android:id="@+id/fragment_generator"
+        android:icon="@drawable/ic_vpn_key"
+        android:title="@string/title_generator_fragment"
+        android:menuCategory="secondary" />
+</menu>
