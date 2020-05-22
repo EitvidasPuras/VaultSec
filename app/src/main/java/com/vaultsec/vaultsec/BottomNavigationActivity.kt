@@ -6,6 +6,7 @@ import android.os.Handler
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewAnimationUtils
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -18,6 +19,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.vaultsec.vaultsec.databinding.ActivityBottomNavigationBinding
 import com.vaultsec.vaultsec.network.entity.ErrorTypes
 import com.vaultsec.vaultsec.viewmodel.TokenViewModel
+import kotlin.math.hypot
 
 class BottomNavigationActivity : AppCompatActivity() {
 
@@ -35,6 +37,11 @@ class BottomNavigationActivity : AppCompatActivity() {
         tokenViewModel =
             ViewModelProvider(this@BottomNavigationActivity).get(TokenViewModel::class.java)
 
+
+        val toolbar: androidx.appcompat.widget.Toolbar? =
+            findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_nav_view)
 
         // Due to a bug on Google's side
@@ -46,7 +53,6 @@ class BottomNavigationActivity : AppCompatActivity() {
             supportFragmentManager.findFragmentById(R.id.fragment_container_view) as NavHostFragment
         val navController = navHostFragment.navController
 
-
         val appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.fragment_notes,
@@ -56,8 +62,35 @@ class BottomNavigationActivity : AppCompatActivity() {
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
-
         bottomNavigationView.setupWithNavController(navController)
+
+        playOpeningAnimation(view)
+    }
+
+    private fun playOpeningAnimation(view: View) {
+        view.addOnLayoutChangeListener(object : View.OnLayoutChangeListener {
+            override fun onLayoutChange(
+                v: View,
+                left: Int,
+                top: Int,
+                right: Int,
+                bottom: Int,
+                oldLeft: Int,
+                oldTop: Int,
+                oldRight: Int,
+                oldBottom: Int
+            ) {
+                v.removeOnLayoutChangeListener(this)
+                val rightX = view.right
+                val bottomY = view.bottom
+                val radius = hypot(rightX.toDouble(), bottomY.toDouble()).toFloat()
+                val anim =
+                    ViewAnimationUtils.createCircularReveal(view, rightX, bottomY, 0f, radius)
+                view.visibility = View.VISIBLE
+                anim.duration = 1500
+                anim.start()
+            }
+        })
     }
 
     override fun onBackPressed() {
@@ -85,8 +118,8 @@ class BottomNavigationActivity : AppCompatActivity() {
                 binding.progressbarBottomNavActivity.visibility = View.VISIBLE
                 tokenViewModel.postLogout("Bearer " + tokenViewModel.getToken().token)
                     .observe(this, Observer {
+                        binding.progressbarBottomNavActivity.visibility = View.INVISIBLE
                         if (!it.isError) {
-                            binding.progressbarBottomNavActivity.visibility = View.INVISIBLE
                             openLogInActivity()
                         } else {
                             when (it.type) {

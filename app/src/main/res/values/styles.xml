@@ -10,10 +10,15 @@
         <item name="android:windowTranslucentStatus">true</item>
     </style>
 
-    <style name="AfterLoginTheme" parent="Theme.MaterialComponents.Light">
+    <style name="AfterLoginTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">@color/color_primary</item>
-        <item name="colorPrimaryDark">@color/color_primary_dark</item>
+        <item name="colorPrimaryDark">@color/color_primary_light</item>
         <item name="colorAccent">@color/color_accent</item>
+    </style>
+
+    <style name="Toolbar.TitleText" parent="Widget.AppCompat.Toolbar">
+        <item name="android:textSize">24sp</item>
+        <item name="android:fontFamily">@font/bowlby_one_sc</item>
     </style>
 
 </resources>

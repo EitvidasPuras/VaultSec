@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <color name="color_white">#fff</color>
+    <color name="color_black">#000</color>
+    <color name="color_gray">#4e4e4e</color>
+
     <color name="color_primary">#90A4AE</color>
-    <color name="color_primary_dark">#CFD8DC</color>
+    <color name="color_primary_dark">#62757f</color>
+    <color name="color_primary_darker">#374953</color>
+    <color name="color_primary_light">#c1d5e0</color>
     <color name="color_accent">#546E7A</color>
+
+    <color name="color_complementary">#ae9a90</color>
+    <color name="color_analogous">#90aea9</color>
+    <color name="color_analogous_2">#9095ae</color>
+    <color name="color_triadic">#9a90ae</color>
+    <color name="color_triadic_2">#ae90a4</color>
 
     <color name="color_login_create_new_user">#0F6CAC</color>
 

@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Patterns
 import android.view.View
+import android.view.ViewAnimationUtils
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -21,6 +22,7 @@ import com.vaultsec.vaultsec.network.entity.ApiUser
 import com.vaultsec.vaultsec.network.entity.ErrorTypes
 import com.vaultsec.vaultsec.viewmodel.TokenViewModel
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlin.math.hypot
 
 class MainActivity : AppCompatActivity() {
 
@@ -53,10 +55,39 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(binding.root, R.string.successful_logout, Snackbar.LENGTH_LONG)
                 .setBackgroundTint(getColor(R.color.color_successful_snackbar)).show()
         }
+        playOpeningAnimation(view)
         isUserLoggedIn()
         openRegistrationActivity()
         logUserIn()
+
     }
+
+    private fun playOpeningAnimation(view: View) {
+        view.addOnLayoutChangeListener(object : View.OnLayoutChangeListener {
+            override fun onLayoutChange(
+                v: View,
+                left: Int,
+                top: Int,
+                right: Int,
+                bottom: Int,
+                oldLeft: Int,
+                oldTop: Int,
+                oldRight: Int,
+                oldBottom: Int
+            ) {
+                v.removeOnLayoutChangeListener(this)
+                val rightX = view.right
+                val bottomY = view.bottom
+                val radius = hypot(rightX.toDouble(), bottomY.toDouble()).toFloat()
+                val anim =
+                    ViewAnimationUtils.createCircularReveal(view, rightX, bottomY, 0f, radius)
+                view.visibility = View.VISIBLE
+                anim.duration = 1500
+                anim.start()
+            }
+        })
+    }
+
 
     private fun isUserLoggedIn() {
         try {

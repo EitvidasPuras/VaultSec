@@ -15,14 +15,6 @@ import kotlinx.coroutines.runBlocking
 
 class TokenViewModel(application: Application) : AndroidViewModel(application) {
     private val tokenRepository: TokenRepository = TokenRepository(application)
-//    private var token: Token
-//
-//    init {
-//        viewModelScope.launch(Dispatchers.IO) {
-//            token = tokenRepository.getToken()
-//        }
-//    }
-
 
     fun insert(token: Token) = viewModelScope.launch(Dispatchers.IO) {
         tokenRepository.insert(token)

@@ -121,12 +121,9 @@ class TokenRepository(application: Application) {
 
     suspend fun postLogout(header: String): ApiResponse {
         try {
-//            val response =
             api.postLogout(header)
             tokenDao.deleteAll()
-//            if (response.has("success")){
             return ApiResponse(false)
-//            }
         } catch (e: Exception) {
             when (e) {
                 is HttpException -> {

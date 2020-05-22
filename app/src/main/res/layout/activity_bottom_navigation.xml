@@ -6,6 +6,16 @@
     android:layout_height="match_parent"
     tools:context=".BottomNavigationActivity">
 
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/color_primary"
+        app:layout_constraintTop_toTopOf="parent"
+        app:popupTheme="@style/AfterLoginTheme"
+        app:titleTextColor="@color/color_primary_darker"
+        app:titleTextAppearance="@style/Toolbar.TitleText" />
+
     <ProgressBar
         android:id="@+id/progressbar_bottom_nav_activity"
         android:layout_width="104dp"
@@ -19,11 +29,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="16dp"
+        android:background="@drawable/bottom_navigation_shadow"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_nav_view" />
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_nav_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/color_primary_dark"
+        android:background="@color/color_white"
+        app:itemIconTint="@color/tab_color"
+        app:itemTextColor="@color/tab_color"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -32,8 +50,9 @@
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_container_view"
         android:name="androidx.navigation.fragment.NavHostFragment"
-        android:layout_width="409dp"
-        android:layout_height="673dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="?attr/actionBarSize"
         app:defaultNavHost="false"
         app:layout_constraintBottom_toTopOf="@+id/bottom_nav_view"
         app:layout_constraintEnd_toEndOf="parent"
