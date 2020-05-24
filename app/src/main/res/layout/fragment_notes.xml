@@ -4,35 +4,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".NotesFragment">
+    tools:context=".ui.note.NotesFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerview_notes"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="These are notes"
-        android:textSize="20sp" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="These are notes"
-        android:textSize="20sp"
-        android:gravity="center_horizontal" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="These are notes"
-        android:textSize="20sp"
-        android:gravity="center" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="These are notes"
-        android:textSize="20sp"
-        android:gravity="bottom|center_horizontal" />
+        android:clipToPadding="false"
+        android:scrollbars="vertical"
+        android:layoutAnimation="@anim/layout_animation_fall_down" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_notes"

@@ -1,4 +1,4 @@
-package com.vaultsec.vaultsec
+package com.vaultsec.vaultsec.ui
 
 import android.app.Activity
 import android.content.Context
@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.databinding.ActivityRegistrationBinding
 import com.vaultsec.vaultsec.network.entity.ApiResponse
 import com.vaultsec.vaultsec.network.entity.ApiUser

@@ -1,4 +1,4 @@
-package com.vaultsec.vaultsec
+package com.vaultsec.vaultsec.ui
 
 import android.content.Intent
 import android.os.Bundle
@@ -16,12 +16,14 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.databinding.ActivityBottomNavigationBinding
 import com.vaultsec.vaultsec.network.entity.ErrorTypes
 import com.vaultsec.vaultsec.viewmodel.TokenViewModel
 import kotlin.math.hypot
 
 class BottomNavigationActivity : AppCompatActivity() {
+
 
     private lateinit var binding: ActivityBottomNavigationBinding
     private lateinit var tokenViewModel: TokenViewModel
@@ -64,7 +66,7 @@ class BottomNavigationActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         bottomNavigationView.setupWithNavController(navController)
 
-        playOpeningAnimation(view)
+//        playOpeningAnimation(view)
     }
 
     private fun playOpeningAnimation(view: View) {
@@ -82,12 +84,12 @@ class BottomNavigationActivity : AppCompatActivity() {
             ) {
                 v.removeOnLayoutChangeListener(this)
                 val rightX = view.right
-                val bottomY = view.bottom
-                val radius = hypot(rightX.toDouble(), bottomY.toDouble()).toFloat()
+                val topY = view.top
+                val radius = hypot(rightX.toDouble(), topY.toDouble()).toFloat()
                 val anim =
-                    ViewAnimationUtils.createCircularReveal(view, rightX, bottomY, 0f, radius)
+                    ViewAnimationUtils.createCircularReveal(view, rightX, topY, 0f, radius)
                 view.visibility = View.VISIBLE
-                anim.duration = 1500
+                anim.duration = 1000
                 anim.start()
             }
         })

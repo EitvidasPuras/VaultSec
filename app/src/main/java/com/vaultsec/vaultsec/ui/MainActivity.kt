@@ -1,4 +1,4 @@
-package com.vaultsec.vaultsec
+package com.vaultsec.vaultsec.ui
 
 import android.app.Activity
 import android.content.Context
@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
+import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.databinding.ActivityMainBinding
 import com.vaultsec.vaultsec.network.entity.ApiResponse
 import com.vaultsec.vaultsec.network.entity.ApiUser
@@ -51,8 +52,14 @@ class MainActivity : AppCompatActivity() {
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
 
-        if (intent.hasExtra(EXTRA_LOGOUT) && intent.getBooleanExtra(EXTRA_LOGOUT, false)) {
-            Snackbar.make(binding.root, R.string.successful_logout, Snackbar.LENGTH_LONG)
+        if (intent.hasExtra(EXTRA_LOGOUT) && intent.getBooleanExtra(
+                EXTRA_LOGOUT, false
+            )
+        ) {
+            Snackbar.make(
+                binding.root,
+                R.string.successful_logout, Snackbar.LENGTH_LONG
+            )
                 .setBackgroundTint(getColor(R.color.color_successful_snackbar)).show()
         }
         playOpeningAnimation(view)
@@ -121,7 +128,10 @@ class MainActivity : AppCompatActivity() {
     private fun openRegistrationActivity() {
         textview_login_create.setOnClickListener {
             val registrationIntent = Intent(this, RegistrationActivity::class.java)
-            startActivityForResult(registrationIntent, REGISTRATION_REQUEST_CODE)
+            startActivityForResult(
+                registrationIntent,
+                REGISTRATION_REQUEST_CODE
+            )
         }
     }
 
@@ -195,7 +205,10 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == REGISTRATION_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            Snackbar.make(binding.root, R.string.successful_registration, Snackbar.LENGTH_LONG)
+            Snackbar.make(
+                binding.root,
+                R.string.successful_registration, Snackbar.LENGTH_LONG
+            )
                 .setBackgroundTint(getColor(R.color.color_successful_snackbar)).show()
         }
     }
