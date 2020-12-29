@@ -19,7 +19,8 @@
         <activity
             android:name=".ui.BottomNavigationActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AfterLoginTheme" />
+            android:theme="@style/AfterLoginTheme"
+            android:windowSoftInputMode="stateVisible|adjustPan"/>
         <activity
             android:name=".ui.RegistrationActivity"
             android:screenOrientation="portrait"

@@ -2,9 +2,11 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.BottomNavigationActivity">
+
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -13,8 +15,8 @@
         android:background="@color/color_primary"
         app:layout_constraintTop_toTopOf="parent"
         app:popupTheme="@style/AfterLoginTheme"
-        app:titleTextColor="@color/color_primary_darker"
-        app:titleTextAppearance="@style/Toolbar.TitleText" />
+        app:titleTextAppearance="@style/Toolbar.TitleText"
+        app:titleTextColor="@color/color_primary_darker" />
 
     <ProgressBar
         android:id="@+id/progressbar_bottom_nav_activity"
@@ -30,6 +32,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <View
+        android:id="@+id/bottom_nav_shadow"
         android:layout_width="match_parent"
         android:layout_height="16dp"
         android:background="@drawable/bottom_navigation_shadow"
@@ -39,6 +42,7 @@
         android:id="@+id/bottom_nav_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
         android:background="@color/color_white"
         app:itemIconTint="@color/tab_color"
         app:itemTextColor="@color/tab_color"
@@ -47,14 +51,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:menu="@menu/bottom_menu" />
 
+    <!--    Change the bottom constraint toTopOf and all the fragments'
+    marginBottom to do bottomNavBar transitions without animations-->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_container_view"
         android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="?attr/actionBarSize"
-        app:defaultNavHost="false"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_nav_view"
+        app:defaultNavHost="true"
+        app:layout_constraintBottom_toBottomOf="@+id/bottom_nav_view"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"

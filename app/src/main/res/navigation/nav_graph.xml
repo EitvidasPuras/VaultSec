@@ -9,7 +9,35 @@
         android:id="@+id/fragment_notes"
         android:name="com.vaultsec.vaultsec.ui.note.NotesFragment"
         android:label="Notes"
-        tools:layout="@layout/fragment_notes" />
+        tools:layout="@layout/fragment_notes">
+
+        <argument
+            android:name="title"
+            app:argType="string" />
+        <argument
+            android:name="text"
+            app:argType="string" />
+        <argument
+            android:name="fontSize"
+            app:argType="integer" />
+        <argument
+            android:name="color"
+            app:argType="string" />
+        <!--        <argument-->
+        <!--            android:name="createdAt"-->
+        <!--            app:argType="Date" />-->
+        <!--        <argument-->
+        <!--            android:name="updatedAt"-->
+        <!--            app:argType="Date" />-->
+
+        <action
+            android:id="@+id/action_fragment_notes_to_fragment_new_note"
+            app:destination="@id/fragment_new_note"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
     <fragment
         android:id="@+id/fragment_passwords"
         android:name="com.vaultsec.vaultsec.ui.password.PasswordsFragment"
@@ -25,4 +53,9 @@
         android:name="com.vaultsec.vaultsec.GeneratorFragment"
         android:label="Generator"
         tools:layout="@layout/fragment_generator" />
+    <fragment
+        android:id="@+id/fragment_new_note"
+        android:name="com.vaultsec.vaultsec.ui.note.NewNoteFragment"
+        android:label="New note"
+        tools:layout="@layout/fragment_new_note" />
 </navigation>

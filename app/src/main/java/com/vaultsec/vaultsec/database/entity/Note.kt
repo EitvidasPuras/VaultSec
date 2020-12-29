@@ -11,7 +11,7 @@ import java.util.*
 data class Note(
     @ColumnInfo(index = true)
     @PrimaryKey(autoGenerate = true) val id: Int,
-    @ColumnInfo val title: String,
+    @ColumnInfo val title: String?,
     @ColumnInfo val text: String,
     @ColumnInfo val color: String,
     @ColumnInfo(name = "font_size") val fontSize: Int,

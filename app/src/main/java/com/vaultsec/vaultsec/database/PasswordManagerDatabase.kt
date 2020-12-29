@@ -16,7 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 
-@Database(entities = [Token::class, Note::class], version = 3)
+@Database(entities = [Token::class, Note::class], version = 4)
 @TypeConverters(DateConverter::class)
 abstract class PasswordManagerDatabase : RoomDatabase() {
 
@@ -25,8 +25,8 @@ abstract class PasswordManagerDatabase : RoomDatabase() {
 
     private class ManagerDatabaseCallback(private val scope: CoroutineScope) :
         RoomDatabase.Callback() {
-        override fun onOpen(db: SupportSQLiteDatabase) {
-            super.onOpen(db)
+        override fun onCreate(db: SupportSQLiteDatabase) {
+            super.onCreate(db)
             INSTANCE?.let { passwordManagerDatabase ->
                 CoroutineScope(Dispatchers.IO).launch {
                     val tokenDao = passwordManagerDatabase.tokenDao()
@@ -145,7 +145,8 @@ abstract class PasswordManagerDatabase : RoomDatabase() {
                     "vaultsec-database"
                 )
                     .fallbackToDestructiveMigration()
-                    // Uncomment the line below to populate the DB with random data onOpen
+                    // The line below populates the DB with random data
+                    // ON DATABASE CREATION
                     .addCallback(ManagerDatabaseCallback(scope))
                     .build()
                 INSTANCE = instance

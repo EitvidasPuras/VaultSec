@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.note.NewNoteFragment">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textfield_note_title_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/color_note_01"
+        android:fitsSystemWindows="true"
+        android:textAlignment="textStart"
+        app:boxBackgroundColor="@color/color_note_01"
+        app:boxStrokeColor="@color/color_note_01"
+        app:errorEnabled="false"
+        app:helperTextTextColor="@color/color_accent"
+        app:hintEnabled="false"
+        app:hintTextColor="@color/color_accent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/textfield_note_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints="@string/new_note_title_hint"
+            android:background="@color/color_note_01"
+            android:backgroundTint="@color/color_note_01"
+            android:ellipsize="end"
+            android:fitsSystemWindows="true"
+            android:hint="@string/new_note_title_hint"
+            android:inputType="textCapSentences"
+            android:maxLength="30"
+            android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+            app:boxStrokeColor="@color/color_note_01" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textfield_note_text_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:backgroundTint="@color/color_note_01"
+        android:scrollbars="vertical"
+        app:boxBackgroundColor="@color/color_note_01"
+        app:boxStrokeColor="@color/color_note_01"
+        app:errorEnabled="false"
+        app:helperTextTextColor="@color/color_accent"
+        app:hintEnabled="false"
+        app:hintTextColor="@color/color_accent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textfield_note_title_layout">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/textfield_note_text"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:autofillHints="@string/new_note_text_hint"
+            android:background="@color/color_note_01"
+            android:backgroundTint="@color/color_note_01"
+            android:gravity="start|top"
+            android:hint="@string/new_note_text_hint"
+            android:inputType="textMultiLine"
+            android:maxLength="10000"
+            android:paddingTop="0dp"
+            android:scrollbars="vertical" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -39,4 +39,9 @@
     <string name="title_generator_fragment">Generator</string>
 
     <string name="title_logout_dropdown_menu">Logout</string>
+
+    <string name="new_note_title_hint">Title</string>
+    <string name="new_note_text_hint">Note</string>
+    <string name="new_note_save">Save</string>
+    <string name="new_note_customize">Font size and note color</string>
 </resources>

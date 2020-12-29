@@ -62,8 +62,8 @@ class MainActivity : AppCompatActivity() {
             )
                 .setBackgroundTint(getColor(R.color.color_successful_snackbar)).show()
         }
-        playOpeningAnimation(view)
         isUserLoggedIn()
+        playOpeningAnimation(view)
         openRegistrationActivity()
         logUserIn()
 

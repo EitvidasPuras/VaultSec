@@ -169,7 +169,7 @@ class RegistrationActivity : AppCompatActivity() {
             val letterLowercase = Pattern.compile("[a-z]")
             val letterUppercase = Pattern.compile("[A-Z]")
             val digit = Pattern.compile("[0-9]")
-            val specialChar = Pattern.compile("[!@#$%^&*()_+=|<>?{}\\[\\]~`-]")
+            val specialChar = Pattern.compile("[!@#$%^&*.,()_+=|<>?{}\\[\\]~`-]")
 
             if (firstNameInput.isEmpty()) {
                 binding.textfieldRegistrationFirstnameLayout.error =
