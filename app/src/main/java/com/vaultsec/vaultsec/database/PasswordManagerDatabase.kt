@@ -16,7 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 
-@Database(entities = [Token::class, Note::class], version = 4)
+@Database(entities = [Token::class, Note::class], version = 5)
 @TypeConverters(DateConverter::class)
 abstract class PasswordManagerDatabase : RoomDatabase() {
 
