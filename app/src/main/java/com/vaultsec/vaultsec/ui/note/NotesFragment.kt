@@ -32,11 +32,10 @@ class NotesFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentNotesBinding.inflate(inflater, container, false)
-        val view = binding.root
         // Inflate the layout for this fragment
-        return view
+        return binding.root
 
     }
 
@@ -77,7 +76,8 @@ class NotesFragment : Fragment() {
         })
 
         if (!requireArguments().getString("title").isNullOrEmpty() ||
-            !requireArguments().getString("text").isNullOrEmpty()){
+            !requireArguments().getString("text").isNullOrEmpty()
+        ) {
             val title = requireArguments().getString("title")
             val text = requireArguments().getString("text")
             val fontSize = requireArguments().getInt("fontSize")

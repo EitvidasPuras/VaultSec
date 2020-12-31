@@ -2,12 +2,10 @@ package com.vaultsec.vaultsec.ui.note
 
 import android.content.Context
 import android.graphics.Color
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.core.view.marginTop
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -69,7 +67,7 @@ class NoteAdapter(context: Context?) :
         holder.textViewText.text = currentNote.text
         holder.textViewText.textSize = currentNote.fontSize.toFloat()
         holder.container.setCardBackgroundColor(Color.parseColor(currentNote.color))
-        if (holder.textViewTitle.text.isNullOrEmpty()){
+        if (holder.textViewTitle.text.isNullOrEmpty()) {
             holder.textViewTitle.visibility = View.GONE
 //            holder.textViewText.layoutParams =
         }
