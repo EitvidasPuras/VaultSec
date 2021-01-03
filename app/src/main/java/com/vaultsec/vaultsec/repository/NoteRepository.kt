@@ -32,4 +32,8 @@ class NoteRepository(application: Application) {
     fun getAllNotes(): LiveData<List<Note>> {
         return noteDao.getAllNotes()
     }
+
+    suspend fun getItemCount(): Int {
+        return noteDao.getItemCount()
+    }
 }

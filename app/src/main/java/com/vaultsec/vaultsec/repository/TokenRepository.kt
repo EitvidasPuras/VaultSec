@@ -38,7 +38,7 @@ class TokenRepository(application: Application) {
             var response = api.postRegister(user)
             response = response.getAsJsonObject("success")
             tokenDao.deleteAll()
-            val token = Token(0, response["token"].asString)
+            val token = Token(response["token"].asString)
             tokenDao.insert(token)
             Log.e("com.vaultsec.vaultsec.repository.postRegister", response["token"].asString)
             return ApiResponse(false)
@@ -78,7 +78,7 @@ class TokenRepository(application: Application) {
                 response = response?.getAsJsonObject("success")
                 if (response!!.has("token")) {
                     tokenDao.deleteAll()
-                    val token = Token(0, response["token"].asString)
+                    val token = Token(response["token"].asString)
                     tokenDao.insert(token)
                     Log.e(
                         "com.vaultsec.vaultsec.repository.postLogin",
@@ -87,6 +87,7 @@ class TokenRepository(application: Application) {
                     return ApiResponse(false)
                 }
             } catch (e: ClassCastException) {
+                Log.e("ClassCastException", e.toString())
                 return ApiResponse(false)
             }
             return ApiResponse(false)

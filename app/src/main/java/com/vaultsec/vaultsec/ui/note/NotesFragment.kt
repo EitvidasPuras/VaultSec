@@ -3,6 +3,7 @@ package com.vaultsec.vaultsec.ui.note
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,12 +19,12 @@ import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.databinding.FragmentNotesBinding
 import com.vaultsec.vaultsec.viewmodel.NoteViewModel
-import java.util.*
+import java.sql.Timestamp
 
 /**
  * A simple [Fragment] subclass.
  */
-class NotesFragment : Fragment() {
+class NotesFragment : Fragment(R.layout.fragment_notes) {
 
     private lateinit var noteViewModel: NoteViewModel
     private var _binding: FragmentNotesBinding? = null
@@ -41,6 +42,7 @@ class NotesFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
 
         val navbar = requireActivity().findViewById<BottomNavigationView>(R.id.bottom_nav_view)
         val shadow = requireActivity().findViewById<View>(R.id.bottom_nav_shadow)
@@ -75,6 +77,14 @@ class NotesFragment : Fragment() {
             }
         })
 
+        if (noteViewModel.getItemCount() == 0) {
+            binding.textviewEmptyNotes.visibility = View.VISIBLE
+            binding.recyclerviewNotes.visibility = View.GONE
+        } else {
+            binding.textviewEmptyNotes.visibility = View.GONE
+            binding.recyclerviewNotes.visibility = View.VISIBLE
+        }
+
         if (!requireArguments().getString("title").isNullOrEmpty() ||
             !requireArguments().getString("text").isNullOrEmpty()
         ) {
@@ -82,14 +92,16 @@ class NotesFragment : Fragment() {
             val text = requireArguments().getString("text")
             val fontSize = requireArguments().getInt("fontSize")
             val color = requireArguments().getString("color")
-            val createdAt = Date(System.currentTimeMillis())
+            val createdAt = Timestamp(System.currentTimeMillis())
+            Log.e("date:", createdAt.toString())
 
-            val note = Note(0, title!!, text!!, color!!, fontSize, createdAt, createdAt)
+            val note = Note(title, text!!, color!!, fontSize, createdAt, createdAt)
             noteViewModel.insert(note)
         }
 
         adapter.setOnItemClickListener(object : NoteAdapter.OnItemClickListener {
             override fun onItemClick(note: Note) {
+                Log.e("date: ", note.createdAt.toString())
                 Toast.makeText(context, "Clicked", Toast.LENGTH_LONG).show()
             }
         })

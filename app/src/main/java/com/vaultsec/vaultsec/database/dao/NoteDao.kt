@@ -6,7 +6,7 @@ import com.vaultsec.vaultsec.database.entity.Note
 
 @Dao
 interface NoteDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(note: Note)
 
     @Delete
@@ -19,6 +19,9 @@ interface NoteDao {
     suspend fun deleteAll()
 
     @Query("SELECT * FROM vault_notes ORDER BY created_at_local DESC")
-    fun getAllNotes(): LiveData<List<Note>>
+    fun getAllNotes(): LiveData<List<Note>> //Flow<List<Note>>
+
+    @Query("SELECT COUNT(title) FROM vault_notes")
+    suspend fun getItemCount(): Int
 
 }

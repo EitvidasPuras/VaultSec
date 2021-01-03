@@ -55,10 +55,6 @@ class NoteAdapter(context: Context?) :
         return NoteHolder(itemView)
     }
 
-//    override fun getItemCount(): Int {
-//        return notes.size
-//    }
-
     override fun onBindViewHolder(holder: NoteHolder, position: Int) {
         val currentNote: Note = getItem(position)
 //        val currentNote: Note = notes[position]
@@ -80,7 +76,6 @@ class NoteAdapter(context: Context?) :
 //        this.notes = notes
 //        notifyDataSetChanged()
 //    }
-
 
     fun getNoteAt(position: Int): Note {
         return getItem(position)

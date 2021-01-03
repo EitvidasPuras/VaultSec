@@ -8,6 +8,7 @@ import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.repository.NoteRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class NoteViewModel(application: Application) : AndroidViewModel(application) {
     private val noteRepository: NoteRepository = NoteRepository(application)
@@ -35,5 +36,11 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getAllNotes(): LiveData<List<Note>> {
         return allNotes
+    }
+
+    fun getItemCount(): Int {
+        return runBlocking {
+            noteRepository.getItemCount()
+        }
     }
 }
