@@ -1,12 +1,12 @@
 package com.vaultsec.vaultsec.repository
 
 import android.app.Application
-import androidx.lifecycle.LiveData
 import com.vaultsec.vaultsec.database.PasswordManagerDatabase
 import com.vaultsec.vaultsec.database.dao.NoteDao
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.network.PasswordManagerApi
 import com.vaultsec.vaultsec.network.PasswordManagerService
+import kotlinx.coroutines.flow.Flow
 
 class NoteRepository(application: Application) {
     private val database = PasswordManagerDatabase.getInstance(application)
@@ -29,8 +29,8 @@ class NoteRepository(application: Application) {
         noteDao.deleteAll()
     }
 
-    fun getAllNotes(): LiveData<List<Note>> {
-        return noteDao.getAllNotes()
+    fun getNotes(searchQuery: String): Flow<List<Note>> {
+        return noteDao.getNotes(searchQuery)
     }
 
     suspend fun getItemCount(): Int {

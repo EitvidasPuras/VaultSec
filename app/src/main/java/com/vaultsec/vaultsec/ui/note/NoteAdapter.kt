@@ -12,9 +12,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.entity.Note
+import com.vaultsec.vaultsec.databinding.NoteItemBinding
 import kotlinx.android.synthetic.main.note_item.view.*
 
-class NoteAdapter(context: Context?) :
+class NoteAdapter :
 //    RecyclerView.Adapter<NoteAdapter.NoteHolder>() {
     ListAdapter<Note, NoteAdapter.NoteHolder>(DIFF_CALLBACK) {
 
@@ -25,8 +26,7 @@ class NoteAdapter(context: Context?) :
             }
 
             override fun areContentsTheSame(oldItem: Note, newItem: Note): Boolean {
-                return oldItem.title == newItem.title
-                        && oldItem.text == newItem.text
+                return oldItem == newItem
             }
         }
     }
@@ -46,8 +46,31 @@ class NoteAdapter(context: Context?) :
 
     }
 
-    //    private var notes: List<Note> = emptyList()
-    private val mContext = context
+//    // Apparently a cleaner and a newer version to write it
+//    inner class NoteHolder(private val binding: NoteItemBinding) :
+//        RecyclerView.ViewHolder(binding.root) {
+//        fun bind(note: Note) {
+//            binding.apply {
+//                cardviewNote.setBackgroundColor(Color.parseColor(note.color))
+//                textviewNoteText.text = note.text
+//                textviewNoteText.textSize = note.fontSize.toFloat()
+//                textviewNoteTitle.text = note.title
+//                if (textviewNoteTitle.text.isNullOrEmpty()) {
+//                    textviewNoteTitle.visibility = View.GONE
+//                }
+//            }
+//        }
+//    }
+//    // Apparently a cleaner and a newer version to write it
+//    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteHolder {
+//        val binding = NoteItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+//        return NoteHolder(binding)
+//    }
+//    // Apparently a cleaner and a newer version to write it
+//    override fun onBindViewHolder(holder: NoteHolder, position: Int) {
+//        val currentNote: Note = getItem(position)
+//        holder.bind(currentNote)
+//    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteHolder {
         val itemView: View =
@@ -65,11 +88,7 @@ class NoteAdapter(context: Context?) :
         holder.container.setCardBackgroundColor(Color.parseColor(currentNote.color))
         if (holder.textViewTitle.text.isNullOrEmpty()) {
             holder.textViewTitle.visibility = View.GONE
-//            holder.textViewText.layoutParams =
         }
-//        holder.container.backgroundTintList = mContext.resources.getColorStateList(currentNote.color)
-
-//        holder.container.background = ColorDrawable(Color.parseColor(currentNote.color))
     }
 
 //    fun setNotes(notes: List<Note>) {

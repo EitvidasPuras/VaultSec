@@ -19,20 +19,19 @@ import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.databinding.FragmentNewNoteBinding
 
 class NewNoteFragment : Fragment() {
-
     private var _binding: FragmentNewNoteBinding? = null
     private val binding get() = _binding!!
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentNewNoteBinding.inflate(inflater, container, false)
-        val view = binding.root
 
         setHasOptionsMenu(true)
         // Inflate the layout for this fragment
-        return view
+        return binding.root
     }
 
 
@@ -56,7 +55,6 @@ class NewNoteFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
         inflater.inflate(R.menu.new_note_menu, menu)
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
     private fun hideKeyboard() {
@@ -80,148 +78,33 @@ class NewNoteFragment : Fragment() {
         val noteColorStringValue = Integer.toHexString(noteColorIntValue!!)
         val noteColorStringValueClean = noteColorStringValue.replaceRange(0, 2, "#")
 
-        val width = resources.getDimension(R.dimen.color_picker_button_width).toInt()
-        val height = resources.getDimension(R.dimen.color_picker_button_height).toInt()
+        val holderLayout = createLinearLayout()
+        applyLinearLayoutSettings(holderLayout, true)
 
-        val holderLayout = LinearLayout(requireContext())
-        holderLayout.layoutParams = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply {
-            holderLayout.orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-        }
-
-        val fontSizeSlider = Slider(requireContext())
-        fontSizeSlider.layoutParams = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply {
-            gravity = Gravity.CENTER
-            fontSizeSlider.valueFrom = 12f
-            fontSizeSlider.valueTo = 22f
-            fontSizeSlider.value =
-                binding.textfieldNoteText.textSize / resources.displayMetrics.scaledDensity
-            fontSizeSlider.stepSize = 1f
-        }
+        val fontSizeSlider = createFontSizeSlider()
+        applyFontSizeSliderSettings(fontSizeSlider)
 
         fontSizeSlider.addOnChangeListener { _, value, _ ->
             binding.textfieldNoteText.textSize = value
         }
 
-        val colorLayout = LinearLayout(requireContext())
-        colorLayout.layoutParams = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply {
-            colorLayout.orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER
-        }
+        val colorLayout = createLinearLayout()
+        applyLinearLayoutSettings(colorLayout, false)
 
-        val firstColorFAB = FloatingActionButton(requireContext())
-        firstColorFAB.layoutParams = LinearLayout.LayoutParams(
-            width, height
-        ).apply {
-            firstColorFAB.id = View.generateViewId()
-            firstColorFAB.setPadding(0, 0, 0, 0)
-            firstColorFAB.elevation = resources.getDimension(R.dimen.color_picker_button_elevation)
-            setMargins(
-                resources.getDimension(R.dimen.color_picker_button_margin_horizontal).toInt(),
-                resources.getDimension(R.dimen.color_picker_button_margin_vertical).toInt(),
-                resources.getDimension(R.dimen.color_picker_button_margin_horizontal).toInt(),
-                resources.getDimension(R.dimen.color_picker_button_margin_vertical).toInt()
-            )
-            firstColorFAB.backgroundTintList = ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.color_note_01
-                )
-            )
-        }
+        val firstColorFAB = createColorFAB()
+        applyColorFABSettings(firstColorFAB, R.color.color_note_01)
 
-        val secondColorFAB = FloatingActionButton(requireContext())
-        secondColorFAB.layoutParams = LinearLayout.LayoutParams(
-            width, height
-        ).apply {
-            secondColorFAB.id = View.generateViewId()
-            secondColorFAB.setPadding(0, 0, 0, 0)
-            secondColorFAB.elevation = resources.getDimension(R.dimen.color_picker_button_elevation)
-            setMargins(
-                resources.getDimension(R.dimen.color_picker_button_margin_horizontal).toInt(),
-                resources.getDimension(R.dimen.color_picker_button_margin_vertical).toInt(),
-                resources.getDimension(R.dimen.color_picker_button_margin_horizontal).toInt(),
-                resources.getDimension(R.dimen.color_picker_button_margin_vertical).toInt()
-            )
-            secondColorFAB.backgroundTintList = ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.color_note_02
-                )
-            )
-        }
+        val secondColorFAB = createColorFAB()
+        applyColorFABSettings(secondColorFAB, R.color.color_note_02)
 
-        val thirdColorFAB = FloatingActionButton(requireContext())
-        thirdColorFAB.layoutParams = LinearLayout.LayoutParams(
-            width, height
-        ).apply {
-            thirdColorFAB.id = View.generateViewId()
-            thirdColorFAB.setPadding(0, 0, 0, 0)
-            thirdColorFAB.elevation = resources.getDimension(R.dimen.color_picker_button_elevation)
-            setMargins(
-                resources.getDimension(R.dimen.color_picker_button_margin_horizontal).toInt(),
-                resources.getDimension(R.dimen.color_picker_button_margin_vertical).toInt(),
-                resources.getDimension(R.dimen.color_picker_button_margin_horizontal).toInt(),
-                resources.getDimension(R.dimen.color_picker_button_margin_vertical).toInt()
-            )
-            thirdColorFAB.backgroundTintList = ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.color_note_03
-                )
-            )
-        }
+        val thirdColorFAB = createColorFAB()
+        applyColorFABSettings(thirdColorFAB, R.color.color_note_03)
 
-        val fourthColorFAB = FloatingActionButton(requireContext())
-        fourthColorFAB.layoutParams = LinearLayout.LayoutParams(
-            width, height
-        ).apply {
-            fourthColorFAB.id = View.generateViewId()
-            fourthColorFAB.setPadding(0, 0, 0, 0)
-            fourthColorFAB.elevation = resources.getDimension(R.dimen.color_picker_button_elevation)
-            setMargins(
-                resources.getDimension(R.dimen.color_picker_button_margin_horizontal).toInt(),
-                resources.getDimension(R.dimen.color_picker_button_margin_vertical).toInt(),
-                resources.getDimension(R.dimen.color_picker_button_margin_horizontal).toInt(),
-                resources.getDimension(R.dimen.color_picker_button_margin_vertical).toInt()
-            )
-            fourthColorFAB.backgroundTintList = ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.color_note_04
-                )
-            )
-        }
+        val fourthColorFAB = createColorFAB()
+        applyColorFABSettings(fourthColorFAB, R.color.color_note_04)
 
-        val fifthColorFAB = FloatingActionButton(requireContext())
-        fifthColorFAB.layoutParams = LinearLayout.LayoutParams(
-            width, height
-        ).apply {
-            fifthColorFAB.id = View.generateViewId()
-            fifthColorFAB.setPadding(0, 0, 0, 0)
-            fifthColorFAB.elevation = resources.getDimension(R.dimen.color_picker_button_elevation)
-            setMargins(
-                resources.getDimension(R.dimen.color_picker_button_margin_horizontal).toInt(),
-                resources.getDimension(R.dimen.color_picker_button_margin_vertical).toInt(),
-                resources.getDimension(R.dimen.color_picker_button_margin_horizontal).toInt(),
-                resources.getDimension(R.dimen.color_picker_button_margin_vertical).toInt()
-            )
-            fifthColorFAB.backgroundTintList = ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.color_note_05
-                )
-            )
-        }
+        val fifthColorFAB = createColorFAB()
+        applyColorFABSettings(fifthColorFAB, R.color.color_note_05)
 
         colorLayout.addView(firstColorFAB)
         colorLayout.addView(secondColorFAB)
@@ -231,78 +114,6 @@ class NewNoteFragment : Fragment() {
 
         holderLayout.addView(colorLayout)
         holderLayout.addView(fontSizeSlider)
-
-        firstColorFAB.setOnClickListener {
-            binding.textfieldNoteTitle.backgroundTintList = ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.color_note_01
-                )
-            )
-            binding.textfieldNoteText.backgroundTintList = ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.color_note_01
-                )
-            )
-        }
-        secondColorFAB.setOnClickListener {
-            binding.textfieldNoteTitle.backgroundTintList = ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.color_note_02
-                )
-            )
-            binding.textfieldNoteText.backgroundTintList = ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.color_note_02
-                )
-            )
-        }
-        thirdColorFAB.setOnClickListener {
-            binding.textfieldNoteTitle.backgroundTintList = ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.color_note_03
-                )
-            )
-            binding.textfieldNoteText.backgroundTintList = ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.color_note_03
-                )
-            )
-        }
-        fourthColorFAB.setOnClickListener {
-            binding.textfieldNoteTitle.backgroundTintList = ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.color_note_04
-                )
-            )
-            binding.textfieldNoteText.backgroundTintList = ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.color_note_04
-                )
-            )
-        }
-        fifthColorFAB.setOnClickListener {
-            binding.textfieldNoteTitle.backgroundTintList = ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.color_note_05
-                )
-            )
-            binding.textfieldNoteText.backgroundTintList = ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.color_note_05
-                )
-            )
-        }
-
 
         return when (item.itemId) {
             R.id.item_save_note -> {
@@ -322,7 +133,7 @@ class NewNoteFragment : Fragment() {
                     hideKeyboard()
                     return true
                 }
-                return true
+                true
             }
             R.id.item_customize -> {
                 MaterialAlertDialogBuilder(
@@ -343,13 +154,82 @@ class NewNoteFragment : Fragment() {
                     }
                     .setPositiveButton("Confirm") { dialog, _ ->
                         binding.textfieldNoteText.textSize = fontSizeSlider.value
-
                         dialog.cancel()
                     }
                     .show()
-                return true
+                true
             }
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun createLinearLayout(): LinearLayout = LinearLayout(requireContext())
+
+    private fun applyLinearLayoutSettings(linearLayout: LinearLayout, orientation: Boolean) {
+        linearLayout.layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply {
+            if (orientation) linearLayout.orientation = LinearLayout.VERTICAL
+            else linearLayout.orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+        }
+    }
+
+    private fun createFontSizeSlider(): Slider = Slider(requireContext())
+
+    private fun applyFontSizeSliderSettings(fontSizeSlider: Slider) {
+        fontSizeSlider.layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply {
+            gravity = Gravity.CENTER
+            fontSizeSlider.valueFrom = 12f
+            fontSizeSlider.valueTo = 22f
+            fontSizeSlider.value =
+                binding.textfieldNoteText.textSize / resources.displayMetrics.scaledDensity
+            fontSizeSlider.stepSize = 1f
+        }
+    }
+
+    private fun createColorFAB(): FloatingActionButton = FloatingActionButton(requireContext())
+
+    private fun applyColorFABSettings(fab: FloatingActionButton, color: Int) {
+        val width = resources.getDimension(R.dimen.color_picker_button_width).toInt()
+        val height = resources.getDimension(R.dimen.color_picker_button_height).toInt()
+
+        fab.layoutParams = LinearLayout.LayoutParams(
+            width, height
+        ).apply {
+            fab.id = View.generateViewId()
+            fab.setPadding(0, 0, 0, 0)
+            fab.elevation = resources.getDimension(R.dimen.color_picker_button_elevation)
+            setMargins(
+                resources.getDimension(R.dimen.color_picker_button_margin_horizontal).toInt(),
+                resources.getDimension(R.dimen.color_picker_button_margin_vertical).toInt(),
+                resources.getDimension(R.dimen.color_picker_button_margin_horizontal).toInt(),
+                resources.getDimension(R.dimen.color_picker_button_margin_vertical).toInt()
+            )
+            fab.backgroundTintList = ColorStateList.valueOf(
+                ContextCompat.getColor(
+                    requireContext(),
+                    color
+                )
+            )
+            fab.setOnClickListener {
+                binding.textfieldNoteTitle.backgroundTintList = ColorStateList.valueOf(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        color
+                    )
+                )
+                binding.textfieldNoteText.backgroundTintList = ColorStateList.valueOf(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        color
+                    )
+                )
+            }
         }
     }
 }

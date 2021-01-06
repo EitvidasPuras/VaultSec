@@ -17,7 +17,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.sql.Timestamp
 
-@Database(entities = [Token::class, Note::class], version = 7)
+@Database(entities = [Token::class, Note::class], version = 8)
 @TypeConverters(DateConverter::class)
 abstract class PasswordManagerDatabase : RoomDatabase() {
 

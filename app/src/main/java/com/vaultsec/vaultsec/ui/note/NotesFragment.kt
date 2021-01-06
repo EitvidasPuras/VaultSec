@@ -4,12 +4,10 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.Toast
+import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -36,73 +34,41 @@ class NotesFragment : Fragment(R.layout.fragment_notes) {
     ): View {
         _binding = FragmentNotesBinding.inflate(inflater, container, false)
         // Inflate the layout for this fragment
+        setHasOptionsMenu(true)
         return binding.root
 
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-
-
-        val navbar = requireActivity().findViewById<BottomNavigationView>(R.id.bottom_nav_view)
-        val shadow = requireActivity().findViewById<View>(R.id.bottom_nav_shadow)
-        if (navbar.visibility == View.GONE) {
-
-            navbar.translationX = -navbar.width.toFloat()
-            shadow.translationX = -navbar.width.toFloat()
-            navbar.visibility = View.VISIBLE
-            shadow.visibility = View.VISIBLE
-            navbar.animate().translationX(0f).setDuration(300).setListener(null)
-            shadow.animate().translationX(0f).setDuration(300).setListener(null)
-        }
+        playSlidingAnimation(true)
 
 //        val animation = AnimationUtils.loadLayoutAnimation(activity, R.anim.layout_animation_fall_down)
-        val adapter = NoteAdapter(context)
-        binding.recyclerviewNotes.adapter = adapter
-        binding.recyclerviewNotes.layoutManager =
-            StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL)
-//        binding.recyclerviewNotes.layoutManager = LinearLayoutManager(activity)
-        binding.recyclerviewNotes.setHasFixedSize(true)
-//        binding.recyclerviewNotes.layoutAnimation = animation
-//        binding.recyclerviewNotes.itemAnimator = animation
+        val noteAdapter = NoteAdapter()
+        binding.apply {
+            recyclerviewNotes.apply {
+                adapter = noteAdapter
+                layoutManager = StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL)
+//                layoutManager = LinearLayoutManager(requireContext())
+                setHasFixedSize(true)
+//                layoutAnimation = animation
+//                itemAnimator = animation
+            }
+        }
 
         noteViewModel = ViewModelProvider(this).get(NoteViewModel::class.java)
-//        noteViewModel.getAllNotes().observe(viewLifecycleOwner, Observer {
-//            adapter.setNotes(it)
-//        })
-        noteViewModel.getAllNotes().observe(viewLifecycleOwner, Observer {
-            it?.let {
-                adapter.submitList(it)
-                binding.recyclerviewNotes.scheduleLayoutAnimation()
-            }
-        })
-
-        if (noteViewModel.getItemCount() == 0) {
-            binding.textviewEmptyNotes.visibility = View.VISIBLE
-            binding.recyclerviewNotes.visibility = View.GONE
-        } else {
-            binding.textviewEmptyNotes.visibility = View.GONE
-            binding.recyclerviewNotes.visibility = View.VISIBLE
+        noteViewModel.notes.observe(viewLifecycleOwner) {
+            noteAdapter.submitList(it)
+            binding.recyclerviewNotes.scheduleLayoutAnimation()
         }
 
-        if (!requireArguments().getString("title").isNullOrEmpty() ||
-            !requireArguments().getString("text").isNullOrEmpty()
-        ) {
-            val title = requireArguments().getString("title")
-            val text = requireArguments().getString("text")
-            val fontSize = requireArguments().getInt("fontSize")
-            val color = requireArguments().getString("color")
-            val createdAt = Timestamp(System.currentTimeMillis())
-            Log.e("date:", createdAt.toString())
+        displayMessageIfRecyclerViewIsEmpty()
+        createNewNoteIfNecessary()
 
-            val note = Note(title, text!!, color!!, fontSize, createdAt, createdAt)
-            noteViewModel.insert(note)
-        }
-
-        adapter.setOnItemClickListener(object : NoteAdapter.OnItemClickListener {
+        noteAdapter.setOnItemClickListener(object : NoteAdapter.OnItemClickListener {
             override fun onItemClick(note: Note) {
                 Log.e("date: ", note.createdAt.toString())
-                Toast.makeText(context, "Clicked", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, note.createdAt.toString(), Toast.LENGTH_LONG).show()
             }
         })
     }
@@ -112,9 +78,41 @@ class NotesFragment : Fragment(R.layout.fragment_notes) {
 
 //        val navCon = Navigation.findNavController(view)
         binding.fabNotes.setOnClickListener {
-            val navbar = requireActivity().findViewById<BottomNavigationView>(R.id.bottom_nav_view)
-            val shadow = requireActivity().findViewById<View>(R.id.bottom_nav_shadow)
+            playSlidingAnimation(false)
+            view.findNavController().navigate(R.id.action_fragment_notes_to_fragment_new_note)
+        }
+    }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.notes_fragment_menu, menu)
+
+        val searchItem = menu.findItem(R.id.item_search)
+        val searchView = searchItem.actionView as SearchView
+        searchView.maxWidth = Int.MAX_VALUE
+        setSearchViewListeners(searchView, searchItem, menu)
+    }
+
+    private fun setItemsVisibility(menu: Menu, exception: MenuItem, visible: Boolean) {
+        for (i in 0 until menu.size()) {
+            val item = menu.getItem(i)
+            if (item != exception) item.isVisible = visible
+        }
+    }
+
+    private fun playSlidingAnimation(inOrOut: Boolean) {
+        val navbar = requireActivity().findViewById<BottomNavigationView>(R.id.bottom_nav_view)
+        val shadow = requireActivity().findViewById<View>(R.id.bottom_nav_shadow)
+        if (inOrOut) {
+            if (navbar.visibility == View.GONE) {
+
+                navbar.translationX = -navbar.width.toFloat()
+                shadow.translationX = -navbar.width.toFloat()
+                navbar.visibility = View.VISIBLE
+                shadow.visibility = View.VISIBLE
+                navbar.animate().translationX(0f).setDuration(320).setListener(null)
+                shadow.animate().translationX(0f).setDuration(320).setListener(null)
+            }
+        } else {
             shadow.animate().translationX(-shadow.width.toFloat()).setDuration(400)
                 .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(p0: Animator?) {
@@ -127,10 +125,61 @@ class NotesFragment : Fragment(R.layout.fragment_notes) {
                         navbar.visibility = View.GONE
                     }
                 })
-            view.findNavController().navigate(R.id.action_fragment_notes_to_fragment_new_note)
+        }
+
+    }
+
+    private fun displayMessageIfRecyclerViewIsEmpty() {
+        if (noteViewModel.getItemCount() == 0) {
+            binding.textviewEmptyNotes.visibility = View.VISIBLE
+            binding.recyclerviewNotes.visibility = View.GONE
+        } else {
+            binding.textviewEmptyNotes.visibility = View.GONE
+            binding.recyclerviewNotes.visibility = View.VISIBLE
         }
     }
 
+    private fun createNewNoteIfNecessary() {
+        if (!requireArguments().getString("title").isNullOrEmpty() ||
+            !requireArguments().getString("text").isNullOrEmpty()
+        ) {
+            val title = requireArguments().getString("title")
+            val text = requireArguments().getString("text")
+            val fontSize = requireArguments().getInt("fontSize")
+            val color = requireArguments().getString("color")
+            val createdAt = Timestamp(System.currentTimeMillis())
+            Log.e("date:", createdAt.toString())
+
+            val note = Note(title, text!!, color!!, fontSize, createdAt, createdAt)
+            noteViewModel.insert(note)
+            requireArguments().clear()
+        }
+    }
+
+    private fun setSearchViewListeners(searchView: SearchView, searchItem: MenuItem, menu: Menu) {
+        searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+            override fun onMenuItemActionExpand(p0: MenuItem?): Boolean {
+                setItemsVisibility(menu, searchItem, false)
+                return true
+            }
+
+            override fun onMenuItemActionCollapse(p0: MenuItem?): Boolean {
+                setItemsVisibility(menu, searchItem, true)
+                return true
+            }
+        })
+
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                noteViewModel.searchQuery.value = newText.orEmpty()
+                return true
+            }
+        })
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

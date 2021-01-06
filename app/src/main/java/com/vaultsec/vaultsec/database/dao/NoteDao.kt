@@ -1,8 +1,8 @@
 package com.vaultsec.vaultsec.database.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.vaultsec.vaultsec.database.entity.Note
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface NoteDao {
@@ -18,8 +18,8 @@ interface NoteDao {
     @Query("DELETE FROM vault_notes")
     suspend fun deleteAll()
 
-    @Query("SELECT * FROM vault_notes ORDER BY created_at_local DESC")
-    fun getAllNotes(): LiveData<List<Note>> //Flow<List<Note>>
+    @Query("SELECT * FROM vault_notes WHERE title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%' ")
+    fun getNotes(searchQuery: String): Flow<List<Note>>
 
     @Query("SELECT COUNT(title) FROM vault_notes")
     suspend fun getItemCount(): Int

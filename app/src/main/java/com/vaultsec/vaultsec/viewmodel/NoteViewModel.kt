@@ -2,21 +2,25 @@ package com.vaultsec.vaultsec.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.repository.NoteRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class NoteViewModel(application: Application) : AndroidViewModel(application) {
     private val noteRepository: NoteRepository = NoteRepository(application)
-    private val allNotes: LiveData<List<Note>>
 
-    init {
-        allNotes = noteRepository.getAllNotes()
+    val searchQuery = MutableStateFlow("")
+    private val notesFlow = searchQuery.flatMapLatest {
+        noteRepository.getNotes(it)
     }
+    val notes = notesFlow.asLiveData()
+
 
     fun insert(note: Note) = viewModelScope.launch(Dispatchers.IO) {
         noteRepository.insert(note)
@@ -32,10 +36,6 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
 
     fun deleteAll() = viewModelScope.launch(Dispatchers.IO) {
         noteRepository.deleteAll()
-    }
-
-    fun getAllNotes(): LiveData<List<Note>> {
-        return allNotes
     }
 
     fun getItemCount(): Int {

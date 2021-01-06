@@ -1,31 +1,25 @@
 package com.vaultsec.vaultsec.ui
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.view.*
 import android.view.inputmethod.InputMethodManager
-import android.widget.LinearLayout
-import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
-import androidx.navigation.Navigation.findNavController
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.snackbar.Snackbar
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.databinding.ActivityBottomNavigationBinding
 import com.vaultsec.vaultsec.network.entity.ErrorTypes
+import com.vaultsec.vaultsec.viewmodel.NoteViewModel
 import com.vaultsec.vaultsec.viewmodel.TokenViewModel
 import kotlinx.android.synthetic.main.activity_bottom_navigation.*
 import kotlin.math.hypot
@@ -33,6 +27,7 @@ import kotlin.math.hypot
 class BottomNavigationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityBottomNavigationBinding
     private lateinit var tokenViewModel: TokenViewModel
+    private lateinit var noteViewModel: NoteViewModel
     private var wasDoubleBackToExitPressed = false
     private lateinit var backToast: Toast
     private lateinit var navController: NavController
@@ -45,6 +40,8 @@ class BottomNavigationActivity : AppCompatActivity() {
 
         tokenViewModel =
             ViewModelProvider(this@BottomNavigationActivity).get(TokenViewModel::class.java)
+        noteViewModel =
+            ViewModelProvider(this@BottomNavigationActivity).get(NoteViewModel::class.java)
 
         val toolbar: androidx.appcompat.widget.Toolbar? =
             findViewById(R.id.toolbar)
@@ -134,10 +131,6 @@ class BottomNavigationActivity : AppCompatActivity() {
 //        Handler().postDelayed({ wasDoubleBackToExitPressed = false }, 2000)
 //    }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.drop_down_menu, menu)
-        return true
-    }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
@@ -168,7 +161,23 @@ class BottomNavigationActivity : AppCompatActivity() {
                             }
                         }
                     })
-                return true
+                true
+            }
+            R.id.item_settings -> {
+                Snackbar.make(binding.root, "Soon to be implemented", Snackbar.LENGTH_SHORT).show()
+                true
+            }
+            R.id.item_sort_by_title -> {
+                true
+            }
+            R.id.item_sort_by_created_date -> {
+                true
+            }
+            R.id.item_sort_by_updated_date -> {
+                true
+            }
+            R.id.item_sort_by_color -> {
+                true
             }
             else -> super.onOptionsItemSelected(item)
         }
