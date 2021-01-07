@@ -2,9 +2,11 @@ package com.vaultsec.vaultsec.ui.note
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
@@ -171,6 +173,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes) {
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
+                hideKeyboard()
                 return true
             }
 
@@ -179,6 +182,18 @@ class NotesFragment : Fragment(R.layout.fragment_notes) {
                 return true
             }
         })
+    }
+
+    private fun hideKeyboard() {
+        val inputManager =
+            requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+
+        requireActivity().currentFocus?.let {
+            inputManager.hideSoftInputFromWindow(
+                requireActivity().currentFocus?.windowToken,
+                InputMethodManager.HIDE_NOT_ALWAYS
+            )
+        }
     }
 
     override fun onDestroyView() {
