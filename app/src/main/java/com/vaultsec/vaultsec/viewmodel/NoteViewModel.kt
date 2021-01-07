@@ -4,6 +4,8 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import com.vaultsec.vaultsec.database.PasswordManagerPreferences
+import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.repository.NoteRepository
 import kotlinx.coroutines.Dispatchers
@@ -15,17 +17,18 @@ import kotlinx.coroutines.runBlocking
 
 class NoteViewModel(application: Application) : AndroidViewModel(application) {
     private val noteRepository: NoteRepository = NoteRepository(application)
+    private val prefsManager = PasswordManagerPreferences(application)
 
     val searchQuery = MutableStateFlow("")
-    val sortOrder = MutableStateFlow(SortOrder.BY_TITLE)
+    private val sortOrder = prefsManager.preferencesFlow
 
     private val notesFlow = combine(
         searchQuery,
         sortOrder
-    ) { query, order ->
-        Pair(query, order)
-    }.flatMapLatest {
-        noteRepository.getNotes(it.first, it.second)
+    ) { query, sortOrder ->
+        Pair(query, sortOrder)
+    }.flatMapLatest { (query, sortOrder) ->
+        noteRepository.getNotes(query, sortOrder)
     }
     val notes = notesFlow.asLiveData()
 
@@ -51,8 +54,8 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
             noteRepository.getItemCount()
         }
     }
-}
 
-enum class SortOrder {
-    BY_TITLE, BY_DATE_CREATED, BY_DATE_UPDATED, BY_COLOR
+    fun onSortOrderSelected(sortOrder: SortOrder) = viewModelScope.launch(Dispatchers.IO) {
+        prefsManager.updateSortOrder(sortOrder)
+    }
 }

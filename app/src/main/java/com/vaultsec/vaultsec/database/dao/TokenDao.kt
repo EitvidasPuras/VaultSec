@@ -17,6 +17,9 @@ interface TokenDao {
     @Query("SELECT * FROM access_tokens ORDER BY id ASC LIMIT 1")
     suspend fun getToken(): Token
 
+//    @Query("SELECT * FROM access_tokens ORDER BY id ASC LIMIT 1")
+//    fun getToken(): Flow<Token>
+
     @Query("DELETE FROM access_tokens")
     suspend fun deleteAll()
 }

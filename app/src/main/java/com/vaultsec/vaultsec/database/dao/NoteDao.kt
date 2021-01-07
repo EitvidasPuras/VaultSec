@@ -1,8 +1,8 @@
 package com.vaultsec.vaultsec.database.dao
 
 import androidx.room.*
+import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.entity.Note
-import com.vaultsec.vaultsec.viewmodel.SortOrder
 import kotlinx.coroutines.flow.Flow
 
 @Dao

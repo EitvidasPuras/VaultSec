@@ -44,9 +44,9 @@ class TokenViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun postLogout(header: String): LiveData<ApiResponse> {
+    fun postLogout(): LiveData<ApiResponse> {
         return liveData(Dispatchers.IO) {
-            val response = tokenRepository.postLogout(header)
+            val response = tokenRepository.postLogout("Bearer ${getToken().token}")
             emit(response)
         }
     }

@@ -17,6 +17,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.vaultsec.vaultsec.R
+import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.databinding.ActivityBottomNavigationBinding
 import com.vaultsec.vaultsec.network.entity.ErrorTypes
 import com.vaultsec.vaultsec.viewmodel.NoteViewModel
@@ -136,10 +137,11 @@ class BottomNavigationActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.item_logout -> {
                 binding.progressbarBottomNavActivity.visibility = View.VISIBLE
-                tokenViewModel.postLogout("Bearer " + tokenViewModel.getToken().token)
+                tokenViewModel.postLogout()
                     .observe(this, Observer {
                         binding.progressbarBottomNavActivity.visibility = View.INVISIBLE
                         if (!it.isError) {
+                            noteViewModel.onSortOrderSelected(SortOrder.BY_TITLE)
                             openLogInActivity()
                         } else {
                             when (it.type) {
