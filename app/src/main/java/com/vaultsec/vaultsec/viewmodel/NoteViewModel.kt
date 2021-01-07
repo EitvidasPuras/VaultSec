@@ -8,6 +8,7 @@ import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.repository.NoteRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -16,8 +17,15 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
     private val noteRepository: NoteRepository = NoteRepository(application)
 
     val searchQuery = MutableStateFlow("")
-    private val notesFlow = searchQuery.flatMapLatest {
-        noteRepository.getNotes(it)
+    val sortOrder = MutableStateFlow(SortOrder.BY_TITLE)
+
+    private val notesFlow = combine(
+        searchQuery,
+        sortOrder
+    ) { query, order ->
+        Pair(query, order)
+    }.flatMapLatest {
+        noteRepository.getNotes(it.first, it.second)
     }
     val notes = notesFlow.asLiveData()
 
@@ -43,4 +51,8 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
             noteRepository.getItemCount()
         }
     }
+}
+
+enum class SortOrder {
+    BY_TITLE, BY_DATE_CREATED, BY_DATE_UPDATED, BY_COLOR
 }

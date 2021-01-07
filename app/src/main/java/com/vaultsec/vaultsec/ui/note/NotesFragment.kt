@@ -19,6 +19,7 @@ import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.databinding.FragmentNotesBinding
 import com.vaultsec.vaultsec.viewmodel.NoteViewModel
+import com.vaultsec.vaultsec.viewmodel.SortOrder
 import java.sql.Timestamp
 
 /**
@@ -92,6 +93,28 @@ class NotesFragment : Fragment(R.layout.fragment_notes) {
         val searchView = searchItem.actionView as SearchView
         searchView.maxWidth = Int.MAX_VALUE
         setSearchViewListeners(searchView, searchItem, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.item_sort_by_title -> {
+                noteViewModel.sortOrder.value = SortOrder.BY_TITLE
+                true
+            }
+            R.id.item_sort_by_created_date -> {
+                noteViewModel.sortOrder.value = SortOrder.BY_DATE_CREATED
+                true
+            }
+            R.id.item_sort_by_updated_date -> {
+                noteViewModel.sortOrder.value = SortOrder.BY_DATE_UPDATED
+                true
+            }
+            R.id.item_sort_by_color -> {
+                noteViewModel.sortOrder.value = SortOrder.BY_COLOR
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     private fun setItemsVisibility(menu: Menu, exception: MenuItem, visible: Boolean) {

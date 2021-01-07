@@ -167,18 +167,6 @@ class BottomNavigationActivity : AppCompatActivity() {
                 Snackbar.make(binding.root, "Soon to be implemented", Snackbar.LENGTH_SHORT).show()
                 true
             }
-            R.id.item_sort_by_title -> {
-                true
-            }
-            R.id.item_sort_by_created_date -> {
-                true
-            }
-            R.id.item_sort_by_updated_date -> {
-                true
-            }
-            R.id.item_sort_by_color -> {
-                true
-            }
             else -> super.onOptionsItemSelected(item)
         }
     }

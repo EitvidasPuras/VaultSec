@@ -6,6 +6,7 @@ import com.vaultsec.vaultsec.database.dao.NoteDao
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.network.PasswordManagerApi
 import com.vaultsec.vaultsec.network.PasswordManagerService
+import com.vaultsec.vaultsec.viewmodel.SortOrder
 import kotlinx.coroutines.flow.Flow
 
 class NoteRepository(application: Application) {
@@ -29,8 +30,8 @@ class NoteRepository(application: Application) {
         noteDao.deleteAll()
     }
 
-    fun getNotes(searchQuery: String): Flow<List<Note>> {
-        return noteDao.getNotes(searchQuery)
+    fun getNotes(searchQuery: String, sortOrder: SortOrder): Flow<List<Note>> {
+        return noteDao.getNotes(searchQuery, sortOrder)
     }
 
     suspend fun getItemCount(): Int {
