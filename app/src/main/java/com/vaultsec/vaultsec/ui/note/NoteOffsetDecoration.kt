@@ -19,6 +19,9 @@ class NoteOffsetDecoration(private val space: Int, private val spanCount: Int) :
             view.layoutParams as StaggeredGridLayoutManager.LayoutParams
         val spanIndex = lp.spanIndex
 
+        if (position == 0 || position == 1) {
+            outRect.top = space * 2
+        }
         if (spanIndex == 0) {
             outRect.left = space
         } else {
@@ -26,13 +29,5 @@ class NoteOffsetDecoration(private val space: Int, private val spanCount: Int) :
             outRect.left = space
         }
         outRect.bottom = space * 2
-
-
-//        if ((parent.getChildLayoutPosition(view) % spanCount) == 0) {
-//            outRect.left = space
-//        } else if ((parent.getChildLayoutPosition(view) % spanCount) == 1) {
-//            outRect.right = space
-//
-//        }
     }
 }
