@@ -5,7 +5,7 @@ import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 
-class NoteOffsetDecoration(private val space: Int, private val spanCount: Int) :
+class NoteOffsetDecoration(private val space: Int) :
     RecyclerView.ItemDecoration() {
     override fun getItemOffsets(
         outRect: Rect,
@@ -14,13 +14,12 @@ class NoteOffsetDecoration(private val space: Int, private val spanCount: Int) :
         state: RecyclerView.State
     ) {
         val position = parent.getChildLayoutPosition(view)
-
         val lp: StaggeredGridLayoutManager.LayoutParams =
             view.layoutParams as StaggeredGridLayoutManager.LayoutParams
         val spanIndex = lp.spanIndex
 
         if (position == 0 || position == 1) {
-            outRect.top = space * 2
+            outRect.top = space + 8
         }
         if (spanIndex == 0) {
             outRect.left = space
@@ -28,6 +27,6 @@ class NoteOffsetDecoration(private val space: Int, private val spanCount: Int) :
             outRect.right = space
             outRect.left = space
         }
-        outRect.bottom = space * 2
+        outRect.bottom = space + 8
     }
 }

@@ -50,17 +50,19 @@ class NotesFragment : Fragment(R.layout.fragment_notes) {
         super.onActivityCreated(savedInstanceState)
         playSlidingAnimation(true)
 
+        val layoutM = StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL)
+        layoutM.gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_NONE
 //        val animation = AnimationUtils.loadLayoutAnimation(activity, R.anim.layout_animation_fall_down)
         val noteAdapter = NoteAdapter()
         binding.apply {
             recyclerviewNotes.apply {
                 adapter = noteAdapter
-                layoutManager = StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL)
+                layoutManager = layoutM
 //                layoutManager = LinearLayoutManager(requireContext())
                 setHasFixedSize(true)
 //                layoutAnimation = animation
 //                itemAnimator = animation
-                addItemDecoration(NoteOffsetDecoration(16, 2))
+                addItemDecoration(NoteOffsetDecoration(resources.getInteger(R.integer.staggered_grid_layout_offset_spacing)))
             }
         }
 
@@ -69,7 +71,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes) {
             noteAdapter.submitList(it)
             binding.recyclerviewNotes.scheduleLayoutAnimation()
             viewLifecycleOwner.lifecycleScope.launch {
-                delay(30L)
+                delay(130L)
                 binding.recyclerviewNotes.invalidateItemDecorations()
             }
 
