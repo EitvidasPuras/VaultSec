@@ -21,6 +21,7 @@ import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.databinding.FragmentNotesBinding
 import com.vaultsec.vaultsec.viewmodel.NoteViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.sql.Timestamp
@@ -59,6 +60,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes) {
                 setHasFixedSize(true)
 //                layoutAnimation = animation
 //                itemAnimator = animation
+                addItemDecoration(NoteOffsetDecoration(16, 2))
             }
         }
 
@@ -66,6 +68,11 @@ class NotesFragment : Fragment(R.layout.fragment_notes) {
         noteViewModel.notes.observe(viewLifecycleOwner) {
             noteAdapter.submitList(it)
             binding.recyclerviewNotes.scheduleLayoutAnimation()
+            viewLifecycleOwner.lifecycleScope.launch {
+                delay(30L)
+                binding.recyclerviewNotes.invalidateItemDecorations()
+            }
+
         }
 
         displayMessageIfRecyclerViewIsEmpty()
@@ -73,7 +80,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes) {
 
         noteAdapter.setOnItemClickListener(object : NoteAdapter.OnItemClickListener {
             override fun onItemClick(note: Note) {
-                Log.e("date: ", note.createdAt.toString())
+                binding.recyclerviewNotes.invalidateItemDecorations()
                 Toast.makeText(context, note.createdAt.toString(), Toast.LENGTH_LONG).show()
             }
         })

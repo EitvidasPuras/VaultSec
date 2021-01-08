@@ -4,9 +4,6 @@
     android:id="@+id/cardview_note"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="8dp"
-    android:layout_marginTop="8dp"
-    android:layout_marginEnd="8dp"
     android:clickable="true"
     app:cardCornerRadius="5dp"
     app:cardElevation="2dp"
@@ -25,14 +22,14 @@
             android:id="@+id/textview_note_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@+id/textview_note_text"
+            android:layout_marginBottom="8dp"
             android:ellipsize="end"
             android:maxLines="2"
-            android:layout_marginBottom="8dp"
             android:text="Title"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
             android:textSize="24sp"
             android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/textview_note_text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.1"
             app:layout_constraintStart_toStartOf="parent"
@@ -46,10 +43,10 @@
             android:maxLines="3"
             android:text="Text"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.1"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintStart_toStartOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </com.google.android.material.card.MaterialCardView>
