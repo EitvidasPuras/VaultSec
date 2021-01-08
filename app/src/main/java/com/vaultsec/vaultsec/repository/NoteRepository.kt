@@ -30,8 +30,8 @@ class NoteRepository(application: Application) {
         noteDao.deleteAll()
     }
 
-    fun getNotes(searchQuery: String, sortOrder: SortOrder): Flow<List<Note>> {
-        return noteDao.getNotes(searchQuery, sortOrder)
+    fun getNotes(searchQuery: String, sortOrder: SortOrder, isAsc: Boolean): Flow<List<Note>> {
+        return noteDao.getNotes(searchQuery, sortOrder, isAsc)
     }
 
     suspend fun getItemCount(): Int {

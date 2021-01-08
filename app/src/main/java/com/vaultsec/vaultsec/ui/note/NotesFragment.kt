@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
@@ -20,6 +21,8 @@ import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.databinding.FragmentNotesBinding
 import com.vaultsec.vaultsec.viewmodel.NoteViewModel
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import java.sql.Timestamp
 
 /**
@@ -93,6 +96,15 @@ class NotesFragment : Fragment(R.layout.fragment_notes) {
         val searchView = searchItem.actionView as SearchView
         searchView.maxWidth = Int.MAX_VALUE
         setSearchViewListeners(searchView, searchItem, menu)
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            val direction = menu.findItem(R.id.item_sort_direction)
+            if (noteViewModel.preferencesFlow.first().isAsc) {
+                direction.setIcon(R.drawable.ic_baseline_vertical_align_bottom)
+            } else {
+                direction.setIcon(R.drawable.ic_baseline_vertical_align_top)
+            }
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -111,6 +123,22 @@ class NotesFragment : Fragment(R.layout.fragment_notes) {
             }
             R.id.item_sort_by_color -> {
                 noteViewModel.onSortOrderSelected(SortOrder.BY_COLOR)
+                true
+            }
+            R.id.item_sort_by_font_size -> {
+                noteViewModel.onSortOrderSelected(SortOrder.BY_FONT_SIZE)
+                true
+            }
+            R.id.item_sort_direction -> {
+                viewLifecycleOwner.lifecycleScope.launch {
+                    if (noteViewModel.preferencesFlow.first().isAsc) {
+                        noteViewModel.onSortDirectionSelected(false)
+                        item.setIcon(R.drawable.ic_baseline_vertical_align_top)
+                    } else {
+                        noteViewModel.onSortDirectionSelected(true)
+                        item.setIcon(R.drawable.ic_baseline_vertical_align_bottom)
+                    }
+                }
                 true
             }
             else -> super.onOptionsItemSelected(item)

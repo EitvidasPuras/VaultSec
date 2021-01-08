@@ -11,8 +11,10 @@ import kotlinx.coroutines.flow.map
 import java.io.IOException
 
 enum class SortOrder {
-    BY_TITLE, BY_DATE_CREATED, BY_DATE_UPDATED, BY_COLOR
+    BY_TITLE, BY_DATE_CREATED, BY_DATE_UPDATED, BY_COLOR, BY_FONT_SIZE
 }
+
+data class FilterPreferences(val sortOrder: SortOrder, val isAsc: Boolean)
 
 class PasswordManagerPreferences(application: Application) {
 
@@ -31,7 +33,8 @@ class PasswordManagerPreferences(application: Application) {
             val sortOrder = SortOrder.valueOf(
                 it[PreferencesKeys.SORT_ORDER] ?: SortOrder.BY_TITLE.name
             )
-            sortOrder
+            val isAsc = it[PreferencesKeys.SORT_DIR] ?: true
+            FilterPreferences(sortOrder, isAsc)
         }
 
 
@@ -41,8 +44,15 @@ class PasswordManagerPreferences(application: Application) {
         }
     }
 
+    suspend fun updateSortDirection(isAsc: Boolean) {
+        dataStore.edit {
+            it[PreferencesKeys.SORT_DIR] = isAsc
+        }
+    }
+
     private object PreferencesKeys {
-        val SORT_ORDER = preferencesKey<String>("sort_order")
+        val SORT_ORDER = preferencesKey<String>("so")
+        val SORT_DIR = preferencesKey<Boolean>("sd")
     }
 
 

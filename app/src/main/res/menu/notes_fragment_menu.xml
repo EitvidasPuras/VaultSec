@@ -32,9 +32,19 @@
             <item
                 android:id="@+id/item_sort_by_color"
                 android:title="@string/title_sort_by_color_menu_item" />
+            <item
+                android:id="@+id/item_sort_by_font_size"
+                android:title="@string/title_sort_by_font_size" />
         </menu>
 
     </item>
+
+    <item
+        android:id="@+id/item_sort_direction"
+        android:icon="@drawable/ic_baseline_vertical_align_top"
+        android:title="@string/title_sort_direction"
+        android:iconTint="@color/color_black"
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/item_settings"

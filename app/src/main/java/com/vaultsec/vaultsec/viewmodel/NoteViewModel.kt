@@ -20,15 +20,15 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
     private val prefsManager = PasswordManagerPreferences(application)
 
     val searchQuery = MutableStateFlow("")
-    private val sortOrder = prefsManager.preferencesFlow
+    val preferencesFlow = prefsManager.preferencesFlow
 
     private val notesFlow = combine(
         searchQuery,
-        sortOrder
-    ) { query, sortOrder ->
-        Pair(query, sortOrder)
-    }.flatMapLatest { (query, sortOrder) ->
-        noteRepository.getNotes(query, sortOrder)
+        preferencesFlow
+    ) { query, prefs ->
+        Pair(query, prefs)
+    }.flatMapLatest { (query, prefs) ->
+        noteRepository.getNotes(query, prefs.sortOrder, prefs.isAsc)
     }
     val notes = notesFlow.asLiveData()
 
@@ -57,5 +57,9 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
 
     fun onSortOrderSelected(sortOrder: SortOrder) = viewModelScope.launch(Dispatchers.IO) {
         prefsManager.updateSortOrder(sortOrder)
+    }
+
+    fun onSortDirectionSelected(isAsc: Boolean) = viewModelScope.launch(Dispatchers.IO) {
+        prefsManager.updateSortDirection(isAsc)
     }
 }
