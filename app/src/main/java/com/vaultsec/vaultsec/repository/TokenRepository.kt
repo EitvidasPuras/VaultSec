@@ -33,6 +33,7 @@ class TokenRepository(application: Application) {
         return tokenDao.getToken()
     }
 
+    // TODO: Hash before sending data
     suspend fun postRegister(user: ApiUser): ApiResponse {
         try {
             var response = api.postRegister(user)

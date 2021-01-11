@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.vaultsec.vaultsec.R
@@ -51,30 +52,35 @@ class NotesFragment : Fragment(R.layout.fragment_notes) {
         playSlidingAnimation(true)
 
         val layoutM = StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL)
-        layoutM.gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_NONE
-//        val animation = AnimationUtils.loadLayoutAnimation(activity, R.anim.layout_animation_fall_down)
         val noteAdapter = NoteAdapter()
+        noteAdapter.stateRestorationPolicy =
+            RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
         binding.apply {
             recyclerviewNotes.apply {
                 adapter = noteAdapter
                 layoutManager = layoutM
-//                layoutManager = LinearLayoutManager(requireContext())
                 setHasFixedSize(true)
-//                layoutAnimation = animation
-//                itemAnimator = animation
                 addItemDecoration(NoteOffsetDecoration(resources.getInteger(R.integer.staggered_grid_layout_offset_spacing)))
+                addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                    override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                        super.onScrollStateChanged(recyclerView, newState)
+                        if (newState == RecyclerView.SCROLL_STATE_IDLE) recyclerView.invalidateItemDecorations()
+                    }
+                })
             }
+
         }
 
         noteViewModel = ViewModelProvider(this).get(NoteViewModel::class.java)
         noteViewModel.notes.observe(viewLifecycleOwner) {
             noteAdapter.submitList(it)
-            binding.recyclerviewNotes.scheduleLayoutAnimation()
+            // For the search functionality to display items properly
+            // A slight delay so that the search query would have enough time to be processed
             viewLifecycleOwner.lifecycleScope.launch {
-                delay(130L)
+                delay(20L)
                 binding.recyclerviewNotes.invalidateItemDecorations()
             }
-
+            binding.recyclerviewNotes.scheduleLayoutAnimation()
         }
 
         displayMessageIfRecyclerViewIsEmpty()

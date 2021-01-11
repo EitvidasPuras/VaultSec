@@ -33,92 +33,37 @@ abstract class PasswordManagerDatabase : RoomDatabase() {
                     val tokenDao = passwordManagerDatabase.tokenDao()
                     val noteDao = passwordManagerDatabase.noteDao()
 
+                    val arrayOfFontSizes = (12..22 step 2).toList().toTypedArray()
+                    val arrayOfColors =
+                        arrayOf("#ffffff", "#ff5252", "#ffab00", "#43a047", "#0091ea")
 //                    tokenDao.deleteAll()
 //                    val token = Token(0, "aispipevnwpindksnsda")
 //                    tokenDao.insert(token)
 
                     noteDao.deleteAll()
-                    var note = Note(
-                        "Title1",
-                        "Description1",
-                        "#ffffff",
-                        12,
-                        Timestamp(System.currentTimeMillis()),
-                        Timestamp(System.currentTimeMillis())
-                    )
-                    noteDao.insert(note)
-                    note = Note(
-                        "Title1",
-                        "Description1",
-                        "#303f9f",
-                        10,
-                        Timestamp(System.currentTimeMillis()),
-                        Timestamp(System.currentTimeMillis())
-                    )
-                    noteDao.insert(note)
-                    note = Note(
-                        "Title2",
-                        "Description2",
-                        "#9ccc65",
-                        14,
-                        Timestamp(System.currentTimeMillis()),
-                        Timestamp(System.currentTimeMillis())
-                    )
-                    noteDao.insert(note)
-                    note = Note(
-                        "Title4",
-                        "Description3",
-                        "#f57c00",
-                        16,
-                        Timestamp(System.currentTimeMillis()),
-                        Timestamp(System.currentTimeMillis())
-                    )
-                    noteDao.insert(note)
-                    note = Note(
-                        "Title11",
-                        "Description5",
-                        "#ffffff",
-                        12,
-                        Timestamp(System.currentTimeMillis()),
-                        Timestamp(System.currentTimeMillis())
-                    )
-                    noteDao.insert(note)
-                    note = Note(
-                        "Title1000Title1000Title1000Title1000",
-                        "Description5Description5Description5",
-                        "#ffcc80",
-                        18,
-                        Timestamp(System.currentTimeMillis()),
-                        Timestamp(System.currentTimeMillis())
-                    )
-                    noteDao.insert(note)
-                    note = Note(
-                        "Title10101",
-                        "Descriasdsadasdasd5",
-                        "#ba68c8",
-                        10,
-                        Timestamp(System.currentTimeMillis()),
-                        Timestamp(System.currentTimeMillis())
-                    )
-                    noteDao.insert(note)
-                    note = Note(
-                        "Title1001",
-                        "Description5Description5Description5Description5Description5Description5",
-                        "#ffffff",
-                        18,
-                        Timestamp(System.currentTimeMillis()),
-                        Timestamp(System.currentTimeMillis())
-                    )
-                    noteDao.insert(note)
-                    note = Note(
-                        "Title11",
-                        "Description5",
-                        "#43a047",
-                        16,
-                        Timestamp(System.currentTimeMillis()),
-                        Timestamp(System.currentTimeMillis())
-                    )
-                    noteDao.insert(note)
+                    var note: Note
+                    for (i in 0 until 50) {
+                        if (i % 3 == 0 && i % 4 == 0) {
+                            note = Note(
+                                "",
+                                "Description${i}",
+                                arrayOfColors.random(),
+                                arrayOfFontSizes.random(),
+                                Timestamp(System.currentTimeMillis()),
+                                Timestamp(System.currentTimeMillis())
+                            )
+                        } else {
+                            note = Note(
+                                "Title${i}",
+                                "Description${i}",
+                                arrayOfColors.random(),
+                                arrayOfFontSizes.random(),
+                                Timestamp(System.currentTimeMillis()),
+                                Timestamp(System.currentTimeMillis())
+                            )
+                        }
+                        noteDao.insert(note)
+                    }
                 }
             }
         }

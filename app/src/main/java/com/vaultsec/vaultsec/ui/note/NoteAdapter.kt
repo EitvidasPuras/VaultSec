@@ -1,6 +1,5 @@
 package com.vaultsec.vaultsec.ui.note
 
-import android.content.Context
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.entity.Note
-import com.vaultsec.vaultsec.databinding.NoteItemBinding
 import kotlinx.android.synthetic.main.note_item.view.*
 
 class NoteAdapter :
@@ -43,20 +41,43 @@ class NoteAdapter :
                 listener.onItemClick((getItem(adapterPosition)))
             }
         }
-
     }
 
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteHolder {
+        val itemView: View =
+            LayoutInflater.from(parent.context).inflate(R.layout.note_item, parent, false)
+        return NoteHolder(itemView)
+    }
+
+    override fun onBindViewHolder(holder: NoteHolder, position: Int) {
+        val currentNote: Note = getItem(position)
+
+        holder.textViewTitle.text = currentNote.title
+        holder.textViewText.text = currentNote.text
+        holder.textViewText.textSize = currentNote.fontSize.toFloat()
+
+        holder.container.setCardBackgroundColor(Color.parseColor(currentNote.color))
+        if (holder.textViewTitle.text.isNullOrEmpty()) {
+            holder.textViewTitle.visibility = View.GONE
+        } else {
+            holder.textViewTitle.visibility = View.VISIBLE
+        }
+    }
+
+    //These methods doesn't apply the background color correctly for some reason
 //    // Apparently a cleaner and a newer version to write it
 //    inner class NoteHolder(private val binding: NoteItemBinding) :
 //        RecyclerView.ViewHolder(binding.root) {
 //        fun bind(note: Note) {
 //            binding.apply {
-//                cardviewNote.setBackgroundColor(Color.parseColor(note.color))
 //                textviewNoteText.text = note.text
 //                textviewNoteText.textSize = note.fontSize.toFloat()
 //                textviewNoteTitle.text = note.title
+//                cardviewNote.setBackgroundColor(Color.parseColor(note.color))
 //                if (textviewNoteTitle.text.isNullOrEmpty()) {
 //                    textviewNoteTitle.visibility = View.GONE
+//                } else {
+//                    textviewNoteTitle.visibility = View.VISIBLE
 //                }
 //            }
 //        }
@@ -72,29 +93,13 @@ class NoteAdapter :
 //        holder.bind(currentNote)
 //    }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteHolder {
-        val itemView: View =
-            LayoutInflater.from(parent.context).inflate(R.layout.note_item, parent, false)
-        return NoteHolder(itemView)
+    override fun getItemId(position: Int): Long {
+        return position.toLong()
     }
 
-    override fun onBindViewHolder(holder: NoteHolder, position: Int) {
-        val currentNote: Note = getItem(position)
-//        val currentNote: Note = notes[position]
-//        holder.container.animation = AnimationUtils.loadAnimation(mContext, R.anim.item_animation_fall_down)
-        holder.textViewTitle.text = currentNote.title
-        holder.textViewText.text = currentNote.text
-        holder.textViewText.textSize = currentNote.fontSize.toFloat()
-        holder.container.setCardBackgroundColor(Color.parseColor(currentNote.color))
-        if (holder.textViewTitle.text.isNullOrEmpty()) {
-            holder.textViewTitle.visibility = View.GONE
-        }
+    override fun getItemViewType(position: Int): Int {
+        return position
     }
-
-//    fun setNotes(notes: List<Note>) {
-//        this.notes = notes
-//        notifyDataSetChanged()
-//    }
 
     fun getNoteAt(position: Int): Note {
         return getItem(position)

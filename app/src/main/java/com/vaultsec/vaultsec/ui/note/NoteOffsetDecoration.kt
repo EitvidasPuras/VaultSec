@@ -27,6 +27,6 @@ class NoteOffsetDecoration(private val space: Int) :
             outRect.right = space
             outRect.left = space
         }
-        outRect.bottom = space + 8
+        outRect.bottom = space
     }
 }

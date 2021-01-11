@@ -31,7 +31,9 @@ interface NoteDao {
     @Query(
         """SELECT * FROM vault_notes WHERE title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%' ORDER BY
             CASE WHEN :isAsc = 1 THEN title END ASC,
-            CASE WHEN :isAsc = 0 THEN title END DESC """
+            CASE WHEN :isAsc = 1 AND title = "" THEN text END ASC,
+            CASE WHEN :isAsc = 0 THEN title END DESC,
+            CASE WHEN :isAsc = 0 AND title = "" THEN text END DESC"""
     )
     fun getNotesSortedByTitle(searchQuery: String, isAsc: Boolean): Flow<List<Note>>
 
