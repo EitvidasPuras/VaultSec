@@ -13,7 +13,7 @@ import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.entity.Note
 import kotlinx.android.synthetic.main.note_item.view.*
 
-class NoteAdapter :
+class NoteAdapter(private val listener: OnItemClickListener) :
 //    RecyclerView.Adapter<NoteAdapter.NoteHolder>() {
     ListAdapter<Note, NoteAdapter.NoteHolder>(DIFF_CALLBACK) {
 
@@ -29,8 +29,6 @@ class NoteAdapter :
         }
     }
 
-    private lateinit var listener: OnItemClickListener
-
     inner class NoteHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var container: MaterialCardView = itemView.cardview_note
         var textViewTitle: TextView = itemView.textview_note_title
@@ -38,7 +36,10 @@ class NoteAdapter :
 
         init {
             itemView.setOnClickListener {
-                listener.onItemClick((getItem(adapterPosition)))
+                val position = bindingAdapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    listener.onItemClick((getItem(position)))
+                }
             }
         }
     }
@@ -107,9 +108,5 @@ class NoteAdapter :
 
     interface OnItemClickListener {
         fun onItemClick(note: Note)
-    }
-
-    fun setOnItemClickListener(listener: OnItemClickListener) {
-        this.listener = listener
     }
 }

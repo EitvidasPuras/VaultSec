@@ -30,7 +30,7 @@ import java.sql.Timestamp
 /**
  * A simple [Fragment] subclass.
  */
-class NotesFragment : Fragment(R.layout.fragment_notes) {
+class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClickListener {
 
     private lateinit var noteViewModel: NoteViewModel
     private var _binding: FragmentNotesBinding? = null
@@ -52,7 +52,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes) {
         playSlidingAnimation(true)
 
         val layoutM = StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL)
-        val noteAdapter = NoteAdapter()
+        val noteAdapter = NoteAdapter(this)
         noteAdapter.stateRestorationPolicy =
             RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
         binding.apply {
@@ -85,13 +85,6 @@ class NotesFragment : Fragment(R.layout.fragment_notes) {
 
         displayMessageIfRecyclerViewIsEmpty()
         createNewNoteIfNecessary()
-
-        noteAdapter.setOnItemClickListener(object : NoteAdapter.OnItemClickListener {
-            override fun onItemClick(note: Note) {
-                binding.recyclerviewNotes.invalidateItemDecorations()
-                Toast.makeText(context, note.createdAt.toString(), Toast.LENGTH_LONG).show()
-            }
-        })
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -158,6 +151,11 @@ class NotesFragment : Fragment(R.layout.fragment_notes) {
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun onItemClick(note: Note) {
+        binding.recyclerviewNotes.invalidateItemDecorations()
+        Toast.makeText(context, note.id.toString(), Toast.LENGTH_SHORT).show()
     }
 
     private fun setItemsVisibility(menu: Menu, exception: MenuItem, visible: Boolean) {
