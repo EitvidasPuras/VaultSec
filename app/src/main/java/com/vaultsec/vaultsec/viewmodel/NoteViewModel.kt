@@ -62,4 +62,8 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
     fun onSortDirectionSelected(isAsc: Boolean) = viewModelScope.launch(Dispatchers.IO) {
         prefsManager.updateSortDirection(isAsc)
     }
+
+    fun deleteSelectedNotes(idList: ArrayList<Int>) = viewModelScope.launch(Dispatchers.IO) {
+        noteRepository.deleteSelectedNotes(idList)
+    }
 }

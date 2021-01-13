@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="AlwaysShowAction">
+    <!-- To ignore the warning messages -->
+
+
+    <item
+        android:id="@+id/item_multi_select_delete"
+        android:icon="@drawable/ic_delete"
+        android:title="@string/title_multi_select_delete"
+        app:iconTint="@color/color_black"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/item_multi_select_all"
+        android:icon="@drawable/ic_select_all"
+        android:title="@string/title_multi_select_all"
+        app:iconTint="@color/color_black"
+        app:showAsAction="always" />
+
+</menu>

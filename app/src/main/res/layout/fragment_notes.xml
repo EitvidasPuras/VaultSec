@@ -19,8 +19,8 @@
         android:id="@+id/textview_empty_notes"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="There are no notes"
         android:layout_gravity="center"
+        android:text="@string/notes_empty_text"
         android:textSize="24sp" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

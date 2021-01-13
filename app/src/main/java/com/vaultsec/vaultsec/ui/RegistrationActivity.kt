@@ -8,8 +8,11 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
 import android.util.Patterns
+import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
+import android.view.inputmethod.EditorInfo
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -19,6 +22,7 @@ import com.vaultsec.vaultsec.databinding.ActivityRegistrationBinding
 import com.vaultsec.vaultsec.network.entity.ApiResponse
 import com.vaultsec.vaultsec.network.entity.ApiUser
 import com.vaultsec.vaultsec.network.entity.ErrorTypes
+import com.vaultsec.vaultsec.util.hideKeyboard
 import com.vaultsec.vaultsec.viewmodel.TokenViewModel
 import kotlinx.android.synthetic.main.activity_registration.*
 import java.net.SocketException
@@ -91,6 +95,17 @@ class RegistrationActivity : AppCompatActivity() {
     }
 
     private fun registerUser() {
+        binding.textfieldRegistrationPasswordRetype.setOnEditorActionListener(object :
+            TextView.OnEditorActionListener {
+            override fun onEditorAction(p0: TextView?, p1: Int, p2: KeyEvent?): Boolean {
+                if (p1 == EditorInfo.IME_ACTION_DONE) {
+                    binding.buttonRegistration.performClick()
+                    return true
+                }
+                return false
+            }
+        })
+
         button_registration.setOnClickListener {
             val firstNameInput: String = binding.textfieldRegistrationFirstname.text.toString()
             val lastNameInput: String = binding.textfieldRegistrationLastname.text.toString()
@@ -119,6 +134,7 @@ class RegistrationActivity : AppCompatActivity() {
                     tokenViewModel.postRegister(user).observe(this, Observer<ApiResponse> {
                         binding.progressbarRegistration.visibility = View.INVISIBLE
                         if (!it.isError) {
+                            hideKeyboard(this)
                             setResult(Activity.RESULT_OK)
                             finish()
                         } else {

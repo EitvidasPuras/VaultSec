@@ -19,6 +19,9 @@ interface NoteDao {
     @Query("""DELETE FROM vault_notes""")
     suspend fun deleteAll()
 
+    @Query("""DELETE FROM vault_notes WHERE id IN (:idList)""")
+    suspend fun deleteSelectedNotes(idList: ArrayList<Int>)
+
     fun getNotes(searchQuery: String, sortOrder: SortOrder, isAsc: Boolean): Flow<List<Note>> =
         when (sortOrder) {
             SortOrder.BY_TITLE -> getNotesSortedByTitle(searchQuery, isAsc)

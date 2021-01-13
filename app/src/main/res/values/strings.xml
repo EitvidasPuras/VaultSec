@@ -48,10 +48,14 @@
     <string name="title_sort_by_updated_menu_item">Sort by modified date</string>
     <string name="title_sort_by_color_menu_item">Sort by color</string>
     <string name="title_sort_by_font_size">Sort by font size</string>
+    <string name="title_multi_select_delete">Delete selected</string>
+    <string name="title_multi_select_all">Select all</string>
 
     <string name="new_note_title_hint">Title</string>
     <string name="new_note_text_hint">Note</string>
     <string name="new_note_save">Save</string>
     <string name="new_note_customize">Font size and note color</string>
     <string name="new_note_fab_description">Add new note</string>
+
+    <string name="notes_empty_text">There are no notes</string>
 </resources>

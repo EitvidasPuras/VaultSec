@@ -8,9 +8,12 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
 import android.util.Patterns
+import android.view.KeyEvent
 import android.view.View
 import android.view.ViewAnimationUtils
 import android.view.WindowManager
+import android.view.inputmethod.EditorInfo
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -21,6 +24,7 @@ import com.vaultsec.vaultsec.databinding.ActivityMainBinding
 import com.vaultsec.vaultsec.network.entity.ApiResponse
 import com.vaultsec.vaultsec.network.entity.ApiUser
 import com.vaultsec.vaultsec.network.entity.ErrorTypes
+import com.vaultsec.vaultsec.util.hideKeyboard
 import com.vaultsec.vaultsec.viewmodel.TokenViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlin.math.hypot
@@ -142,6 +146,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun logUserIn() {
+        binding.textfieldLoginPassword.setOnEditorActionListener(object :
+            TextView.OnEditorActionListener {
+            override fun onEditorAction(p0: TextView?, p1: Int, p2: KeyEvent?): Boolean {
+                if (p1 == EditorInfo.IME_ACTION_DONE) {
+                    binding.buttonLogin.performClick()
+                    return true
+                }
+                return false
+            }
+        })
         button_login.setOnClickListener {
             val emailInput: String = binding.textfieldLoginEmail.text.toString()
             val passInput: String = binding.textfieldLoginPassword.text.toString()
@@ -156,6 +170,7 @@ class MainActivity : AppCompatActivity() {
                     tokenViewModel.postLogin(user).observe(this, Observer<ApiResponse> {
                         binding.progressbarLogin.visibility = View.INVISIBLE
                         if (!it.isError) {
+                            hideKeyboard(this)
                             openBottomNavigationActivity()
                         } else {
                             when (it.type) {

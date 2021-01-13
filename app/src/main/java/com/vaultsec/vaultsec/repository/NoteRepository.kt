@@ -37,4 +37,8 @@ class NoteRepository(application: Application) {
     suspend fun getItemCount(): Int {
         return noteDao.getItemCount()
     }
+
+    suspend fun deleteSelectedNotes(idList: ArrayList<Int>) {
+        noteDao.deleteSelectedNotes(idList)
+    }
 }

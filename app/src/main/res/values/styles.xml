@@ -16,8 +16,23 @@
         <item name="colorAccent">@color/color_accent</item>
         <item name="android:textColorSecondary">@color/color_black</item>
 
-        <!--        radioButtonStyle doesn't seem to work-->
-<!--        <item name="radioButtonStyle">@style/Widget.App.CompoundButton.RadioButton</item>-->
+        <item name="windowActionModeOverlay">true</item>
+        <item name="actionModeCloseDrawable">@drawable/ic_close</item>
+        <item name="android:actionModeBackground">@color/color_white</item>
+        <item name="actionModeStyle">@style/ActionModeStyle</item>
+    </style>
+
+    <style name="ActionModeStyle" parent="Widget.AppCompat.ActionMode">
+        <item name="android:textSize">24sp</item>
+        <item name="backgroundSplit">@color/color_white</item>
+        <item name="titleTextStyle">@style/ActionModeTitleStyle</item>
+    </style>
+
+    <style name="ActionModeTitleStyle">
+        <item name="android:textSize">24sp</item>
+        <item name="android:textColor">@color/color_primary_darker</item>
+        <item name="fontFamily">@font/bowlby_one_sc</item>
+        <item name="android:fontFamily">@font/bowlby_one_sc</item>
     </style>
 
     <style name="Toolbar.TitleText" parent="Widget.AppCompat.Toolbar">
@@ -32,7 +47,9 @@
     </style>
 
     <style name="MaterialAlertDialog.App.Title.Text" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
-        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:layout_marginBottom">6dp</item>
+        <item name="android:textSize">16sp</item>
+
     </style>
 
 </resources>

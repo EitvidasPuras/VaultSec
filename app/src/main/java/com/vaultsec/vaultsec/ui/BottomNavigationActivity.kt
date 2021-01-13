@@ -1,10 +1,8 @@
 package com.vaultsec.vaultsec.ui
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
-import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -20,6 +18,7 @@ import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.databinding.ActivityBottomNavigationBinding
 import com.vaultsec.vaultsec.network.entity.ErrorTypes
+import com.vaultsec.vaultsec.util.hideKeyboard
 import com.vaultsec.vaultsec.viewmodel.NoteViewModel
 import com.vaultsec.vaultsec.viewmodel.TokenViewModel
 import kotlinx.android.synthetic.main.activity_bottom_navigation.*
@@ -76,20 +75,9 @@ class BottomNavigationActivity : AppCompatActivity() {
 
 
     override fun onSupportNavigateUp(): Boolean {
-        hideKeyboard()
+        hideKeyboard(this)
         navController.navigateUp()
         return super.onSupportNavigateUp()
-    }
-
-    private fun hideKeyboard() {
-        val inputManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-
-        this.currentFocus?.let {
-            inputManager.hideSoftInputFromWindow(
-                currentFocus?.windowToken,
-                InputMethodManager.HIDE_NOT_ALWAYS
-            )
-        }
     }
 
     private fun playOpeningAnimation(view: View) {

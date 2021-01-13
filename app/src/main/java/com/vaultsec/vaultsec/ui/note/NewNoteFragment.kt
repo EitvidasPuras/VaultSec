@@ -1,10 +1,8 @@
 package com.vaultsec.vaultsec.ui.note
 
-import android.content.Context
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.*
-import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -17,6 +15,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.slider.Slider
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.databinding.FragmentNewNoteBinding
+import com.vaultsec.vaultsec.util.hideKeyboard
 
 class NewNoteFragment : Fragment() {
     private var _binding: FragmentNewNoteBinding? = null
@@ -55,18 +54,6 @@ class NewNoteFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
         inflater.inflate(R.menu.new_note_menu, menu)
-    }
-
-    private fun hideKeyboard() {
-        val inputManager =
-            requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-
-        requireActivity().currentFocus?.let {
-            inputManager.hideSoftInputFromWindow(
-                requireActivity().currentFocus?.windowToken,
-                InputMethodManager.HIDE_NOT_ALWAYS
-            )
-        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -130,7 +117,7 @@ class NewNoteFragment : Fragment() {
                     )
                     findNavController().setGraph(R.navigation.nav_graph, args)
                     binding.root.findNavController().navigateUp()
-                    hideKeyboard()
+                    hideKeyboard(requireActivity())
                     return true
                 }
                 true

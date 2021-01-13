@@ -2,17 +2,18 @@ package com.vaultsec.vaultsec.ui.note
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
+import androidx.recyclerview.selection.SelectionTracker
+import androidx.recyclerview.selection.StableIdKeyProvider
+import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
@@ -21,6 +22,7 @@ import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.databinding.FragmentNotesBinding
+import com.vaultsec.vaultsec.util.hideKeyboard
 import com.vaultsec.vaultsec.viewmodel.NoteViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -33,6 +35,11 @@ import java.sql.Timestamp
 class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClickListener {
 
     private lateinit var noteViewModel: NoteViewModel
+    private lateinit var noteAdapter: NoteAdapter
+    private var listOfNoteIdsToDelete: ArrayList<Int> = arrayListOf()
+    var tracker: SelectionTracker<Long>? = null
+    var mActionMode: ActionMode? = null
+
     private var _binding: FragmentNotesBinding? = null
     private val binding get() = _binding!!
 
@@ -52,7 +59,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
         playSlidingAnimation(true)
 
         val layoutM = StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL)
-        val noteAdapter = NoteAdapter(this)
+        noteAdapter = NoteAdapter(this)
         noteAdapter.stateRestorationPolicy =
             RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
         binding.apply {
@@ -68,8 +75,58 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
                     }
                 })
             }
-
         }
+
+        tracker = SelectionTracker.Builder(
+            "com.vaultsec.vaultsec.ui.note",
+            binding.recyclerviewNotes,
+            StableIdKeyProvider(binding.recyclerviewNotes),
+            NoteAdapter.NoteDetailsLookup(binding.recyclerviewNotes),
+            StorageStrategy.createLongStorage()
+        ).withSelectionPredicate(object : SelectionTracker.SelectionPredicate<Long>() {
+            override fun canSetStateForKey(key: Long, nextState: Boolean): Boolean =
+                key != NoteAdapter.NoteDetailsLookup.EMPTY_ITEM.selectionKey
+
+            override fun canSetStateAtPosition(position: Int, nextState: Boolean): Boolean =
+                position != NoteAdapter.NoteDetailsLookup.EMPTY_ITEM.position
+
+            override fun canSelectMultiple(): Boolean = true
+        }).build()
+
+        tracker?.addObserver(object : SelectionTracker.SelectionObserver<Long>() {
+            override fun onSelectionChanged() {
+                super.onSelectionChanged()
+                val noteAmount = tracker?.selection!!.size()
+                if (mActionMode == null) {
+                    mActionMode = activity?.startActionMode(mActionModeCallBack)
+                }
+                mActionMode!!.title = "$noteAmount selected"
+
+                if (noteAmount <= 0) {
+                    mActionMode?.finish()
+                }
+            }
+
+            override fun onItemStateChanged(key: Long, selected: Boolean) {
+                super.onItemStateChanged(key, selected)
+                try {
+                    if (!tracker?.selection!!.isEmpty) {
+                        if (selected) {
+                            if (tracker?.selection!!.contains(key)) {
+                                listOfNoteIdsToDelete.add(noteAdapter.currentList[key.toInt()].id)
+                            }
+                        } else {
+                            if (!tracker?.selection!!.contains(key)) {
+                                listOfNoteIdsToDelete.remove(noteAdapter.currentList[key.toInt()].id)
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("Error ", e.message!!)
+                }
+            }
+        })
+        noteAdapter.tracker = tracker
 
         noteViewModel = ViewModelProvider(this).get(NoteViewModel::class.java)
         noteViewModel.notes.observe(viewLifecycleOwner) {
@@ -77,19 +134,17 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
             // For the search functionality to display items properly
             // A slight delay so that the search query would have enough time to be processed
             viewLifecycleOwner.lifecycleScope.launch {
-                delay(20L)
+                delay(40L)
                 binding.recyclerviewNotes.invalidateItemDecorations()
             }
             binding.recyclerviewNotes.scheduleLayoutAnimation()
         }
-
         displayMessageIfRecyclerViewIsEmpty()
         createNewNoteIfNecessary()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
 //        val navCon = Navigation.findNavController(view)
         binding.fabNotes.setOnClickListener {
             playSlidingAnimation(false)
@@ -112,6 +167,52 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
             } else {
                 direction.setIcon(R.drawable.ic_baseline_vertical_align_top)
             }
+        }
+
+    }
+
+    private val mActionModeCallBack = object : ActionMode.Callback {
+        override fun onCreateActionMode(p0: ActionMode?, p1: Menu?): Boolean {
+            p1?.clear()
+            p0?.menuInflater?.inflate(R.menu.notes_fragment_multi_select_menu, p1)
+            return true
+        }
+
+        override fun onPrepareActionMode(p0: ActionMode?, p1: Menu?): Boolean {
+            return false
+        }
+
+        override fun onActionItemClicked(p0: ActionMode?, p1: MenuItem?): Boolean {
+            return when (p1?.itemId) {
+                R.id.item_multi_select_all -> {
+                    val mutableListIds = arrayListOf<Long>()
+                    for (i in 0 until noteAdapter.itemCount) {
+                        val longId = noteAdapter.getItemId(i)
+                        mutableListIds.add(longId)
+                        tracker?.setItemsSelected(mutableListIds.asIterable(), true)
+                    }
+                    true
+                }
+                R.id.item_multi_select_delete -> {
+                    if (listOfNoteIdsToDelete.isNotEmpty()) {
+                        noteViewModel.deleteSelectedNotes(listOfNoteIdsToDelete)
+                        // Have to give some time for the data to get to the DAO
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            delay(20L)
+                            tracker?.clearSelection()
+                            listOfNoteIdsToDelete.clear()
+                        }
+                    }
+                    true
+                }
+                else -> false
+            }
+        }
+
+        override fun onDestroyActionMode(p0: ActionMode?) {
+            tracker?.clearSelection()
+            mActionMode = null
+            displayMessageIfRecyclerViewIsEmpty()
         }
     }
 
@@ -154,14 +255,19 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
     }
 
     override fun onItemClick(note: Note) {
-        binding.recyclerviewNotes.invalidateItemDecorations()
         Toast.makeText(context, note.id.toString(), Toast.LENGTH_SHORT).show()
     }
 
-    private fun setItemsVisibility(menu: Menu, exception: MenuItem, visible: Boolean) {
+    private fun setItemsVisibility(
+        menu: Menu,
+        exceptionSearchItem: MenuItem,
+        visible: Boolean
+    ) {
         for (i in 0 until menu.size()) {
             val item = menu.getItem(i)
-            if (item != exception) item.isVisible = visible
+            if (item != exceptionSearchItem) {
+                item.isVisible = visible
+            }
         }
     }
 
@@ -222,7 +328,11 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
         }
     }
 
-    private fun setSearchViewListeners(searchView: SearchView, searchItem: MenuItem, menu: Menu) {
+    private fun setSearchViewListeners(
+        searchView: SearchView,
+        searchItem: MenuItem,
+        menu: Menu
+    ) {
         searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
             override fun onMenuItemActionExpand(p0: MenuItem?): Boolean {
                 setItemsVisibility(menu, searchItem, false)
@@ -237,31 +347,32 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                hideKeyboard()
+                hideKeyboard(requireActivity())
                 return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 noteViewModel.searchQuery.value = newText.orEmpty()
+                // For the search functionality to display items properly
+                // A slight delay so that the search query would have enough time to be processed
+//                viewLifecycleOwner.lifecycleScope.launch {
+//                    delay(100L)
+//                    Toast.makeText(requireContext(), "Post delay", Toast.LENGTH_SHORT).show()
+//                    binding.recyclerviewNotes.invalidateItemDecorations()
+//                }
                 return true
             }
         })
     }
 
-    private fun hideKeyboard() {
-        val inputManager =
-            requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-
-        requireActivity().currentFocus?.let {
-            inputManager.hideSoftInputFromWindow(
-                requireActivity().currentFocus?.windowToken,
-                InputMethodManager.HIDE_NOT_ALWAYS
-            )
-        }
+    override fun onResume() {
+        super.onResume()
+        displayMessageIfRecyclerViewIsEmpty()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        mActionMode?.finish()
         _binding = null
     }
 }
