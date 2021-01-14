@@ -9,9 +9,11 @@ import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.repository.NoteRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -21,6 +23,9 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
 
     val searchQuery = MutableStateFlow("")
     val preferencesFlow = prefsManager.preferencesFlow
+
+    private val notesEventChannel = Channel<NotesEvent>()
+    val notesEvent = notesEventChannel.receiveAsFlow()
 
     private val notesFlow = combine(
         searchQuery,
@@ -63,7 +68,18 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
         prefsManager.updateSortDirection(isAsc)
     }
 
-    fun deleteSelectedNotes(idList: ArrayList<Int>) = viewModelScope.launch(Dispatchers.IO) {
-        noteRepository.deleteSelectedNotes(idList)
+    fun deleteSelectedNotes(noteList: ArrayList<Note>) = viewModelScope.launch(Dispatchers.IO) {
+        noteRepository.deleteSelectedNotes(noteList)
+        notesEventChannel.send(NotesEvent.ShowUndoDeleteNoteMessage(noteList))
+    }
+
+    fun onUndoDeleteClick(noteList: ArrayList<Note>) = viewModelScope.launch(Dispatchers.IO) {
+        noteRepository.insertList(noteList)
+    }
+
+    // Sealed class in case of more events would be added later on
+    // Won't be exhaustive to check all the different events using the when statement
+    sealed class NotesEvent {
+        data class ShowUndoDeleteNoteMessage(val noteList: ArrayList<Note>) : NotesEvent()
     }
 }

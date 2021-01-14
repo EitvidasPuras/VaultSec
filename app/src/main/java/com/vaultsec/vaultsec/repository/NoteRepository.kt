@@ -38,7 +38,14 @@ class NoteRepository(application: Application) {
         return noteDao.getItemCount()
     }
 
-    suspend fun deleteSelectedNotes(idList: ArrayList<Int>) {
+    suspend fun deleteSelectedNotes(noteList: ArrayList<Note>) {
+        val idList: ArrayList<Int> = noteList.map {
+            it.id
+        } as ArrayList<Int>
         noteDao.deleteSelectedNotes(idList)
+    }
+
+    suspend fun insertList(noteList: ArrayList<Note>) {
+        noteDao.insertList(noteList)
     }
 }

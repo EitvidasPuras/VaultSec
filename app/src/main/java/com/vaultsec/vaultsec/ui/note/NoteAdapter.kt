@@ -24,6 +24,7 @@ class NoteAdapter(
     init {
         setHasStableIds(true)
     }
+
     var tracker: SelectionTracker<Long>? = null
 
     companion object {

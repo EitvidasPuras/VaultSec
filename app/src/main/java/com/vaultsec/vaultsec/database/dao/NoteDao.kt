@@ -10,6 +10,10 @@ interface NoteDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(note: Note)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @JvmSuppressWildcards
+    suspend fun insertList(noteList: ArrayList<Note>)
+
     @Delete
     suspend fun delete(note: Note)
 

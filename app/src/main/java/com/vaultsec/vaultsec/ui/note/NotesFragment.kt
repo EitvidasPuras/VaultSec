@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.snackbar.Snackbar
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.entity.Note
@@ -25,6 +26,7 @@ import com.vaultsec.vaultsec.databinding.FragmentNotesBinding
 import com.vaultsec.vaultsec.util.hideKeyboard
 import com.vaultsec.vaultsec.viewmodel.NoteViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.sql.Timestamp
@@ -36,10 +38,10 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
 
     private lateinit var noteViewModel: NoteViewModel
     private lateinit var noteAdapter: NoteAdapter
-    private var listOfNoteIdsToDelete: ArrayList<Int> = arrayListOf()
+    private var listOfNotesToDelete: ArrayList<Note> = arrayListOf()
     var tracker: SelectionTracker<Long>? = null
     var mActionMode: ActionMode? = null
-
+    
     private var _binding: FragmentNotesBinding? = null
     private val binding get() = _binding!!
 
@@ -64,6 +66,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
             RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
         binding.apply {
             recyclerviewNotes.apply {
+                recycledViewPool.clear()
                 adapter = noteAdapter
                 layoutManager = layoutM
                 setHasFixedSize(true)
@@ -113,11 +116,11 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
                     if (!tracker?.selection!!.isEmpty) {
                         if (selected) {
                             if (tracker?.selection!!.contains(key)) {
-                                listOfNoteIdsToDelete.add(noteAdapter.currentList[key.toInt()].id)
+                                listOfNotesToDelete.add(noteAdapter.currentList[key.toInt()])
                             }
                         } else {
                             if (!tracker?.selection!!.contains(key)) {
-                                listOfNoteIdsToDelete.remove(noteAdapter.currentList[key.toInt()].id)
+                                listOfNotesToDelete.remove(noteAdapter.currentList[key.toInt()])
                             }
                         }
                     }
@@ -130,15 +133,41 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
 
         noteViewModel = ViewModelProvider(this).get(NoteViewModel::class.java)
         noteViewModel.notes.observe(viewLifecycleOwner) {
+            // An interesting behavior would occur after sorting a small amount
+            // of items in the recyclerview. The recycler would only redraw some of the items,
+            // causing duplicates. The code below submits null as a list forcing the recycler to
+            // redraw all of the items
+            if (noteAdapter.itemCount <= 25) {
+                noteAdapter.submitList(null)
+            }
             noteAdapter.submitList(it)
-            // For the search functionality to display items properly
+            viewLifecycleOwner.lifecycleScope.launch {
+                delay(50L)
+                displayMessageIfRecyclerViewIsEmpty()
+            }
+
+            // For the search functionality to display items properly, aligning them adequately
             // A slight delay so that the search query would have enough time to be processed
             viewLifecycleOwner.lifecycleScope.launch {
-                delay(40L)
+                delay(70L)
                 binding.recyclerviewNotes.invalidateItemDecorations()
             }
             binding.recyclerviewNotes.scheduleLayoutAnimation()
         }
+
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            noteViewModel.notesEvent.collect { event ->
+                when (event) {
+                    is NoteViewModel.NotesEvent.ShowUndoDeleteNoteMessage -> {
+                        Snackbar.make(requireView(), "Notes deleted", Snackbar.LENGTH_LONG)
+                            .setAction("UNDO") {
+                                noteViewModel.onUndoDeleteClick(event.noteList)
+                            }.show()
+                    }
+                }
+            }
+        }
+
         displayMessageIfRecyclerViewIsEmpty()
         createNewNoteIfNecessary()
     }
@@ -194,14 +223,10 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
                     true
                 }
                 R.id.item_multi_select_delete -> {
-                    if (listOfNoteIdsToDelete.isNotEmpty()) {
-                        noteViewModel.deleteSelectedNotes(listOfNoteIdsToDelete)
-                        // Have to give some time for the data to get to the DAO
-                        viewLifecycleOwner.lifecycleScope.launch {
-                            delay(20L)
-                            tracker?.clearSelection()
-                            listOfNoteIdsToDelete.clear()
-                        }
+                    if (listOfNotesToDelete.isNotEmpty()) {
+                        noteViewModel.deleteSelectedNotes(listOfNotesToDelete.clone() as ArrayList<Note>)
+                        tracker?.clearSelection()
+                        listOfNotesToDelete.clear()
                     }
                     true
                 }
