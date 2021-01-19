@@ -35,6 +35,11 @@ interface NoteDao {
             SortOrder.BY_FONT_SIZE -> getNotesSortedByFontSize(searchQuery, isAsc)
         }
 
+    /*
+    * If '%' || were to be removed, that would mean that the text or title of the note
+    * would have to start with the search query. If || '%' were to be removed, that would mean that
+    * the text or title of the note would have to end with the search query
+    * */
     @Query(
         """SELECT * FROM vault_notes WHERE title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%' ORDER BY
             CASE WHEN :isAsc = 1 THEN title END ASC,
@@ -71,8 +76,5 @@ interface NoteDao {
             CASE WHEN :isAsc = 0 THEN font_size END DESC """
     )
     fun getNotesSortedByFontSize(searchQuery: String, isAsc: Boolean): Flow<List<Note>>
-
-    @Query("""SELECT COUNT(title) FROM vault_notes""")
-    suspend fun getItemCount(): Int
 
 }

@@ -14,6 +14,7 @@ import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -24,13 +25,16 @@ import com.vaultsec.vaultsec.network.entity.ApiUser
 import com.vaultsec.vaultsec.network.entity.ErrorTypes
 import com.vaultsec.vaultsec.util.hideKeyboard
 import com.vaultsec.vaultsec.viewmodel.TokenViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_registration.*
 import java.net.SocketException
 import java.util.regex.Pattern
 
+@AndroidEntryPoint
 class RegistrationActivity : AppCompatActivity() {
 
-    private lateinit var tokenViewModel: TokenViewModel
+//    private lateinit var tokenViewModel: TokenViewModel
+    private val tokenViewModel: TokenViewModel by viewModels()
     private lateinit var binding: ActivityRegistrationBinding
 
 
@@ -42,8 +46,6 @@ class RegistrationActivity : AppCompatActivity() {
         binding = ActivityRegistrationBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-        tokenViewModel =
-            ViewModelProvider(this@RegistrationActivity).get(TokenViewModel::class.java)
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {

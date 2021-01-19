@@ -1,7 +1,7 @@
 package com.vaultsec.vaultsec.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.hilt.lifecycle.ViewModelInject
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.vaultsec.vaultsec.database.PasswordManagerPreferences
@@ -15,19 +15,30 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
-class NoteViewModel(application: Application) : AndroidViewModel(application) {
-    private val noteRepository: NoteRepository = NoteRepository(application)
-    private val prefsManager = PasswordManagerPreferences(application)
-
+class NoteViewModel
+@ViewModelInject constructor(
+    private val noteRepository: NoteRepository,
+    private val prefsManager: PasswordManagerPreferences
+) : ViewModel() {
+    /*
+    * In case you want to store search query into the SavedStateArguments
+    * so that when the app is killed in the background and you return to it the search
+    * query would still be there
+    * */
+//    val searchQuery = state.getLiveData("searchQuery", "")
     val searchQuery = MutableStateFlow("")
     val preferencesFlow = prefsManager.preferencesFlow
 
     private val notesEventChannel = Channel<NotesEvent>()
     val notesEvent = notesEventChannel.receiveAsFlow()
 
+    /*
+    * With flatMapLatest, when a new Observable is mapped, it overwrites the last Observable
+    * if there was one. Combine combines multiple flows into a single flow
+    * */
     private val notesFlow = combine(
+//        searchQuery.asFlow(),
         searchQuery,
         preferencesFlow
     ) { query, prefs ->
@@ -54,12 +65,6 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
         noteRepository.deleteAll()
     }
 
-    fun getItemCount(): Int {
-        return runBlocking {
-            noteRepository.getItemCount()
-        }
-    }
-
     fun onSortOrderSelected(sortOrder: SortOrder) = viewModelScope.launch(Dispatchers.IO) {
         prefsManager.updateSortOrder(sortOrder)
     }
@@ -77,9 +82,48 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
         noteRepository.insertList(noteList)
     }
 
-    // Sealed class in case of more events would be added later on
-    // Won't be exhaustive to check all the different events using the when statement
+    fun onAddNewNoteClick() = viewModelScope.launch(Dispatchers.IO) {
+        notesEventChannel.send(NotesEvent.NavigateToAddNoteFragment)
+    }
+
+    fun onNoteClicked(note: Note) = viewModelScope.launch(Dispatchers.IO) {
+        notesEventChannel.send(NotesEvent.NavigateToEditNoteFragment(note))
+    }
+
+    fun onAddEditResult(result: Int) {
+        when (result) {
+            ADD_NOTE_RESULT_OK -> showNoteSavedConfirmationMessage("Note created")
+            EDIT_NOTE_RESULT_OK -> showNoteSavedConfirmationMessage("Note updated")
+        }
+    }
+
+    private fun showNoteSavedConfirmationMessage(message: String) =
+        viewModelScope.launch(Dispatchers.IO) {
+            notesEventChannel.send(NotesEvent.ShowNoteSavedConfirmationMessage(message))
+        }
+
+    fun onDisplayEmptyRecyclerViewMessage() {
+        if (notes.value?.isEmpty() == true) {
+            viewModelScope.launch(Dispatchers.IO) {
+                notesEventChannel.send(NotesEvent.ShowEmptyRecyclerViewMessage)
+            }
+        } else {
+            viewModelScope.launch(Dispatchers.IO) {
+                notesEventChannel.send(NotesEvent.HideEmptyRecyclerViewMessage)
+            }
+        }
+    }
+
+    /*
+    * Sealed class in case of more events would be added later on
+    * Won't be exhaustive to check all the different events using the when statement
+    * */
     sealed class NotesEvent {
+        object NavigateToAddNoteFragment : NotesEvent()
+        data class NavigateToEditNoteFragment(val note: Note) : NotesEvent()
         data class ShowUndoDeleteNoteMessage(val noteList: ArrayList<Note>) : NotesEvent()
+        data class ShowNoteSavedConfirmationMessage(val message: String) : NotesEvent()
+        object ShowEmptyRecyclerViewMessage : NotesEvent()
+        object HideEmptyRecyclerViewMessage : NotesEvent()
     }
 }

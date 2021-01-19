@@ -1,20 +1,24 @@
 package com.vaultsec.vaultsec.viewmodel
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.liveData
-import androidx.lifecycle.viewModelScope
+import androidx.hilt.lifecycle.ViewModelInject
+import androidx.lifecycle.*
+import com.vaultsec.vaultsec.database.PasswordManagerPreferences
 import com.vaultsec.vaultsec.database.entity.Token
 import com.vaultsec.vaultsec.network.entity.ApiResponse
 import com.vaultsec.vaultsec.network.entity.ApiUser
+import com.vaultsec.vaultsec.repository.NoteRepository
 import com.vaultsec.vaultsec.repository.TokenRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
-class TokenViewModel(application: Application) : AndroidViewModel(application) {
-    private val tokenRepository: TokenRepository = TokenRepository(application)
+class TokenViewModel
+@ViewModelInject constructor(
+    private val tokenRepository: TokenRepository,
+) : ViewModel()
+{
+//    private val tokenRepository: TokenRepository = TokenRepository(application)
 
     fun insert(token: Token) = viewModelScope.launch(Dispatchers.IO) {
         tokenRepository.insert(token)

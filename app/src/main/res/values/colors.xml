@@ -19,10 +19,10 @@
     <color name="color_login_create_new_user">#0F6CAC</color>
 
     <color name="color_note_01">#ffffff</color>
-    <color name="color_note_02">#ff5252</color>
-    <color name="color_note_03">#ffab00</color>
-    <color name="color_note_04">#43a047</color>
-    <color name="color_note_05">#0091ea</color>
+    <color name="color_note_02">#ef5350</color>
+    <color name="color_note_03">#ffa726</color>
+    <color name="color_note_04">#66bb6a</color>
+    <color name="color_note_05">#42a5f5</color>
 
 <!--    Outline box color-->
     <color name="mtrl_textinput_default_box_stroke_color" tools:override="true">#546E7A</color>

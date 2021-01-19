@@ -56,6 +56,7 @@
     <string name="new_note_save">Save</string>
     <string name="new_note_customize">Font size and note color</string>
     <string name="new_note_fab_description">Add new note</string>
+    <string name="new_note_edit_time_text">Edited %s</string>
 
     <string name="notes_empty_text">There are no notes</string>
 </resources>

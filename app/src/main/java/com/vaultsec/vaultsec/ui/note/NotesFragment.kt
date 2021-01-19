@@ -1,47 +1,47 @@
 package com.vaultsec.vaultsec.ui.note
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.setFragmentResultListener
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.selection.StableIdKeyProvider
 import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.databinding.FragmentNotesBinding
 import com.vaultsec.vaultsec.util.hideKeyboard
+import com.vaultsec.vaultsec.util.playSlidingAnimation
 import com.vaultsec.vaultsec.viewmodel.NoteViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import java.sql.Timestamp
 
 /**
  * A simple [Fragment] subclass.
  */
+@AndroidEntryPoint
 class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClickListener {
 
-    private lateinit var noteViewModel: NoteViewModel
+    private val noteViewModel: NoteViewModel by viewModels()
+
     private lateinit var noteAdapter: NoteAdapter
     private var listOfNotesToDelete: ArrayList<Note> = arrayListOf()
     var tracker: SelectionTracker<Long>? = null
     var mActionMode: ActionMode? = null
-    
+
     private var _binding: FragmentNotesBinding? = null
     private val binding get() = _binding!!
 
@@ -51,14 +51,12 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
     ): View {
         _binding = FragmentNotesBinding.inflate(inflater, container, false)
         // Inflate the layout for this fragment
-        setHasOptionsMenu(true)
         return binding.root
-
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        playSlidingAnimation(true)
+        playSlidingAnimation(true, requireActivity())
 
         val layoutM = StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL)
         noteAdapter = NoteAdapter(this)
@@ -131,26 +129,27 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
         })
         noteAdapter.tracker = tracker
 
-        noteViewModel = ViewModelProvider(this).get(NoteViewModel::class.java)
+        setFragmentResultListener("com.vaultsec.vaultsec.ui.note.AddEditNoteFragment") { _, bundle ->
+            val result = bundle.getInt("AddEditResult")
+            noteViewModel.onAddEditResult(result)
+        }
+
         noteViewModel.notes.observe(viewLifecycleOwner) {
-            // An interesting behavior would occur after sorting a small amount
-            // of items in the recyclerview. The recycler would only redraw some of the items,
-            // causing duplicates. The code below submits null as a list forcing the recycler to
-            // redraw all of the items
-            if (noteAdapter.itemCount <= 25) {
-                noteAdapter.submitList(null)
-            }
+            /*
+            * An interesting behavior would occur after sorting a small amount
+            * of items in the recyclerview. The recycler would only redraw some of the items,
+            * causing duplicates.
+            * A similar issue also applies to a search function if there are custom
+            * OffsetDecorations created. Since the recyclerview only redraws some of the items, this
+            * causes items to be displayed misaligned.
+            * The code below submits null as a list forcing the recycler to redraw all of the items
+            * */
+            noteAdapter.submitList(null)
             noteAdapter.submitList(it)
+
             viewLifecycleOwner.lifecycleScope.launch {
                 delay(50L)
-                displayMessageIfRecyclerViewIsEmpty()
-            }
-
-            // For the search functionality to display items properly, aligning them adequately
-            // A slight delay so that the search query would have enough time to be processed
-            viewLifecycleOwner.lifecycleScope.launch {
-                delay(70L)
-                binding.recyclerviewNotes.invalidateItemDecorations()
+                noteViewModel.onDisplayEmptyRecyclerViewMessage()
             }
             binding.recyclerviewNotes.scheduleLayoutAnimation()
         }
@@ -159,25 +158,56 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
             noteViewModel.notesEvent.collect { event ->
                 when (event) {
                     is NoteViewModel.NotesEvent.ShowUndoDeleteNoteMessage -> {
-                        Snackbar.make(requireView(), "Notes deleted", Snackbar.LENGTH_LONG)
+                        Snackbar.make(
+                            requireView(),
+                            if (event.noteList.size == 1) {
+                                "${event.noteList.size} note deleted"
+                            } else {
+                                "${event.noteList.size} notes deleted"
+                            },
+                            Snackbar.LENGTH_LONG
+                        )
                             .setAction("UNDO") {
                                 noteViewModel.onUndoDeleteClick(event.noteList)
                             }.show()
+                    }
+                    is NoteViewModel.NotesEvent.NavigateToAddNoteFragment -> {
+                        val action =
+                            NotesFragmentDirections.actionFragmentNotesToFragmentAddEditNote(title = "New note")
+                        findNavController().navigate(action)
+                    }
+                    is NoteViewModel.NotesEvent.NavigateToEditNoteFragment -> {
+                        val action =
+                            NotesFragmentDirections.actionFragmentNotesToFragmentAddEditNote(
+                                event.note,
+                                "Edit note"
+                            )
+                        findNavController().navigate(action)
+                    }
+                    is NoteViewModel.NotesEvent.ShowNoteSavedConfirmationMessage -> {
+                        Snackbar.make(requireView(), event.message, Snackbar.LENGTH_SHORT).show()
+                    }
+                    is NoteViewModel.NotesEvent.ShowEmptyRecyclerViewMessage -> {
+                        binding.textviewEmptyNotes.visibility = View.VISIBLE
+                        binding.recyclerviewNotes.visibility = View.GONE
+                    }
+                    is NoteViewModel.NotesEvent.HideEmptyRecyclerViewMessage -> {
+                        binding.textviewEmptyNotes.visibility = View.GONE
+                        binding.recyclerviewNotes.visibility = View.VISIBLE
                     }
                 }
             }
         }
 
-        displayMessageIfRecyclerViewIsEmpty()
-        createNewNoteIfNecessary()
+        noteViewModel.onDisplayEmptyRecyclerViewMessage()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-//        val navCon = Navigation.findNavController(view)
+        setHasOptionsMenu(true)
         binding.fabNotes.setOnClickListener {
-            playSlidingAnimation(false)
-            view.findNavController().navigate(R.id.action_fragment_notes_to_fragment_new_note)
+            noteViewModel.onAddNewNoteClick()
+            playSlidingAnimation(false, requireActivity())
         }
     }
 
@@ -235,9 +265,10 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
         }
 
         override fun onDestroyActionMode(p0: ActionMode?) {
+            listOfNotesToDelete.clear()
             tracker?.clearSelection()
             mActionMode = null
-            displayMessageIfRecyclerViewIsEmpty()
+            noteViewModel.onDisplayEmptyRecyclerViewMessage()
         }
     }
 
@@ -280,7 +311,8 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
     }
 
     override fun onItemClick(note: Note) {
-        Toast.makeText(context, note.id.toString(), Toast.LENGTH_SHORT).show()
+        noteViewModel.onNoteClicked(note)
+        playSlidingAnimation(false, requireActivity())
     }
 
     private fun setItemsVisibility(
@@ -293,63 +325,6 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
             if (item != exceptionSearchItem) {
                 item.isVisible = visible
             }
-        }
-    }
-
-    private fun playSlidingAnimation(inOrOut: Boolean) {
-        val navbar = requireActivity().findViewById<BottomNavigationView>(R.id.bottom_nav_view)
-        val shadow = requireActivity().findViewById<View>(R.id.bottom_nav_shadow)
-        if (inOrOut) {
-            if (navbar.visibility == View.GONE) {
-
-                navbar.translationX = -navbar.width.toFloat()
-                shadow.translationX = -navbar.width.toFloat()
-                navbar.visibility = View.VISIBLE
-                shadow.visibility = View.VISIBLE
-                navbar.animate().translationX(0f).setDuration(320).setListener(null)
-                shadow.animate().translationX(0f).setDuration(320).setListener(null)
-            }
-        } else {
-            shadow.animate().translationX(-shadow.width.toFloat()).setDuration(400)
-                .setListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(p0: Animator?) {
-                        shadow.visibility = View.GONE
-                    }
-                })
-            navbar.animate().translationX(-navbar.width.toFloat()).setDuration(400)
-                .setListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(p0: Animator?) {
-                        navbar.visibility = View.GONE
-                    }
-                })
-        }
-
-    }
-
-    private fun displayMessageIfRecyclerViewIsEmpty() {
-        if (noteViewModel.getItemCount() == 0) {
-            binding.textviewEmptyNotes.visibility = View.VISIBLE
-            binding.recyclerviewNotes.visibility = View.GONE
-        } else {
-            binding.textviewEmptyNotes.visibility = View.GONE
-            binding.recyclerviewNotes.visibility = View.VISIBLE
-        }
-    }
-
-    private fun createNewNoteIfNecessary() {
-        if (!requireArguments().getString("title").isNullOrEmpty() ||
-            !requireArguments().getString("text").isNullOrEmpty()
-        ) {
-            val title = requireArguments().getString("title")
-            val text = requireArguments().getString("text")
-            val fontSize = requireArguments().getInt("fontSize")
-            val color = requireArguments().getString("color")
-            val createdAt = Timestamp(System.currentTimeMillis())
-            Log.e("date:", createdAt.toString())
-
-            val note = Note(title, text!!, color!!, fontSize, createdAt, createdAt)
-            noteViewModel.insert(note)
-            requireArguments().clear()
         }
     }
 
@@ -378,13 +353,6 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 noteViewModel.searchQuery.value = newText.orEmpty()
-                // For the search functionality to display items properly
-                // A slight delay so that the search query would have enough time to be processed
-//                viewLifecycleOwner.lifecycleScope.launch {
-//                    delay(100L)
-//                    Toast.makeText(requireContext(), "Post delay", Toast.LENGTH_SHORT).show()
-//                    binding.recyclerviewNotes.invalidateItemDecorations()
-//                }
                 return true
             }
         })
@@ -392,7 +360,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
 
     override fun onResume() {
         super.onResume()
-        displayMessageIfRecyclerViewIsEmpty()
+        noteViewModel.onDisplayEmptyRecyclerViewMessage()
     }
 
     override fun onDestroyView() {

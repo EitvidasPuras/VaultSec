@@ -10,14 +10,14 @@ import com.vaultsec.vaultsec.R
 /**
  * A simple [Fragment] subclass.
  */
-class PasswordsFragment : Fragment() {
+class PasswordsFragment : Fragment(R.layout.fragment_passwords) {
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_passwords, container, false)
-    }
+//    override fun onCreateView(
+//        inflater: LayoutInflater, container: ViewGroup?,
+//        savedInstanceState: Bundle?
+//    ): View? {
+//        // Inflate the layout for this fragment
+//        return inflater.inflate(R.layout.fragment_passwords, container, false)
+//    }
 
 }

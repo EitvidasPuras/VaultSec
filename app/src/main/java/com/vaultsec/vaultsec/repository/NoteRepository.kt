@@ -8,11 +8,15 @@ import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.network.PasswordManagerApi
 import com.vaultsec.vaultsec.network.PasswordManagerService
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class NoteRepository(application: Application) {
-    private val database = PasswordManagerDatabase.getInstance(application)
-    private val noteDao: NoteDao = database.noteDao()
-    private val api: PasswordManagerApi = PasswordManagerService().apiService
+class NoteRepository @Inject constructor(
+    private val noteDao: NoteDao,
+    private val api: PasswordManagerApi
+) {
+//    private val database = PasswordManagerDatabase.getInstance(application)
+//    private val noteDao: NoteDao = database.noteDao()
+//    private val api: PasswordManagerApi = PasswordManagerService().apiService
 
     suspend fun insert(note: Note) {
         noteDao.insert(note)
@@ -32,10 +36,6 @@ class NoteRepository(application: Application) {
 
     fun getNotes(searchQuery: String, sortOrder: SortOrder, isAsc: Boolean): Flow<List<Note>> {
         return noteDao.getNotes(searchQuery, sortOrder, isAsc)
-    }
-
-    suspend fun getItemCount(): Int {
-        return noteDao.getItemCount()
     }
 
     suspend fun deleteSelectedNotes(noteList: ArrayList<Note>) {

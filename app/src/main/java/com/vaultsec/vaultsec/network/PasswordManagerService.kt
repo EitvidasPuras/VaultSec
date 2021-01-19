@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit
 class PasswordManagerService {
 
     companion object {
-        private const val BASE_URL = "http://192.168.0.103:8001/"
+        private const val BASE_URL = "http://192.168.0.104:8001/"
     }
 
     private val okHttpClient = OkHttpClient.Builder()

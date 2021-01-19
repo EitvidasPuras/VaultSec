@@ -10,29 +10,9 @@
         android:name="com.vaultsec.vaultsec.ui.note.NotesFragment"
         android:label="Notes"
         tools:layout="@layout/fragment_notes">
-
-        <argument
-            android:name="title"
-            app:argType="string" />
-        <argument
-            android:name="text"
-            app:argType="string" />
-        <argument
-            android:name="fontSize"
-            app:argType="integer" />
-        <argument
-            android:name="color"
-            app:argType="string" />
-        <!--        <argument-->
-        <!--            android:name="createdAt"-->
-        <!--            app:argType="Date" />-->
-        <!--        <argument-->
-        <!--            android:name="updatedAt"-->
-        <!--            app:argType="Date" />-->
-
         <action
-            android:id="@+id/action_fragment_notes_to_fragment_new_note"
-            app:destination="@id/fragment_new_note"
+            android:id="@+id/action_fragment_notes_to_fragment_add_edit_note"
+            app:destination="@id/fragment_add_edit_note"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
@@ -54,8 +34,17 @@
         android:label="Generator"
         tools:layout="@layout/fragment_generator" />
     <fragment
-        android:id="@+id/fragment_new_note"
-        android:name="com.vaultsec.vaultsec.ui.note.NewNoteFragment"
-        android:label="New note"
-        tools:layout="@layout/fragment_new_note" />
+        android:id="@+id/fragment_add_edit_note"
+        android:name="com.vaultsec.vaultsec.ui.note.AddEditNoteFragment"
+        android:label="{title}"
+        tools:layout="@layout/fragment_add_edit_note" >
+        <argument
+            android:name="note"
+            app:argType="com.vaultsec.vaultsec.database.entity.Note"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+    </fragment>
 </navigation>

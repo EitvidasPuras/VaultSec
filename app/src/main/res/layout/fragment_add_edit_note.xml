@@ -4,7 +4,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.note.NewNoteFragment">
+    tools:context=".ui.note.AddEditNoteFragment">
+
+    <TextView
+        android:id="@+id/textview_date_edited"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:text="@string/new_note_edit_time_text"
+        android:gravity="center"
+        android:textColor="@color/color_black"
+        app:layout_constraintBottom_toTopOf="@id/textfield_note_title_layout"
+        app:layout_constraintHorizontal_bias="0.50"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.5" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textfield_note_title_layout"
@@ -20,12 +35,13 @@
         app:helperTextTextColor="@color/color_accent"
         app:hintEnabled="false"
         app:hintTextColor="@color/color_accent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/textview_date_edited">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/textfield_note_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
             android:autofillHints="@string/new_note_title_hint"
             android:background="@color/color_note_01"
             android:backgroundTint="@color/color_note_01"
@@ -34,6 +50,7 @@
             android:hint="@string/new_note_title_hint"
             android:inputType="textCapSentences"
             android:maxLength="30"
+            android:paddingTop="0dp"
             android:textAppearance="@style/TextAppearance.AppCompat.Headline"
             app:boxStrokeColor="@color/color_note_01" />
 
@@ -59,6 +76,7 @@
             android:id="@+id/textfield_note_text"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginTop="0dp"
             android:autofillHints="@string/new_note_text_hint"
             android:background="@color/color_note_01"
             android:backgroundTint="@color/color_note_01"

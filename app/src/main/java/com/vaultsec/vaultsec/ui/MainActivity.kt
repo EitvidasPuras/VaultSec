@@ -15,9 +15,9 @@ import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.databinding.ActivityMainBinding
@@ -26,13 +26,16 @@ import com.vaultsec.vaultsec.network.entity.ApiUser
 import com.vaultsec.vaultsec.network.entity.ErrorTypes
 import com.vaultsec.vaultsec.util.hideKeyboard
 import com.vaultsec.vaultsec.viewmodel.TokenViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlin.math.hypot
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var tokenViewModel: TokenViewModel
+    private val tokenViewModel: TokenViewModel by viewModels()
+//    private lateinit var tokenViewModel: TokenViewModel
 
     companion object {
         const val REGISTRATION_REQUEST_CODE = 1
@@ -48,8 +51,12 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-        tokenViewModel =
-            ViewModelProvider(this@MainActivity).get(TokenViewModel::class.java)
+
+        /*
+        * This is how to create a viewModel without Dagger Hilt. Keep this code as an example
+        * */
+//        tokenViewModel =
+//            ViewModelProvider(this@MainActivity).get(TokenViewModel::class.java)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             window.attributes.layoutInDisplayCutoutMode =
@@ -160,6 +167,7 @@ class MainActivity : AppCompatActivity() {
             val emailInput: String = binding.textfieldLoginEmail.text.toString()
             val passInput: String = binding.textfieldLoginPassword.text.toString()
             clearInputErrors()
+            hideKeyboard(this)
             if (hasInternetConnection()) {
                 if (isLoginDataValid(emailInput, passInput)) {
                     binding.progressbarLogin.visibility = View.VISIBLE
@@ -170,7 +178,6 @@ class MainActivity : AppCompatActivity() {
                     tokenViewModel.postLogin(user).observe(this, Observer<ApiResponse> {
                         binding.progressbarLogin.visibility = View.INVISIBLE
                         if (!it.isError) {
-                            hideKeyboard(this)
                             openBottomNavigationActivity()
                         } else {
                             when (it.type) {

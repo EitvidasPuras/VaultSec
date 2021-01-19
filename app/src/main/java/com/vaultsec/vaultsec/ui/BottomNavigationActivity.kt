@@ -2,13 +2,16 @@ package com.vaultsec.vaultsec.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.*
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewAnimationUtils
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
@@ -21,13 +24,16 @@ import com.vaultsec.vaultsec.network.entity.ErrorTypes
 import com.vaultsec.vaultsec.util.hideKeyboard
 import com.vaultsec.vaultsec.viewmodel.NoteViewModel
 import com.vaultsec.vaultsec.viewmodel.TokenViewModel
-import kotlinx.android.synthetic.main.activity_bottom_navigation.*
+import dagger.hilt.android.AndroidEntryPoint
 import kotlin.math.hypot
 
+@AndroidEntryPoint
 class BottomNavigationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityBottomNavigationBinding
-    private lateinit var tokenViewModel: TokenViewModel
-    private lateinit var noteViewModel: NoteViewModel
+
+    private val tokenViewModel: TokenViewModel by viewModels()
+    private val noteViewModel: NoteViewModel by viewModels()
+
     private var wasDoubleBackToExitPressed = false
     private lateinit var backToast: Toast
     private lateinit var navController: NavController
@@ -38,25 +44,15 @@ class BottomNavigationActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        tokenViewModel =
-            ViewModelProvider(this@BottomNavigationActivity).get(TokenViewModel::class.java)
-        noteViewModel =
-            ViewModelProvider(this@BottomNavigationActivity).get(NoteViewModel::class.java)
-
         val toolbar: androidx.appcompat.widget.Toolbar? =
             findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
 
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_nav_view)
 
-        // Due to a bug on Google's side
-        // If using <fragment> as a NavController
-//        val navController = findNavController(R.id.fragment_container_view)
-
-        // If using <FragmentContainerView> as a NavController
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.fragment_container_view) as NavHostFragment
-        navController = navHostFragment.navController
+        navController = navHostFragment.findNavController()
 
         val appBarConfiguration = AppBarConfiguration(
             setOf(
@@ -76,8 +72,7 @@ class BottomNavigationActivity : AppCompatActivity() {
 
     override fun onSupportNavigateUp(): Boolean {
         hideKeyboard(this)
-        navController.navigateUp()
-        return super.onSupportNavigateUp()
+        return navController.navigateUp() || super.onSupportNavigateUp()
     }
 
     private fun playOpeningAnimation(view: View) {
@@ -106,8 +101,8 @@ class BottomNavigationActivity : AppCompatActivity() {
         })
     }
 
-    //    override fun onBackPressed() {
-//        // TODO: Implement soft logout
+    // TODO: Implement soft logout?
+//    override fun onBackPressed() {
 //        if (wasDoubleBackToExitPressed) {
 //            backToast.cancel()
 //            super.onBackPressed()
