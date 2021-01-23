@@ -8,6 +8,7 @@ import android.view.ViewAnimationUtils
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
@@ -21,9 +22,11 @@ import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.databinding.ActivityBottomNavigationBinding
 import com.vaultsec.vaultsec.network.entity.ErrorTypes
 import com.vaultsec.vaultsec.util.hideKeyboard
+import com.vaultsec.vaultsec.viewmodel.HTTP_NONE_ERROR
 import com.vaultsec.vaultsec.viewmodel.NoteViewModel
 import com.vaultsec.vaultsec.viewmodel.TokenViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
 import kotlin.math.hypot
 
 @AndroidEntryPoint
@@ -66,6 +69,36 @@ class BottomNavigationActivity : AppCompatActivity() {
         bottomNavigationView.setupWithNavController(navController)
 
         playOpeningAnimation(view)
+
+        lifecycleScope.launchWhenStarted {
+            tokenViewModel.tokenEvent.collect { event ->
+                when (event) {
+                    is TokenViewModel.TokenEvent.ShowHttpError -> {
+                        when (event.whereToDisplay) {
+                            HTTP_NONE_ERROR -> {
+                                Snackbar.make(view, event.message, Snackbar.LENGTH_LONG)
+                                    .setBackgroundTint(getColor(R.color.color_error_snackbar))
+                                    .show()
+                            }
+                        }
+                    }
+                    is TokenViewModel.TokenEvent.ShowRequestError -> {
+                        Snackbar.make(view, event.message, Snackbar.LENGTH_LONG)
+                            .setBackgroundTint(getColor(R.color.color_error_snackbar))
+                            .show()
+                    }
+                    TokenViewModel.TokenEvent.SuccessfulLogout -> {
+                        openStartActivity()
+                    }
+                    TokenViewModel.TokenEvent.ShowProgressBar -> {
+                        binding.progressbarBottomNavActivity.visibility = View.VISIBLE
+                    }
+                    TokenViewModel.TokenEvent.HideProgressBar -> {
+                        binding.progressbarBottomNavActivity.visibility = View.INVISIBLE
+                    }
+                }
+            }
+        }
     }
 
 
@@ -118,34 +151,7 @@ class BottomNavigationActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.item_logout -> {
-                binding.progressbarBottomNavActivity.visibility = View.VISIBLE
-                tokenViewModel.postLogout()
-                    .observe(this) {
-                        binding.progressbarBottomNavActivity.visibility = View.INVISIBLE
-                        if (!it.isError) {
-                            noteViewModel.onSortOrderSelected(SortOrder.BY_TITLE)
-                            noteViewModel.onSortDirectionSelected(true)
-                            openLogInActivity()
-                        } else {
-                            when (it.type) {
-                                ErrorTypes.HTTP_ERROR -> Toast.makeText(
-                                    this,
-                                    it.message,
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                ErrorTypes.SOCKET_TIMEOUT -> Toast.makeText(
-                                    this,
-                                    getString(R.string.error_connection_timed_out),
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                ErrorTypes.GENERAL -> Toast.makeText(
-                                    this,
-                                    getString(R.string.error_generic_connection),
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            }
-                        }
-                    }
+                tokenViewModel.onLogoutClick()
                 true
             }
             R.id.item_settings -> {
@@ -156,7 +162,7 @@ class BottomNavigationActivity : AppCompatActivity() {
         }
     }
 
-    private fun openLogInActivity() {
+    private fun openStartActivity() {
         val startIntent = Intent(this, StartActivity::class.java)
         startIntent.putExtra(StartActivity.EXTRA_LOGOUT, true)
         startActivity(startIntent)

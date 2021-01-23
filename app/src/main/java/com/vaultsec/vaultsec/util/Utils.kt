@@ -52,6 +52,7 @@ fun playSlidingAnimation(reveal: Boolean, activity: Activity) {
     }
 }
 
+// TODO: 2021-01-23 Use NetworkCallback
 fun hasInternetConnection(activity: Activity): Boolean {
     val connectivityManager =
         activity.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager

@@ -32,5 +32,6 @@
 <!--    <color name="mtrl_filled_stroke_color" tools:override="true">#fff</color>-->
 
     <color name="color_successful_snackbar">#388e3c</color>
+    <color name="color_error_snackbar">#b00020</color>
 
 </resources>

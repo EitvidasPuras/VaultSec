@@ -12,6 +12,7 @@ import com.vaultsec.vaultsec.network.entity.ApiUser
 import com.vaultsec.vaultsec.network.entity.ErrorTypes
 import retrofit2.HttpException
 import java.net.ConnectException
+import java.net.SocketException
 import java.net.SocketTimeoutException
 import javax.inject.Inject
 
@@ -56,7 +57,7 @@ class TokenRepository
                         ApiError::class.java
                     )
                     Log.e("com.vaultsec.vaultsec.repository.postRegister", apiError.error)
-                    return ApiResponse(true, ErrorTypes.HTTP_ERROR, apiError.error)
+                    return ApiResponse(true, ErrorTypes.HTTP, apiError.error)
                 }
                 is SocketTimeoutException -> {
                     Log.e("com.vaultsec.vaultsec.repository.postRegister", e.message.toString())
@@ -70,6 +71,13 @@ class TokenRepository
                     return ApiResponse(
                         true,
                         ErrorTypes.CONNECTION
+                    )
+                }
+                is SocketException -> {
+                    Log.e("com.vaultsec.vaultsec.repository.postLogin", e.message.toString())
+                    return ApiResponse(
+                        true,
+                        ErrorTypes.SOCKET
                     )
                 }
                 else -> {
@@ -112,7 +120,7 @@ class TokenRepository
                         ApiError::class.java
                     )
                     Log.e("com.vaultsec.vaultsec.repository.postLogin", apiError.error)
-                    return ApiResponse(true, ErrorTypes.HTTP_ERROR, apiError.error)
+                    return ApiResponse(true, ErrorTypes.HTTP, apiError.error)
                 }
                 is SocketTimeoutException -> {
                     Log.e("com.vaultsec.vaultsec.repository.postLogin", e.message.toString())
@@ -126,6 +134,13 @@ class TokenRepository
                     return ApiResponse(
                         true,
                         ErrorTypes.CONNECTION
+                    )
+                }
+                is SocketException -> {
+                    Log.e("com.vaultsec.vaultsec.repository.postLogin", e.message.toString())
+                    return ApiResponse(
+                        true,
+                        ErrorTypes.SOCKET
                     )
                 }
                 else -> {
@@ -153,7 +168,7 @@ class TokenRepository
                         ApiError::class.java
                     )
                     Log.e("com.vaultsec.vaultsec.repository.postLogout", apiError.error)
-                    return ApiResponse(true, ErrorTypes.HTTP_ERROR, apiError.error)
+                    return ApiResponse(true, ErrorTypes.HTTP, apiError.error)
                 }
                 is SocketTimeoutException -> {
                     Log.e("com.vaultsec.vaultsec.repository.postLogout", e.message.toString())
@@ -167,6 +182,13 @@ class TokenRepository
                     return ApiResponse(
                         true,
                         ErrorTypes.CONNECTION
+                    )
+                }
+                is SocketException -> {
+                    Log.e("com.vaultsec.vaultsec.repository.postLogin", e.message.toString())
+                    return ApiResponse(
+                        true,
+                        ErrorTypes.SOCKET
                     )
                 }
                 else -> {

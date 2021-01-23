@@ -7,5 +7,5 @@ data class ApiResponse(
 )
 
 enum class ErrorTypes {
-    HTTP_ERROR, SOCKET_TIMEOUT, CONNECTION, GENERAL
+    HTTP, SOCKET_TIMEOUT, SOCKET, CONNECTION, GENERAL
 }

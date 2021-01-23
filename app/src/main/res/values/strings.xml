@@ -32,6 +32,7 @@
     <string name="error_password_format">A stronger password is required</string>
     <string name="error_password_match">Passwords do not match</string>
     <string name="error_connection_timed_out">Could not connect to the server</string>
+    <string name="error_connection_lost">Lost connection with the server</string>
     <string name="error_generic_connection">Something went wrong. Please try again</string>
 
     <string name="successful_registration">Account created successfully</string>
