@@ -46,13 +46,12 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
         return binding.root
     }
 
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         binding.apply {
             textviewDateEdited.text = getString(
-                R.string.new_note_edit_time_text,
+                R.string.add_edit_note_edit_time_text,
                 addEditNoteViewModel.noteDateUpdated.toString().substringBeforeLast(":")
             )
             textfieldNoteTitle.setText(addEditNoteViewModel.noteTitle)
@@ -324,7 +323,7 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
                     requireContext(),
                     R.style.ThemeOverlay_App_MaterialAlertDialog
                 )
-                    .setTitle(R.string.new_note_customize)
+                    .setTitle(R.string.add_edit_note_customize)
                     .setView(holderLayout)
                     .setNegativeButton("Cancel") { dialog, _ ->
                         binding.textfieldNoteText.textSize = currentFontSize

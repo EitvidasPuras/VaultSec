@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph_pre_login"
+    app:startDestination="@id/fragment_login">
+
+    <fragment
+        android:id="@+id/fragment_login"
+        android:name="com.vaultsec.vaultsec.ui.login.LoginFragment"
+        android:label="Login"
+        tools:layout="@layout/fragment_login" >
+        <action
+            android:id="@+id/action_fragment_login_to_fragment_registration"
+            app:destination="@id/fragment_registration"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out"
+
+            />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragment_registration"
+        android:name="com.vaultsec.vaultsec.ui.registration.RegistrationFragment"
+        android:label="Registration"
+        tools:layout="@layout/fragment_registration" />
+
+</navigation>

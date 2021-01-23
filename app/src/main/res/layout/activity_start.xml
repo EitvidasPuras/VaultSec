@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!--
+        Kept the logo in the activity layout, because it looks the same on both fragments
+        and it keeps the transition animation looking clean
+    -->
+    <TextView
+        android:id="@+id/textview_login_app_logo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:drawablePadding="-32dp"
+        android:fontFamily="@font/bowlby_one_sc"
+        android:text="@string/app_name"
+        android:textColor="@color/color_accent"
+        android:textSize="48sp"
+        app:drawableBottomCompat="@drawable/ic_launcher_foreground"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.12" />
+
+    <ProgressBar
+        android:id="@+id/progressbar_in_start"
+        android:layout_width="104dp"
+        android:layout_height="104dp"
+        android:elevation="10dp"
+        android:indeterminate="true"
+        android:indeterminateDrawable="@drawable/custom_progress_bar"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragment_container_view_start"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:defaultNavHost="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textview_login_app_logo"
+        app:navGraph="@navigation/nav_graph_pre_login" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

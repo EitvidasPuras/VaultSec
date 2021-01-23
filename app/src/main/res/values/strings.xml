@@ -22,9 +22,13 @@
     <string name="error_first_name_required">First name is required</string>
     <string name="error_last_name_required">Last name is required</string>
     <string name="error_first_name_format">First name must only contain letters</string>
-    <string name="error_last_name_format">Last name must only contain letters</string>
+    <string name="error_first_name_length">First name is too long</string>
+    <string name="error_name_first_letter">First letter has to be uppercase</string>
+    <string name="error_last_name_length">Last name is too long</string>
+    <string name="error_last_name_format">Invalid last name</string>
     <string name="error_email_format">Invalid email address</string>
-    <string name="error_password_length">Must be at least 10 characters long</string>
+    <string name="error_password_length_short">Must be at least 10 characters long</string>
+    <string name="error_password_length_long">Password is too long</string>
     <string name="error_password_format">A stronger password is required</string>
     <string name="error_password_match">Passwords do not match</string>
     <string name="error_connection_timed_out">Could not connect to the server</string>
@@ -51,12 +55,17 @@
     <string name="title_multi_select_delete">Delete selected</string>
     <string name="title_multi_select_all">Select all</string>
 
-    <string name="new_note_title_hint">Title</string>
-    <string name="new_note_text_hint">Note</string>
-    <string name="new_note_save">Save</string>
-    <string name="new_note_customize">Font size and note color</string>
+    <string name="add_edit_note_title_hint">Title</string>
+    <string name="add_edit_note_text_hint">Note</string>
+    <string name="add_edit_note_save">Save</string>
+    <string name="add_edit_note_customize">Font size and note color</string>
     <string name="new_note_fab_description">Add new note</string>
-    <string name="new_note_edit_time_text">Edited %s</string>
+    <string name="add_edit_note_edit_time_text">Edited %s</string>
+    <string name="add_edit_note_text_input_error">Text cannot be empty</string>
+    <string name="add_note_confirmation">Note created</string>
+    <string name="edit_note_confirmation">Note updated</string>
 
     <string name="notes_empty_text">There are no notes</string>
+    <string name="notes_one_deleted">%d note deleted</string>
+    <string name="notes_more_than_one_deleted">%d notes deleted</string>
 </resources>

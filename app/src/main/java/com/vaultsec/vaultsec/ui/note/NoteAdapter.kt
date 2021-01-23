@@ -97,8 +97,11 @@ class NoteAdapter(
         }
     }
 
-//    //These methods doesn't apply the background color correctly for some reason
-//    // Apparently a cleaner and a newer version to write it
+    /*
+    * The methods below are a nicer and more up-to-date way of binding RecyclerView items.
+    * But for some reason the background color doesn't get correctly applied around the rounded
+    * edges of the items.
+    * */
 //    inner class NoteHolder(private val binding: NoteItemBinding) :
 //        RecyclerView.ViewHolder(binding.root) {
 //        fun bind(note: Note, isActivated: Boolean = false) {
@@ -153,6 +156,10 @@ class NoteAdapter(
             return (recyclerView.getChildViewHolder(view) as NoteAdapter.NoteHolder).getItemDetails()
         }
 
+        /*
+        * When selecting an empty spot in the recyclerview, the selection would cancel.
+        * The code below and above prevents it
+        * */
         object EMPTY_ITEM : ItemDetails<Long>() {
             override fun getPosition(): Int = Int.MAX_VALUE
             override fun getSelectionKey(): Long = Long.MAX_VALUE

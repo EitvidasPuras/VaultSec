@@ -4,6 +4,7 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.PasswordManagerPreferences
 import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.entity.Note
@@ -32,6 +33,8 @@ class NoteViewModel
 
     private val notesEventChannel = Channel<NotesEvent>()
     val notesEvent = notesEventChannel.receiveAsFlow()
+
+    private val multiSelectedNotes: ArrayList<Note> = arrayListOf()
 
     /*
     * With flatMapLatest, when a new Observable is mapped, it overwrites the last Observable
@@ -73,9 +76,25 @@ class NoteViewModel
         prefsManager.updateSortDirection(isAsc)
     }
 
-    fun deleteSelectedNotes(noteList: ArrayList<Note>) = viewModelScope.launch(Dispatchers.IO) {
-        noteRepository.deleteSelectedNotes(noteList)
-        notesEventChannel.send(NotesEvent.ShowUndoDeleteNoteMessage(noteList))
+    fun onNoteSelection(note: Note) {
+        multiSelectedNotes.add(note)
+    }
+
+    fun onNoteDeselection(note: Note) {
+        multiSelectedNotes.add(note)
+    }
+
+    fun onDeleteSelectedNotesClick() = viewModelScope.launch(Dispatchers.IO) {
+        if (multiSelectedNotes.isNotEmpty()) {
+            val multiSelectedNotesClone = multiSelectedNotes.clone() as ArrayList<Note>
+            noteRepository.deleteSelectedNotes(multiSelectedNotesClone)
+            notesEventChannel.send(NotesEvent.ShowUndoDeleteNoteMessage(multiSelectedNotesClone))
+            multiSelectedNotes.clear()
+        }
+    }
+
+    fun onMultiSelectActionModeClose() {
+        multiSelectedNotes.clear()
     }
 
     fun onUndoDeleteClick(noteList: ArrayList<Note>) = viewModelScope.launch(Dispatchers.IO) {
@@ -92,12 +111,12 @@ class NoteViewModel
 
     fun onAddEditResult(result: Int) {
         when (result) {
-            ADD_NOTE_RESULT_OK -> showNoteSavedConfirmationMessage("Note created")
-            EDIT_NOTE_RESULT_OK -> showNoteSavedConfirmationMessage("Note updated")
+            ADD_NOTE_RESULT_OK -> showNoteSavedConfirmationMessage(R.string.add_note_confirmation)
+            EDIT_NOTE_RESULT_OK -> showNoteSavedConfirmationMessage(R.string.edit_note_confirmation)
         }
     }
 
-    private fun showNoteSavedConfirmationMessage(message: String) =
+    private fun showNoteSavedConfirmationMessage(message: Int) =
         viewModelScope.launch(Dispatchers.IO) {
             notesEventChannel.send(NotesEvent.ShowNoteSavedConfirmationMessage(message))
         }
@@ -122,7 +141,7 @@ class NoteViewModel
         object NavigateToAddNoteFragment : NotesEvent()
         data class NavigateToEditNoteFragment(val note: Note) : NotesEvent()
         data class ShowUndoDeleteNoteMessage(val noteList: ArrayList<Note>) : NotesEvent()
-        data class ShowNoteSavedConfirmationMessage(val message: String) : NotesEvent()
+        data class ShowNoteSavedConfirmationMessage(val message: Int) : NotesEvent()
         object ShowEmptyRecyclerViewMessage : NotesEvent()
         object HideEmptyRecyclerViewMessage : NotesEvent()
     }

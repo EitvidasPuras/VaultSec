@@ -8,7 +8,6 @@ import android.view.ViewAnimationUtils
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
@@ -121,10 +120,11 @@ class BottomNavigationActivity : AppCompatActivity() {
             R.id.item_logout -> {
                 binding.progressbarBottomNavActivity.visibility = View.VISIBLE
                 tokenViewModel.postLogout()
-                    .observe(this, Observer {
+                    .observe(this) {
                         binding.progressbarBottomNavActivity.visibility = View.INVISIBLE
                         if (!it.isError) {
                             noteViewModel.onSortOrderSelected(SortOrder.BY_TITLE)
+                            noteViewModel.onSortDirectionSelected(true)
                             openLogInActivity()
                         } else {
                             when (it.type) {
@@ -145,7 +145,7 @@ class BottomNavigationActivity : AppCompatActivity() {
                                 ).show()
                             }
                         }
-                    })
+                    }
                 true
             }
             R.id.item_settings -> {
@@ -157,9 +157,9 @@ class BottomNavigationActivity : AppCompatActivity() {
     }
 
     private fun openLogInActivity() {
-        val logInIntent = Intent(this, MainActivity::class.java)
-        logInIntent.putExtra(MainActivity.EXTRA_LOGOUT, true)
-        startActivity(logInIntent)
+        val startIntent = Intent(this, StartActivity::class.java)
+        startIntent.putExtra(StartActivity.EXTRA_LOGOUT, true)
+        startActivity(startIntent)
         finish()
     }
 }

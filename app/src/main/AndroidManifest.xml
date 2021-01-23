@@ -25,12 +25,7 @@
             android:windowSoftInputMode="stateVisible|adjustPan"
             android:supportsPictureInPicture="false"/>
         <activity
-            android:name=".ui.RegistrationActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme"
-            android:supportsPictureInPicture="false"/>
-        <activity
-            android:name=".ui.MainActivity"
+            android:name=".ui.StartActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme"
             android:supportsPictureInPicture="false">

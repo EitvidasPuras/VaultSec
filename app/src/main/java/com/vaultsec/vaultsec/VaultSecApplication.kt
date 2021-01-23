@@ -8,5 +8,4 @@ import dagger.hilt.android.HiltAndroidApp
 * servers as the application-level dependency container
 * */
 @HiltAndroidApp
-class VaultSecApplication : Application() {
-}
+class VaultSecApplication : Application()

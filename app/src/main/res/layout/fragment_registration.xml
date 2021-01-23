@@ -4,36 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.RegistrationActivity">
-
-    <ProgressBar
-        android:id="@+id/progressbar_registration"
-        android:layout_width="104dp"
-        android:layout_height="104dp"
-        android:elevation="10dp"
-        android:indeterminate="true"
-        android:indeterminateDrawable="@drawable/custom_progress_bar"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/textview_registration_app_logo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:drawableBottom="@drawable/ic_launcher_foreground"
-        android:drawablePadding="-32dp"
-        android:fontFamily="@font/bowlby_one_sc"
-        android:text="@string/app_name"
-        android:textColor="@color/color_accent"
-        android:textSize="48sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.12" />
+    tools:context=".ui.registration.RegistrationFragment">
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textfield_registration_firstname_layout"
@@ -53,7 +24,7 @@
         app:layout_constraintHorizontal_bias="0.50"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textview_registration_app_logo">
+        app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/textfield_registration_firstname"
@@ -134,7 +105,7 @@
         android:textAlignment="center"
         app:boxStrokeColor="@color/color_accent"
         app:counterEnabled="true"
-        app:counterMaxLength="40"
+        app:counterMaxLength="50"
         app:endIconMode="password_toggle"
         app:endIconTint="@color/color_accent"
         app:errorEnabled="true"
@@ -169,7 +140,7 @@
         android:textAlignment="center"
         app:boxStrokeColor="@color/color_accent"
         app:counterEnabled="true"
-        app:counterMaxLength="40"
+        app:counterMaxLength="50"
         app:endIconMode="password_toggle"
         app:endIconTint="@color/color_accent"
         app:errorEnabled="true"

@@ -5,6 +5,10 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
+/*
+* This class is no longer needed cause of Dagger Hilt.
+* That's how the class should be created without Dagger Hilt
+* */
 class PasswordManagerService {
 
     companion object {

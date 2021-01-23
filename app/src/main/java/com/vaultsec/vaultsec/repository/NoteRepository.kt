@@ -1,12 +1,9 @@
 package com.vaultsec.vaultsec.repository
 
-import android.app.Application
-import com.vaultsec.vaultsec.database.PasswordManagerDatabase
 import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.dao.NoteDao
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.network.PasswordManagerApi
-import com.vaultsec.vaultsec.network.PasswordManagerService
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 

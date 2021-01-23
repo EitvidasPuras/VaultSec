@@ -38,7 +38,6 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
     private val noteViewModel: NoteViewModel by viewModels()
 
     private lateinit var noteAdapter: NoteAdapter
-    private var listOfNotesToDelete: ArrayList<Note> = arrayListOf()
     var tracker: SelectionTracker<Long>? = null
     var mActionMode: ActionMode? = null
 
@@ -54,8 +53,9 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
         return binding.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setHasOptionsMenu(true)
         playSlidingAnimation(true, requireActivity())
 
         val layoutM = StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL)
@@ -114,11 +114,11 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
                     if (!tracker?.selection!!.isEmpty) {
                         if (selected) {
                             if (tracker?.selection!!.contains(key)) {
-                                listOfNotesToDelete.add(noteAdapter.currentList[key.toInt()])
+                                noteViewModel.onNoteSelection(noteAdapter.currentList[key.toInt()])
                             }
                         } else {
                             if (!tracker?.selection!!.contains(key)) {
-                                listOfNotesToDelete.remove(noteAdapter.currentList[key.toInt()])
+                                noteViewModel.onNoteDeselection(noteAdapter.currentList[key.toInt()])
                             }
                         }
                     }
@@ -161,9 +161,15 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
                         Snackbar.make(
                             requireView(),
                             if (event.noteList.size == 1) {
-                                "${event.noteList.size} note deleted"
+                                getString(
+                                    R.string.notes_one_deleted,
+                                    event.noteList.size
+                                )
                             } else {
-                                "${event.noteList.size} notes deleted"
+                                getString(
+                                    R.string.notes_more_than_one_deleted,
+                                    event.noteList.size
+                                )
                             },
                             Snackbar.LENGTH_LONG
                         )
@@ -200,11 +206,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
         }
 
         noteViewModel.onDisplayEmptyRecyclerViewMessage()
-    }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        setHasOptionsMenu(true)
         binding.fabNotes.setOnClickListener {
             noteViewModel.onAddNewNoteClick()
             playSlidingAnimation(false, requireActivity())
@@ -253,11 +255,8 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
                     true
                 }
                 R.id.item_multi_select_delete -> {
-                    if (listOfNotesToDelete.isNotEmpty()) {
-                        noteViewModel.deleteSelectedNotes(listOfNotesToDelete.clone() as ArrayList<Note>)
-                        tracker?.clearSelection()
-                        listOfNotesToDelete.clear()
-                    }
+                    noteViewModel.onDeleteSelectedNotesClick()
+                    tracker?.clearSelection()
                     true
                 }
                 else -> false
@@ -265,7 +264,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
         }
 
         override fun onDestroyActionMode(p0: ActionMode?) {
-            listOfNotesToDelete.clear()
+            noteViewModel.onMultiSelectActionModeClose()
             tracker?.clearSelection()
             mActionMode = null
             noteViewModel.onDisplayEmptyRecyclerViewMessage()
@@ -369,3 +368,6 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
         _binding = null
     }
 }
+
+// TODO: 2021-01-20 Pull to refresh functionality
+// TODO: 2021-01-20 General code cleanup

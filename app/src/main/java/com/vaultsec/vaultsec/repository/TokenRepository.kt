@@ -1,20 +1,17 @@
 package com.vaultsec.vaultsec.repository
 
-import android.app.Application
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import com.vaultsec.vaultsec.database.PasswordManagerDatabase
-import com.vaultsec.vaultsec.database.dao.NoteDao
 import com.vaultsec.vaultsec.database.dao.TokenDao
 import com.vaultsec.vaultsec.database.entity.Token
 import com.vaultsec.vaultsec.network.PasswordManagerApi
-import com.vaultsec.vaultsec.network.PasswordManagerService
 import com.vaultsec.vaultsec.network.entity.ApiError
 import com.vaultsec.vaultsec.network.entity.ApiResponse
 import com.vaultsec.vaultsec.network.entity.ApiUser
 import com.vaultsec.vaultsec.network.entity.ErrorTypes
 import retrofit2.HttpException
+import java.net.ConnectException
 import java.net.SocketTimeoutException
 import javax.inject.Inject
 
@@ -22,8 +19,7 @@ class TokenRepository
 @Inject constructor(
     private val tokenDao: TokenDao,
     private val api: PasswordManagerApi
-)
-{
+) {
 
 //    private val database = PasswordManagerDatabase.getInstance(application)
 //    private val tokenDao = database.tokenDao()
@@ -67,6 +63,13 @@ class TokenRepository
                     return ApiResponse(
                         true,
                         ErrorTypes.SOCKET_TIMEOUT
+                    )
+                }
+                is ConnectException -> {
+                    Log.e("com.vaultsec.vaultsec.repository.postRegister", e.message.toString())
+                    return ApiResponse(
+                        true,
+                        ErrorTypes.CONNECTION
                     )
                 }
                 else -> {
@@ -118,6 +121,13 @@ class TokenRepository
                         ErrorTypes.SOCKET_TIMEOUT
                     )
                 }
+                is ConnectException -> {
+                    Log.e("com.vaultsec.vaultsec.repository.postLogin", e.message.toString())
+                    return ApiResponse(
+                        true,
+                        ErrorTypes.CONNECTION
+                    )
+                }
                 else -> {
                     Log.e("com.vaultsec.vaultsec.repository.postLogin", e.message.toString())
                     return ApiResponse(
@@ -150,6 +160,13 @@ class TokenRepository
                     return ApiResponse(
                         true,
                         ErrorTypes.SOCKET_TIMEOUT
+                    )
+                }
+                is ConnectException -> {
+                    Log.e("com.vaultsec.vaultsec.repository.postLogout", e.message.toString())
+                    return ApiResponse(
+                        true,
+                        ErrorTypes.CONNECTION
                     )
                 }
                 else -> {

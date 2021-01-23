@@ -6,6 +6,7 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.repository.NoteRepository
 import kotlinx.coroutines.Dispatchers
@@ -80,7 +81,7 @@ class AddEditNoteViewModel
     fun onSaveNoteClick() {
         if (noteText.isBlank()) {
             viewModelScope.launch(Dispatchers.IO) {
-                addEditNoteEventChannel.send(AddEditNoteEvent.ShowInvalidInputMessage("Text cannot be empty"))
+                addEditNoteEventChannel.send(AddEditNoteEvent.ShowInvalidInputMessage(R.string.add_edit_note_text_input_error))
             }
             return // To stop executing the code after the error
         }
@@ -126,7 +127,7 @@ class AddEditNoteViewModel
     }
 
     sealed class AddEditNoteEvent {
-        data class ShowInvalidInputMessage(val message: String) : AddEditNoteEvent()
+        data class ShowInvalidInputMessage(val message: Int) : AddEditNoteEvent()
         data class NavigateBackWithResult(val result: Int) : AddEditNoteEvent()
         object NavigateBackWithoutResult : AddEditNoteEvent()
     }
