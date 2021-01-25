@@ -81,7 +81,7 @@ class NoteViewModel
     }
 
     fun onNoteDeselection(note: Note) {
-        multiSelectedNotes.add(note)
+        multiSelectedNotes.remove(note)
     }
 
     fun onDeleteSelectedNotesClick() = viewModelScope.launch(Dispatchers.IO) {
