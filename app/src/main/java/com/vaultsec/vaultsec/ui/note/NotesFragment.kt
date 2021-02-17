@@ -1,9 +1,11 @@
 package com.vaultsec.vaultsec.ui.note
 
 import android.os.Bundle
+import android.util.Base64
 import android.util.Log
 import android.view.*
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
@@ -15,19 +17,24 @@ import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import androidx.security.crypto.MasterKey
 import com.google.android.material.snackbar.Snackbar
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.databinding.FragmentNotesBinding
-import com.vaultsec.vaultsec.util.hideKeyboard
-import com.vaultsec.vaultsec.util.playSlidingAnimation
+import com.vaultsec.vaultsec.util.*
 import com.vaultsec.vaultsec.viewmodel.NoteViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.security.SecureRandom
+import javax.crypto.Cipher
+import javax.crypto.SecretKeyFactory
+import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.PBEKeySpec
+import javax.crypto.spec.SecretKeySpec
 
 /**
  * A simple [Fragment] subclass.
@@ -57,6 +64,11 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
         playSlidingAnimation(true, requireActivity())
+        NetworkMonitor(requireActivity()).startNetworkCallback()
+
+        val mainKey = MasterKey.Builder(requireContext())
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
 
         val layoutM = StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL)
         noteAdapter = NoteAdapter(this)
@@ -68,6 +80,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
                 adapter = noteAdapter
                 layoutManager = layoutM
                 setHasFixedSize(true)
+                itemAnimator?.changeDuration = 0
                 addItemDecoration(NoteOffsetDecoration(resources.getInteger(R.integer.staggered_grid_layout_offset_spacing)))
                 addOnScrollListener(object : RecyclerView.OnScrollListener() {
                     override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
@@ -75,6 +88,13 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
                         if (newState == RecyclerView.SCROLL_STATE_IDLE) recyclerView.invalidateItemDecorations()
                     }
                 })
+            }
+            swiperefreshlayout.setOnRefreshListener {
+                noteViewModel.onManualNoteSync()
+            }
+            fabNotes.setOnClickListener {
+                noteViewModel.onAddNewNoteClick()
+                playSlidingAnimation(false, requireActivity())
             }
         }
 
@@ -144,14 +164,23 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
             * causes items to be displayed misaligned.
             * The code below submits null as a list forcing the recycler to redraw all of the items
             * */
-            noteAdapter.submitList(null)
-            noteAdapter.submitList(it)
 
-            viewLifecycleOwner.lifecycleScope.launch {
-                delay(50L)
-                noteViewModel.onDisplayEmptyRecyclerViewMessage()
+            Log.e("Are lists the same?", "${it.data?.equals(noteAdapter.currentList)}")
+            if (it.data?.equals(noteAdapter.currentList) == false) {
+                noteAdapter.submitList(null)
+                noteAdapter.submitList(it.data) {
+                    binding.recyclerviewNotes.scheduleLayoutAnimation()
+                }
             }
-            binding.recyclerviewNotes.scheduleLayoutAnimation()
+            binding.swiperefreshlayout.isRefreshing = it is Holder.Loading
+
+            // TODO: 2021-02-17 Fix the empty notes message flash on logout
+            binding.recyclerviewNotes.isVisible = !it.data.isNullOrEmpty()
+            binding.textviewEmptyNotes.isVisible = it.data.isNullOrEmpty()
+//            viewLifecycleOwner.lifecycleScope.launch {
+//                delay(50L)
+//                noteViewModel.onDisplayEmptyRecyclerViewMessage()
+//            }
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
@@ -206,11 +235,42 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
         }
 
         noteViewModel.onDisplayEmptyRecyclerViewMessage()
+    }
 
-        binding.fabNotes.setOnClickListener {
-            noteViewModel.onAddNewNoteClick()
-            playSlidingAnimation(false, requireActivity())
-        }
+    private fun test101(text: String, password: String) {
+        var saltBytes: ByteArray = getRandomBytes()
+        Log.e("Random bytes", Base64.encodeToString(saltBytes, Base64.DEFAULT))
+
+        val factory: SecretKeyFactory = SecretKeyFactory.getInstance("PBEwithHmacSHA256AndAES_256")
+        Log.e("Factory", factory.toString())
+        val spec = PBEKeySpec(password.toCharArray(), saltBytes, 40000, 256)
+        val secretKey = factory.generateSecret(spec)
+        Log.e("secretKey object", secretKey.toString())
+        Log.e("secretKey base64", Base64.encodeToString(secretKey.encoded, Base64.DEFAULT))
+        val secreyKeySpec = SecretKeySpec(secretKey.encoded, "AES")
+        Log.e("secretKeySpec object", secreyKeySpec.toString())
+        Log.e("secretKeySpec base64", Base64.encodeToString(secreyKeySpec.encoded, Base64.DEFAULT))
+
+        val cipher = Cipher.getInstance("AES_256/CBC/PKCS5Padding")
+        cipher.init(Cipher.ENCRYPT_MODE, secreyKeySpec)
+        val params = cipher.parameters
+        Log.e("Params", Base64.encodeToString(params.encoded, Base64.DEFAULT))
+        val ivBytes = params.getParameterSpec(IvParameterSpec::class.java).iv
+        Log.e("IvBytes", Base64.encodeToString(ivBytes, Base64.DEFAULT))
+        val encrypterByteArray = cipher.doFinal(text.toByteArray(Charsets.UTF_8))
+        Log.e("EncryptedByteArray", Base64.encodeToString(encrypterByteArray, Base64.DEFAULT))
+
+        val everything = ByteArray(saltBytes.size + ivBytes.size + encrypterByteArray.size)
+
+        Log.e("Everything", Base64.encodeToString(everything, Base64.DEFAULT))
+
+        Log.e("Random playaround", "random".encodeToByteArray().decodeToString())
+    }
+
+    private fun getRandomBytes(): ByteArray {
+        val ba = ByteArray(512)
+        SecureRandom().nextBytes(ba)
+        return ba
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -359,6 +419,9 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
 
     override fun onResume() {
         super.onResume()
+//        test101("textToEncrypt", "password123")
+//        Log.e("hashString", hashString("masterpasswordamazing"))
+//        Log.e("hashString length", hashString("masterpasswordamazing").length.toString())
         noteViewModel.onDisplayEmptyRecyclerViewMessage()
     }
 
@@ -367,7 +430,11 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
         mActionMode?.finish()
         _binding = null
     }
-}
 
-// TODO: 2021-01-20 Pull to refresh functionality
-// TODO: 2021-01-20 General code cleanup
+    override fun onStart() {
+        super.onStart()
+        Log.e("NetworkMonitor START", "$isNetworkConnected")
+        Log.e("hasInternetConnection START", "${hasInternetConnection(requireActivity())}")
+        noteViewModel.onStart()
+    }
+}

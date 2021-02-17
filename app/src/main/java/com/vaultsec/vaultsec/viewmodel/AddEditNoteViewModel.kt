@@ -30,7 +30,7 @@ class AddEditNoteViewModel
     val addEditTaskEvent = addEditNoteEventChannel.receiveAsFlow()
 
 
-    var noteTitle = state.get<String>("noteTitle") ?: note?.title ?: ""
+    var noteTitle: String? = state.get<String>("noteTitle") ?: note?.title ?: ""
         set(value) {
             field = value
             state.set("noteTitle", value)
@@ -99,7 +99,8 @@ class AddEditNoteViewModel
                     color = noteColor,
                     fontSize = noteFontSize,
                     createdAt = noteDateCreated,
-                    updatedAt = noteDateUpdated
+                    updatedAt = noteDateUpdated,
+                    synced = false
                 )
                 updateNote(updatedNote)
             }

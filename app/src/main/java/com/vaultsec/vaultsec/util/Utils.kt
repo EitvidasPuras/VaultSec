@@ -6,10 +6,19 @@ import android.app.Activity
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.ProgressBar
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.vaultsec.vaultsec.R
+import com.vaultsec.vaultsec.ui.StartActivity
+import kotlinx.android.synthetic.main.activity_bottom_navigation.*
+import kotlinx.android.synthetic.main.activity_start.*
+import java.security.MessageDigest
+
+//private val HEX_CHARS = "0123456789abcdef".toCharArray()
 
 fun hideKeyboard(activity: Activity) {
     val inputManager =
@@ -52,7 +61,6 @@ fun playSlidingAnimation(reveal: Boolean, activity: Activity) {
     }
 }
 
-// TODO: 2021-01-23 Use NetworkCallback
 fun hasInternetConnection(activity: Activity): Boolean {
     val connectivityManager =
         activity.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -64,3 +72,38 @@ fun hasInternetConnection(activity: Activity): Boolean {
         else -> false
     }
 }
+
+fun hashString(input: String): String {
+    val bytes = MessageDigest
+        .getInstance("SHA-256")
+        .digest(input.toByteArray())
+    return bytes.toHex()
+}
+
+private fun ByteArray.toHex(): String {
+    return joinToString("") { "%02x".format(it) }
+}
+
+/*
+* This is needed, because when setting indeterminateDrawable in the XML the animation gets messed up
+* */
+fun setProgressBarDrawable(progressBar: ProgressBar) {
+    val drawable = CircularProgressDrawable(progressBar.context).apply {
+        strokeWidth = 16f
+        centerRadius = 88f
+        setColorSchemeColors(progressBar.context.getColor(R.color.color_accent))
+    }
+    progressBar.indeterminateDrawable = drawable
+}
+/*
+* A different way to implement ByteArray to hex conversion
+* */
+//private fun printHexBinary(data: ByteArray): String {
+//    val r = StringBuilder(data.size * 2)
+//    data.forEach { b ->
+//        val i = b.toInt()
+//        r.append(HEX_CHARS[i shr 4 and 0xF])
+//        r.append(HEX_CHARS[i and 0xF])
+//    }
+//    return r.toString()
+//}

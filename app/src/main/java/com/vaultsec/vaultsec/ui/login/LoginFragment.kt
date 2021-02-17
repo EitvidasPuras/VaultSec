@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
@@ -117,11 +118,11 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                         binding.textfieldLoginPasswordLayout.error = null
                     }
                     is TokenViewModel.TokenEvent.ShowProgressBar -> {
-                        requireActivity().progressbar_in_start.visibility = View.VISIBLE
+                        requireActivity().progressbar_start.isVisible = event.doShow
                     }
-                    is TokenViewModel.TokenEvent.HideProgressBar -> {
-                        requireActivity().progressbar_in_start.visibility = View.INVISIBLE
-                    }
+//                    is TokenViewModel.TokenEvent.HideProgressBar -> {
+//                        requireActivity().progressbar_in_start.visibility = View.INVISIBLE
+//                    }
                     is TokenViewModel.TokenEvent.ShowHttpError -> {
                         when (event.whereToDisplay) {
                             HTTP_EMAIL_ERROR -> {

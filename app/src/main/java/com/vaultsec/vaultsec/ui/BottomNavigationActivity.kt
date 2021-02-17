@@ -8,6 +8,7 @@ import android.view.ViewAnimationUtils
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -18,12 +19,10 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.vaultsec.vaultsec.R
-import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.databinding.ActivityBottomNavigationBinding
-import com.vaultsec.vaultsec.network.entity.ErrorTypes
 import com.vaultsec.vaultsec.util.hideKeyboard
+import com.vaultsec.vaultsec.util.setProgressBarDrawable
 import com.vaultsec.vaultsec.viewmodel.HTTP_NONE_ERROR
-import com.vaultsec.vaultsec.viewmodel.NoteViewModel
 import com.vaultsec.vaultsec.viewmodel.TokenViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
@@ -34,7 +33,6 @@ class BottomNavigationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityBottomNavigationBinding
 
     private val tokenViewModel: TokenViewModel by viewModels()
-    private val noteViewModel: NoteViewModel by viewModels()
 
     private var wasDoubleBackToExitPressed = false
     private lateinit var backToast: Toast
@@ -45,6 +43,7 @@ class BottomNavigationActivity : AppCompatActivity() {
         binding = ActivityBottomNavigationBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+        setProgressBarDrawable(binding.progressbarBottomNavigation)
 
         val toolbar: androidx.appcompat.widget.Toolbar? =
             findViewById(R.id.toolbar)
@@ -90,11 +89,8 @@ class BottomNavigationActivity : AppCompatActivity() {
                     TokenViewModel.TokenEvent.SuccessfulLogout -> {
                         openStartActivity()
                     }
-                    TokenViewModel.TokenEvent.ShowProgressBar -> {
-                        binding.progressbarBottomNavActivity.visibility = View.VISIBLE
-                    }
-                    TokenViewModel.TokenEvent.HideProgressBar -> {
-                        binding.progressbarBottomNavActivity.visibility = View.INVISIBLE
+                    is TokenViewModel.TokenEvent.ShowProgressBar -> {
+                        binding.progressbarBottomNavigation.isVisible = event.doShow
                     }
                 }
             }

@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-android-extensions' //Deprecated. TODO: Come back to it one day
 apply plugin: 'kotlin-kapt'
 apply plugin: 'androidx.navigation.safeargs.kotlin'
 apply plugin: 'dagger.hilt.android.plugin'
@@ -69,6 +69,7 @@ dependencies {
     implementation "androidx.coordinatorlayout:coordinatorlayout:1.1.0"
     implementation "androidx.cardview:cardview:1.0.0"
     implementation "androidx.recyclerview:recyclerview:1.2.0-beta01"
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01'
     // For control over item selection of both touch and mouse driven selection
     implementation "androidx.recyclerview:recyclerview-selection:1.1.0-rc03"
 
@@ -89,13 +90,15 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.2"
 
     // Data store
-    implementation "androidx.datastore:datastore-preferences:1.0.0-alpha05"
+    implementation "androidx.datastore:datastore-preferences:1.0.0-alpha06"
 
     // Dagger Hilt
     implementation "com.google.dagger:hilt-android:2.28.3-alpha"
     kapt "com.google.dagger:hilt-android-compiler:2.28.3-alpha"
     implementation "androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha02"
     kapt "androidx.hilt:hilt-compiler:1.0.0-alpha02"
+
+    implementation 'androidx.security:security-crypto-ktx:1.1.0-alpha02'
 
     // Testing
     testImplementation 'junit:junit:4.13.1'

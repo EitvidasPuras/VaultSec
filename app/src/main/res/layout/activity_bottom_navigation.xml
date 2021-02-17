@@ -20,17 +20,17 @@
         app:titleTextColor="@color/color_primary_darker" />
 
     <ProgressBar
-        android:id="@+id/progressbar_bottom_nav_activity"
+        android:id="@+id/progressbar_bottom_navigation"
         android:layout_width="104dp"
         android:layout_height="104dp"
-        android:elevation="10dp"
-        android:indeterminate="true"
-        android:indeterminateDrawable="@drawable/custom_progress_bar"
+        android:elevation="15dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.5" />
 
     <View
         android:id="@+id/bottom_nav_shadow"

@@ -1,14 +1,13 @@
 package com.vaultsec.vaultsec.viewmodel
 
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.PasswordManagerPreferences
 import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.repository.NoteRepository
+import com.vaultsec.vaultsec.util.Holder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,30 +30,67 @@ class NoteViewModel
     val searchQuery = MutableStateFlow("")
     val preferencesFlow = prefsManager.preferencesFlow
 
+    fun onStart() {
+        viewModelScope.launch {
+            if (notes.value !is Holder.Loading) {
+                refreshTriggerChannel.send(Refresh.DIDNT)
+            }
+        }
+    }
+
+    private val refreshAction = MutableLiveData(Refresh.DIDNT)
+
+    private val refreshTriggerChannel = Channel<Refresh>()
+    private val refreshTrigger = refreshTriggerChannel.receiveAsFlow()
+
     private val notesEventChannel = Channel<NotesEvent>()
     val notesEvent = notesEventChannel.receiveAsFlow()
 
     private val multiSelectedNotes: ArrayList<Note> = arrayListOf()
 
-    /*
-    * With flatMapLatest, when a new Observable is mapped, it overwrites the last Observable
-    * if there was one. Combine combines multiple flows into a single flow
-    * */
-    private val notesFlow = combine(
-//        searchQuery.asFlow(),
-        searchQuery,
-        preferencesFlow
-    ) { query, prefs ->
-        Pair(query, prefs)
-    }.flatMapLatest { (query, prefs) ->
-        noteRepository.getNotes(query, prefs.sortOrder, prefs.isAsc)
-    }
-    val notes = notesFlow.asLiveData()
-
-
     fun insert(note: Note) = viewModelScope.launch(Dispatchers.IO) {
         noteRepository.insert(note)
     }
+
+    /*
+    * Both of the solutions below work fine.
+    * TODO: Test for performance
+    * */
+    val notes: LiveData<Holder<List<Note>>> = refreshTrigger.flatMapLatest {
+        combine(
+            searchQuery,
+            preferencesFlow
+        ) { query, prefs ->
+            Pair(query, prefs)
+        }.flatMapLatest { (query, prefs) ->
+            noteRepository.synchronizeNotes(
+                didRefresh = (it == Refresh.DID),
+                searchQuery = query,
+                sortOrder = prefs.sortOrder,
+                isAsc = prefs.isAsc,
+                onFetchComplete = {}
+            )
+        }
+    }.asLiveData()
+
+//    val notes: LiveData<Holder<List<Note>>> = refreshAction.asFlow().flatMapLatest {
+//        combine(
+//            searchQuery,
+//            preferencesFlow
+//        ) { query, prefs ->
+//            Pair(query, prefs)
+//        }.flatMapLatest { (query, prefs) ->
+//            noteRepository.synchronizeNotes(
+//                didRefresh = (it == Refresh.DID),
+//                searchQuery = query,
+//                sortOrder = prefs.sortOrder,
+//                isAsc = prefs.isAsc,
+//                onFetchComplete = {
+//                    refreshAction.value = Refresh.DIDNT
+//                }
+//            )
+//        }
+//    }.asLiveData()
 
     fun update(note: Note) = viewModelScope.launch(Dispatchers.IO) {
         noteRepository.update(note)
@@ -122,7 +158,8 @@ class NoteViewModel
         }
 
     fun onDisplayEmptyRecyclerViewMessage() {
-        if (notes.value?.isEmpty() == true) {
+        val isListEmpty = notes.value?.data?.isEmpty()
+        if (isListEmpty == true) {
             viewModelScope.launch(Dispatchers.IO) {
                 notesEventChannel.send(NotesEvent.ShowEmptyRecyclerViewMessage)
             }
@@ -131,6 +168,26 @@ class NoteViewModel
                 notesEventChannel.send(NotesEvent.HideEmptyRecyclerViewMessage)
             }
         }
+    }
+
+    /*
+    * Different methods for different optimization solutions
+    * */
+    fun onManualNoteSync() {
+        viewModelScope.launch {
+            if (notes.value !is Holder.Loading) {
+                refreshTriggerChannel.send(Refresh.DID)
+            }
+        }
+    }
+
+//    fun onManualNoteSync() {
+//        if (notes.value is Holder.Loading) return
+//        refreshAction.value = Refresh.DID
+//    }
+
+    enum class Refresh {
+        DID, DIDNT
     }
 
     /*

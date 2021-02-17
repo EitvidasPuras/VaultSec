@@ -7,32 +7,40 @@
     android:layout_marginBottom="?attr/actionBarSize"
     tools:context=".ui.note.NotesFragment">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerview_notes"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swiperefreshlayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:layoutAnimation="@anim/layout_animation_fall_down"
-        android:scrollbars="vertical" />
+        tools:context=".ui.note.NotesFragment">
 
-    <TextView
-        android:id="@+id/textview_empty_notes"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/notes_empty_text"
-        android:textSize="24sp" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerview_notes"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:layoutAnimation="@anim/layout_animation_fall_down"
+            android:scrollbars="vertical" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_notes"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
-        android:backgroundTint="@color/color_analogous"
-        android:contentDescription="@string/new_note_fab_description"
-        android:src="@drawable/ic_add"
-        app:borderWidth="0dp"
-        app:fabSize="normal" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <TextView
+            android:id="@+id/textview_empty_notes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/notes_empty_text"
+            android:textSize="24sp" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_notes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="16dp"
+            android:backgroundTint="@color/color_analogous"
+            android:contentDescription="@string/new_note_fab_description"
+            android:src="@drawable/ic_add"
+            app:borderWidth="0dp"
+            app:fabSize="normal" />
 
 </com.google.android.material.circularreveal.coordinatorlayout.CircularRevealCoordinatorLayout>

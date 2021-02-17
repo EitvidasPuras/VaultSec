@@ -15,7 +15,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.databinding.ActivityStartBinding
 import com.vaultsec.vaultsec.util.hideKeyboard
-import com.vaultsec.vaultsec.viewmodel.NoteViewModel
+import com.vaultsec.vaultsec.util.setProgressBarDrawable
 import com.vaultsec.vaultsec.viewmodel.TokenViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlin.math.hypot
@@ -36,6 +36,7 @@ class StartActivity : AppCompatActivity() {
         binding = ActivityStartBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+        setProgressBarDrawable(binding.progressbarStart)
 
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.fragment_container_view_start) as NavHostFragment

@@ -2,9 +2,10 @@ package com.vaultsec.vaultsec.database
 
 import android.content.Context
 import android.util.Log
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
-import androidx.datastore.preferences.core.preferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.createDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.catch
@@ -58,8 +59,8 @@ class PasswordManagerPreferences
     }
 
     private object PreferencesKeys {
-        val SORT_ORDER = preferencesKey<String>("so")
-        val SORT_DIR = preferencesKey<Boolean>("sd")
+        val SORT_ORDER = stringPreferencesKey("so")
+        val SORT_DIR = booleanPreferencesKey("sd")
     }
 
 

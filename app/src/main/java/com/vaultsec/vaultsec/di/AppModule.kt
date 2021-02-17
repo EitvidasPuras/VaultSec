@@ -2,8 +2,10 @@ package com.vaultsec.vaultsec.di
 
 import android.app.Application
 import androidx.room.Room
+import com.google.gson.GsonBuilder
 import com.vaultsec.vaultsec.database.PasswordManagerDatabase
 import com.vaultsec.vaultsec.network.PasswordManagerApi
+import com.vaultsec.vaultsec.util.exclusion.AnnotationExclusionStrategy
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,7 +33,7 @@ object AppModule {
             application, PasswordManagerDatabase::class.java, "vaultsec-database"
         )
             .fallbackToDestructiveMigration()
-            .addCallback(callback)
+//            .addCallback(callback)
             .build()
 
     @Provides
@@ -46,18 +48,24 @@ object AppModule {
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder()
-        .connectTimeout(3, TimeUnit.SECONDS)
-        .readTimeout(3, TimeUnit.SECONDS)
+        .connectTimeout(2, TimeUnit.SECONDS)
+        .readTimeout(4, TimeUnit.SECONDS)
         .writeTimeout(3, TimeUnit.SECONDS)
         .build()
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient, BASE_URL: String): Retrofit = Retrofit.Builder()
-        .client(okHttpClient)
-        .baseUrl(BASE_URL)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
+    fun provideRetrofit(okHttpClient: OkHttpClient, BASE_URL: String): Retrofit {
+        val gson = GsonBuilder()
+            .setDateFormat("yyyy-MM-dd HH:mm:ss")
+            .setExclusionStrategies(AnnotationExclusionStrategy())
+            .create()
+        return Retrofit.Builder()
+            .client(okHttpClient)
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+    }
 
     @Provides
     @Singleton

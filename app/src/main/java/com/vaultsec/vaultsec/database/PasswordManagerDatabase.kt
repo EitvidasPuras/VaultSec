@@ -37,9 +37,6 @@ abstract class PasswordManagerDatabase : RoomDatabase() {
             val noteDao = database.get().noteDao()
 
             CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
-//                tokenDao.deleteAll()
-//                val token = Token("aispipevnwpindksnsda")
-//                tokenDao.insert(token)
 
                 val arrayOfFontSizes = (12..22 step 2).toList().toTypedArray()
                 val arrayOfColors =

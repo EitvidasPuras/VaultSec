@@ -9,6 +9,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.os.bundleOf
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
@@ -47,6 +48,8 @@ class RegistrationFragment : Fragment(R.layout.fragment_registration) {
 //            WindowManager.LayoutParams.FLAG_SECURE,
 //            WindowManager.LayoutParams.FLAG_SECURE
 //        )
+
+        populateTestingData()
 
         binding.textviewRegistrationLogin.setOnClickListener {
             findNavController().popBackStack()
@@ -103,11 +106,8 @@ class RegistrationFragment : Fragment(R.layout.fragment_registration) {
                     TokenViewModel.TokenEvent.ClearErrorsPasswordRetype -> {
                         binding.textfieldRegistrationPasswordRetypeLayout.error = null
                     }
-                    TokenViewModel.TokenEvent.ShowProgressBar -> {
-                        requireActivity().progressbar_in_start.visibility = View.VISIBLE
-                    }
-                    TokenViewModel.TokenEvent.HideProgressBar -> {
-                        requireActivity().progressbar_in_start.visibility = View.INVISIBLE
+                    is TokenViewModel.TokenEvent.ShowProgressBar -> {
+                        requireActivity().progressbar_start.isVisible = event.doShow
                     }
                     TokenViewModel.TokenEvent.SuccessfulRegistration -> {
                         setFragmentResult(
@@ -168,6 +168,14 @@ class RegistrationFragment : Fragment(R.layout.fragment_registration) {
                 }
             }
         }
+    }
+
+    private fun populateTestingData() {
+        binding.textfieldRegistrationFirstname.setText("First")
+        binding.textfieldRegistrationLastname.setText("Last")
+        binding.textfieldRegistrationEmail.setText("email@gmail.com")
+        binding.textfieldRegistrationPassword.setText("123456789*aA")
+        binding.textfieldRegistrationPasswordRetype.setText("123456789*aA")
     }
 
     override fun onStop() {

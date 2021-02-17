@@ -3,6 +3,7 @@ package com.vaultsec.vaultsec.database.dao
 import androidx.room.*
 import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.entity.Note
+import com.vaultsec.vaultsec.network.entity.ApiNote
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -25,6 +26,9 @@ interface NoteDao {
 
     @Query("""DELETE FROM vault_notes WHERE id IN (:idList)""")
     suspend fun deleteSelectedNotes(idList: ArrayList<Int>)
+
+    @Query("""SELECT * FROM vault_notes WHERE synced = 0""")
+    fun getUnsyncedNotes(): Flow<List<Note>>
 
     fun getNotes(searchQuery: String, sortOrder: SortOrder, isAsc: Boolean): Flow<List<Note>> =
         when (sortOrder) {
