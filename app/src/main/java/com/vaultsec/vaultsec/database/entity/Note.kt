@@ -21,7 +21,7 @@ data class Note(
     @ColumnInfo(name = "created_at_local") @TypeConverters(DateConverter::class) val createdAt: Timestamp,
     @SerializedName("updated_at_device")
     @ColumnInfo(name = "updated_at_local") @TypeConverters(DateConverter::class) val updatedAt: Timestamp,
-    @ColumnInfo @Exclude var synced: Boolean = false,
+    @ColumnInfo @Exclude val synced: Boolean = false,
 //    @ColumnInfo val idS: Int = 0,
     @ColumnInfo(index = true)
     @PrimaryKey(autoGenerate = true) @Exclude val id: Int = 0

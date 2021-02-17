@@ -1,9 +1,11 @@
 package com.vaultsec.vaultsec.util
 
 import android.util.Log
-import com.vaultsec.vaultsec.repository.ShouldFetch
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 inline fun <ResultType, RequestType> networkBoundResource(
