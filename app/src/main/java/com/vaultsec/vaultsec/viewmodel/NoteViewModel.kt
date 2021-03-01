@@ -7,7 +7,6 @@ import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.PasswordManagerPreferences
 import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.entity.Note
-import com.vaultsec.vaultsec.network.entity.ApiResponse
 import com.vaultsec.vaultsec.repository.NoteRepository
 import com.vaultsec.vaultsec.util.Resource
 import kotlinx.coroutines.Dispatchers
@@ -51,7 +50,7 @@ class NoteViewModel
 
     private val multiSelectedNotes: ArrayList<Note> = arrayListOf()
 
-    private var deletionResponse: ApiResponse<*> = ApiResponse.Loading<Any>()
+    private var deletionResponse: Resource<*> = Resource.Loading<Any>()
 
     fun insert(note: Note) = viewModelScope.launch(Dispatchers.IO) {
         noteRepository.insert(note)
@@ -148,19 +147,19 @@ class NoteViewModel
         * for the noteRepository.deleteSelectedNotes to return a response. Only then does the app
         * try to recover deleted notes.
         * */
-        if (deletionResponse is ApiResponse.Loading) {
+        if (deletionResponse is Resource.Loading) {
             for (i in (0..400)) {
                 delay(25)
-                if (deletionResponse is ApiResponse.Success || deletionResponse is ApiResponse.Error) {
+                if (deletionResponse is Resource.Success || deletionResponse is Resource.Error) {
                     noteRepository.undoDeletedNotes(noteList)
                     notesEventChannel.send(NotesEvent.DoShowRefreshing(false))
-                    deletionResponse = ApiResponse.Loading<Any>()
+                    deletionResponse = Resource.Loading<Any>()
                     return@launch
                 }
             }
         } else {
             noteRepository.undoDeletedNotes(noteList)
-            deletionResponse = ApiResponse.Loading<Any>()
+            deletionResponse = Resource.Loading<Any>()
             notesEventChannel.send(NotesEvent.DoShowRefreshing(false))
         }
     }

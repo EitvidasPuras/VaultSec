@@ -7,8 +7,7 @@ import com.vaultsec.vaultsec.database.dao.NoteDao
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.network.PasswordManagerApi
 import com.vaultsec.vaultsec.network.entity.ApiError
-import com.vaultsec.vaultsec.network.entity.ApiResponse
-import com.vaultsec.vaultsec.network.entity.ErrorTypes
+import com.vaultsec.vaultsec.util.ErrorTypes
 import com.vaultsec.vaultsec.util.Resource
 import com.vaultsec.vaultsec.util.isNetworkAvailable
 import com.vaultsec.vaultsec.util.networkBoundResource
@@ -92,7 +91,7 @@ class NoteRepository @Inject constructor(
             onFetchFailed = onFetchComplete
         )
 
-    suspend fun deleteSelectedNotes(noteList: ArrayList<Note>): ApiResponse<*> {
+    suspend fun deleteSelectedNotes(noteList: ArrayList<Note>): Resource<*> {
         didPerformDeletionAPICall = false
         val unsyncedNotesIds = arrayListOf<Int>()
         val syncedNotesIds = arrayListOf<Int>()
@@ -124,7 +123,7 @@ class NoteRepository @Inject constructor(
                     )
                     didPerformDeletionAPICall = true
                     noteDao.deleteSelectedNotes(syncedNotesIds)
-                    return ApiResponse.Success<Any>()
+                    return Resource.Success<Any>()
                 } catch (e: Exception) {
                     when (e) {
                         is HttpException -> {
@@ -138,22 +137,22 @@ class NoteRepository @Inject constructor(
                                 "com.vaultsec.vaultsec.repository.deleteSelectedNotes.HTTP",
                                 apiError.error
                             )
-                            return ApiResponse.Error<Any>(ErrorTypes.HTTP, apiError.error)
+                            return Resource.Error<Any>(ErrorTypes.HTTP, apiError.error)
                         }
                         else -> {
                             Log.e(
                                 "com.vaultsec.vaultsec.repository.deleteSelectedNotes.ELSE",
                                 e.localizedMessage!!
                             )
-                            return ApiResponse.Error<Any>(ErrorTypes.GENERAL)
+                            return Resource.Error<Any>(ErrorTypes.GENERAL)
                         }
                     }
                 }
             } else {
-                return ApiResponse.Success<Any>()
+                return Resource.Success<Any>()
             }
         } else {
-            return ApiResponse.Success<Any>()
+            return Resource.Success<Any>()
         }
     }
 

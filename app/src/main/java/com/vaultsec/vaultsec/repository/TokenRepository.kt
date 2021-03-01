@@ -7,9 +7,9 @@ import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.database.entity.Token
 import com.vaultsec.vaultsec.network.PasswordManagerApi
 import com.vaultsec.vaultsec.network.entity.ApiError
-import com.vaultsec.vaultsec.network.entity.ApiResponse
 import com.vaultsec.vaultsec.network.entity.ApiUser
-import com.vaultsec.vaultsec.network.entity.ErrorTypes
+import com.vaultsec.vaultsec.util.ErrorTypes
+import com.vaultsec.vaultsec.util.Resource
 import kotlinx.coroutines.flow.first
 import retrofit2.HttpException
 import java.net.ConnectException
@@ -41,19 +41,19 @@ class TokenRepository
         return tokenDao.getToken()
     }
 
-    suspend fun postRegister(user: ApiUser): ApiResponse<*> {
+    suspend fun postRegister(user: ApiUser): Resource<*> {
         try {
             val response = api.postRegister(user)
             try {
                 response.get("success").asJsonObject
-                ApiResponse.Success<Any>()
+                Resource.Success<Any>()
             } catch (e: ClassCastException) {
                 Log.e(
                     "com.vaultsec.vaultsec.repository.postRegister.CAST", e.toString()
                 )
-                ApiResponse.Success<Any>()
+                Resource.Success<Any>()
             }
-            return ApiResponse.Success<Any>()
+            return Resource.Success<Any>()
         } catch (e: Exception) {
             when (e) {
                 is HttpException -> {
@@ -64,63 +64,63 @@ class TokenRepository
                         ApiError::class.java
                     )
                     Log.e("com.vaultsec.vaultsec.repository.postRegister.HTTP", apiError.error)
-                    return ApiResponse.Error<Any>(ErrorTypes.HTTP, apiError.error)
+                    return Resource.Error<Any>(ErrorTypes.HTTP, apiError.error)
                 }
                 is SocketTimeoutException -> {
                     Log.e(
                         "com.vaultsec.vaultsec.repository.postRegister.TIMEOUT",
                         e.message.toString()
                     )
-                    return ApiResponse.Error<Any>(ErrorTypes.SOCKET_TIMEOUT)
+                    return Resource.Error<Any>(ErrorTypes.SOCKET_TIMEOUT)
                 }
                 is ConnectException -> {
                     Log.e(
                         "com.vaultsec.vaultsec.repository.postRegister.CONNECTION",
                         e.message.toString()
                     )
-                    return ApiResponse.Error<Any>(ErrorTypes.CONNECTION)
+                    return Resource.Error<Any>(ErrorTypes.CONNECTION)
                 }
                 is SocketException -> {
                     Log.e(
                         "com.vaultsec.vaultsec.repository.postRegister.SOCKET",
                         e.message.toString()
                     )
-                    return ApiResponse.Error<Any>(ErrorTypes.SOCKET)
+                    return Resource.Error<Any>(ErrorTypes.SOCKET)
                 }
                 else -> {
                     Log.e(
                         "com.vaultsec.vaultsec.repository.postRegister.GENERIC",
                         e.message.toString()
                     )
-                    return ApiResponse.Error<Any>(ErrorTypes.GENERAL)
+                    return Resource.Error<Any>(ErrorTypes.GENERAL)
                 }
             }
         }
     }
 
-    suspend fun postLogin(user: ApiUser): ApiResponse<*> {
+    suspend fun postLogin(user: ApiUser): Resource<*> {
         try {
             var loginResponse = api.postLogin(user)
             try {
                 loginResponse = loginResponse.get("success").asJsonObject
                 if (loginResponse.has("token")) {
                     val notesResponse = getUserNotes(loginResponse["token"].asString)
-                    if (notesResponse is ApiResponse.Success) {
+                    if (notesResponse is Resource.Success) {
                         val token = Token(loginResponse["token"].asString)
                         tokenDao.deleteAll()
                         tokenDao.insert(token)
                         noteDao.deleteAll()
                         noteDao.insertList(notesResponse.data as ArrayList<Note>)
-                        return ApiResponse.Success<Any>()
+                        return Resource.Success<Any>()
                     } else {
                         return notesResponse
                     }
                 }
             } catch (e: ClassCastException) {
                 Log.e("com.vaultsec.vaultsec.repository.postLogin.CAST", e.toString())
-                return ApiResponse.Success<Any>()
+                return Resource.Success<Any>()
             }
-            return ApiResponse.Success<Any>()
+            return Resource.Success<Any>()
         } catch (e: Exception) {
             when (e) {
                 is HttpException -> {
@@ -130,38 +130,38 @@ class TokenRepository
                         ApiError::class.java
                     )
                     Log.e("com.vaultsec.vaultsec.repository.postLogin.HTTP", apiError.error)
-                    return ApiResponse.Error<Any>(ErrorTypes.HTTP, apiError.error)
+                    return Resource.Error<Any>(ErrorTypes.HTTP, apiError.error)
                 }
                 is SocketTimeoutException -> {
                     Log.e(
                         "com.vaultsec.vaultsec.repository.postLogin.TIMEOUT",
                         e.message.toString()
                     )
-                    return ApiResponse.Error<Any>(ErrorTypes.SOCKET_TIMEOUT)
+                    return Resource.Error<Any>(ErrorTypes.SOCKET_TIMEOUT)
                 }
                 is ConnectException -> {
                     Log.e(
                         "com.vaultsec.vaultsec.repository.postLogin.CONNECTION",
                         e.message.toString()
                     )
-                    return ApiResponse.Error<Any>(ErrorTypes.CONNECTION)
+                    return Resource.Error<Any>(ErrorTypes.CONNECTION)
                 }
                 is SocketException -> {
                     Log.e("com.vaultsec.vaultsec.repository.postLogin.SOCKET", e.message.toString())
-                    return ApiResponse.Error<Any>(ErrorTypes.SOCKET)
+                    return Resource.Error<Any>(ErrorTypes.SOCKET)
                 }
                 else -> {
                     Log.e(
                         "com.vaultsec.vaultsec.repository.postLogin.GENERIC",
                         e.message.toString()
                     )
-                    return ApiResponse.Error<Any>(ErrorTypes.GENERAL)
+                    return Resource.Error<Any>(ErrorTypes.GENERAL)
                 }
             }
         }
     }
 
-    suspend fun postLogout(header: String): ApiResponse<*> {
+    suspend fun postLogout(header: String): Resource<*> {
         try {
             // Sync noted before logout
             val syncedButDeleted = noteDao.getSyncedDeletedNotesIds()
@@ -172,7 +172,7 @@ class TokenRepository
             api.postLogout(header)
             // Empty the database
             db.clearAllTables()
-            return ApiResponse.Success<Any>()
+            return Resource.Success<Any>()
         } catch (e: Exception) {
             when (e) {
                 is HttpException -> {
@@ -183,38 +183,38 @@ class TokenRepository
                         ApiError::class.java
                     )
                     Log.e("com.vaultsec.vaultsec.repository.postLogout.HTTP", apiError.error)
-                    return ApiResponse.Error<Any>(ErrorTypes.HTTP, apiError.error)
+                    return Resource.Error<Any>(ErrorTypes.HTTP, apiError.error)
                 }
                 is SocketTimeoutException -> {
                     Log.e(
                         "com.vaultsec.vaultsec.repository.postLogout.TIMEOUT",
                         e.message.toString()
                     )
-                    return ApiResponse.Error<Any>(ErrorTypes.SOCKET_TIMEOUT)
+                    return Resource.Error<Any>(ErrorTypes.SOCKET_TIMEOUT)
                 }
                 is ConnectException -> {
                     Log.e(
                         "com.vaultsec.vaultsec.repository.postLogout.CONNECTION",
                         e.message.toString()
                     )
-                    return ApiResponse.Error<Any>(ErrorTypes.CONNECTION)
+                    return Resource.Error<Any>(ErrorTypes.CONNECTION)
                 }
                 is SocketException -> {
                     Log.e("com.vaultsec.vaultsec.repository.postLogin.SOCKET", e.message.toString())
-                    return ApiResponse.Error<Any>(ErrorTypes.SOCKET)
+                    return Resource.Error<Any>(ErrorTypes.SOCKET)
                 }
                 else -> {
                     Log.e(
                         "com.vaultsec.vaultsec.repository.postLogout.GENERAL",
                         e.message.toString()
                     )
-                    return ApiResponse.Error<Any>(ErrorTypes.GENERAL)
+                    return Resource.Error<Any>(ErrorTypes.GENERAL)
                 }
             }
         }
     }
 
-    private suspend fun getUserNotes(token: String): ApiResponse<*> {
+    private suspend fun getUserNotes(token: String): Resource<*> {
         try {
             val notesResponse = api.getUserNotes("Bearer $token")
             val notes = arrayListOf<Note>()
@@ -232,7 +232,7 @@ class TokenRepository
                     )
                 )
             }
-            return ApiResponse.Success(notes)
+            return Resource.Success(notes)
         } catch (e: Exception) {
             when (e) {
                 is HttpException -> {
@@ -242,35 +242,35 @@ class TokenRepository
                         ApiError::class.java
                     )
                     Log.e("com.vaultsec.vaultsec.repository.getUserNotes.HTTP", apiError.error)
-                    return ApiResponse.Error<Any>(ErrorTypes.HTTP, apiError.error)
+                    return Resource.Error<Any>(ErrorTypes.HTTP, apiError.error)
                 }
                 is SocketTimeoutException -> {
                     Log.e(
                         "com.vaultsec.vaultsec.repository.getUserNotes.TIMEOUT",
                         e.message.toString()
                     )
-                    return ApiResponse.Error<Any>(ErrorTypes.SOCKET_TIMEOUT)
+                    return Resource.Error<Any>(ErrorTypes.SOCKET_TIMEOUT)
                 }
                 is ConnectException -> {
                     Log.e(
                         "com.vaultsec.vaultsec.repository.getUserNotes.CONNECTION",
                         e.message.toString()
                     )
-                    return ApiResponse.Error<Any>(ErrorTypes.CONNECTION)
+                    return Resource.Error<Any>(ErrorTypes.CONNECTION)
                 }
                 is SocketException -> {
                     Log.e(
                         "com.vaultsec.vaultsec.repository.getUserNotes.SOCKET",
                         e.message.toString()
                     )
-                    return ApiResponse.Error<Any>(ErrorTypes.SOCKET)
+                    return Resource.Error<Any>(ErrorTypes.SOCKET)
                 }
                 else -> {
                     Log.e(
                         "com.vaultsec.vaultsec.repository.getUserNotes.GENERAL",
                         e.message.toString()
                     )
-                    return ApiResponse.Error<Any>(ErrorTypes.GENERAL)
+                    return Resource.Error<Any>(ErrorTypes.GENERAL)
                 }
             }
         }

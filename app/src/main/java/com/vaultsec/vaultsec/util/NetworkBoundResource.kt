@@ -35,7 +35,7 @@ inline fun <ResultType, RequestType> networkBoundResource(
             Log.e("onFetchFailed", "")
             onFetchFailed()
             loading.cancel()
-            query().collect { send(Resource.Error(e, it)) }
+            query().collect { send(Resource.Error(type = ErrorTypes.GENERAL, data = it)) }
         }
     } else {
 //        loading.cancel()

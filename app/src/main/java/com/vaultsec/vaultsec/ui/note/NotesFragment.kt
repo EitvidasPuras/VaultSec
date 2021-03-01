@@ -26,6 +26,7 @@ import com.vaultsec.vaultsec.databinding.FragmentNotesBinding
 import com.vaultsec.vaultsec.util.*
 import com.vaultsec.vaultsec.viewmodel.NoteViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -171,8 +172,11 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
             }
             binding.swiperefreshlayout.isRefreshing = it is Resource.Loading
 
-            binding.recyclerviewNotes.isVisible = !it.data.isNullOrEmpty()
-            binding.textviewEmptyNotes.isVisible = it.data.isNullOrEmpty()
+            viewLifecycleOwner.lifecycleScope.launch {
+                delay(50)
+                binding.recyclerviewNotes.isVisible = !it.data.isNullOrEmpty()
+                binding.textviewEmptyNotes.isVisible = it.data.isNullOrEmpty()
+            }
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {

@@ -8,10 +8,10 @@ import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.PasswordManagerPreferences
 import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.entity.Token
-import com.vaultsec.vaultsec.network.entity.ApiResponse
 import com.vaultsec.vaultsec.network.entity.ApiUser
-import com.vaultsec.vaultsec.network.entity.ErrorTypes
 import com.vaultsec.vaultsec.repository.TokenRepository
+import com.vaultsec.vaultsec.util.ErrorTypes
+import com.vaultsec.vaultsec.util.Resource
 import com.vaultsec.vaultsec.util.hashString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -74,9 +74,9 @@ class TokenViewModel
                     email = emailInput,
                     password = hashString(passInput)
                 )
-                val response: ApiResponse<*> = tokenRepository.postLogin(user)
+                val response: Resource<*> = tokenRepository.postLogin(user)
                 tokenEventChannel.send(TokenEvent.ShowProgressBar(false))
-                if (response is ApiResponse.Success) {
+                if (response is Resource.Success) {
                     tokenEventChannel.send(TokenEvent.SuccessfulLogin)
                 } else {
                     when (response.type) {
@@ -106,7 +106,7 @@ class TokenViewModel
         }
     }
 
-    private fun whereToDisplayHttpError(response: ApiResponse<*>): Int {
+    private fun whereToDisplayHttpError(response: Resource<*>): Int {
         return when {
             response.message!!.contains("first name", ignoreCase = true) -> {
                 HTTP_FIRST_NAME_ERROR
@@ -182,9 +182,9 @@ class TokenViewModel
                     password = hashString(passwordInput),
                     password_confirmation = hashString(passwordRetypeInput)
                 )
-                val response: ApiResponse<*> = tokenRepository.postRegister(user)
+                val response: Resource<*> = tokenRepository.postRegister(user)
                 tokenEventChannel.send(TokenEvent.ShowProgressBar(false))
-                if (response is ApiResponse.Success) {
+                if (response is Resource.Success) {
                     tokenEventChannel.send(TokenEvent.SuccessfulRegistration)
                 } else {
                     when (response.type) {
@@ -343,9 +343,9 @@ class TokenViewModel
 
     fun onLogoutClick() = viewModelScope.launch(Dispatchers.IO) {
         tokenEventChannel.send(TokenEvent.ShowProgressBar(true))
-        val response: ApiResponse<*> = tokenRepository.postLogout("Bearer ${getToken().token}")
+        val response: Resource<*> = tokenRepository.postLogout("Bearer ${getToken().token}")
         tokenEventChannel.send(TokenEvent.ShowProgressBar(false))
-        if (response is ApiResponse.Success) {
+        if (response is Resource.Success) {
             prefsManager.updateSortOrder(SortOrder.BY_TITLE) // Reset to default
             prefsManager.updateSortDirection(true) // Reset to default
             tokenEventChannel.send(TokenEvent.SuccessfulLogout)
