@@ -118,7 +118,9 @@ class AddEditNoteViewModel
     }
 
     private fun createNote(newNote: Note) = viewModelScope.launch(Dispatchers.IO) {
+        addEditNoteEventChannel.send(AddEditNoteEvent.DoShowLoading(true))
         noteRepository.insert(newNote)
+        addEditNoteEventChannel.send(AddEditNoteEvent.DoShowLoading(false))
         addEditNoteEventChannel.send(AddEditNoteEvent.NavigateBackWithResult(ADD_NOTE_RESULT_OK))
     }
 
@@ -131,5 +133,6 @@ class AddEditNoteViewModel
         data class ShowInvalidInputMessage(val message: Int) : AddEditNoteEvent()
         data class NavigateBackWithResult(val result: Int) : AddEditNoteEvent()
         object NavigateBackWithoutResult : AddEditNoteEvent()
+        data class DoShowLoading(val visible: Boolean) : AddEditNoteEvent()
     }
 }

@@ -24,7 +24,45 @@ class NoteRepository @Inject constructor(
     private var didPerformDeletionAPICall: Boolean = false
 
     suspend fun insert(note: Note) {
-        noteDao.insert(note)
+        if (isNetworkAvailable) {
+            try {
+                val id = api.postSingleNote(note, "Bearer ${tokenRepository.getToken().token}")
+                val newNote = note.copy(
+                    title = note.title,
+                    text = note.text,
+                    color = note.color,
+                    fontSize = note.fontSize,
+                    createdAt = note.createdAt,
+                    updatedAt = note.updatedAt,
+                    isSynced = true,
+                    id = id
+                )
+                noteDao.insert(newNote)
+            } catch (e: Exception) {
+                when (e) {
+                    is HttpException -> {
+                        val errorBody = e.response()?.errorBody()
+                        Log.e("errorBody", errorBody!!.string())
+                        val apiError: ApiError = Gson().fromJson(
+                            errorBody!!.charStream(),
+                            ApiError::class.java
+                        )
+                        Log.e(
+                            "com.vaultsec.vaultsec.repository.NoteRepository.insert.HTTP",
+                            apiError.error
+                        )
+                    }
+                    else -> {
+                        Log.e(
+                            "com.vaultsec.vaultsec.repository.NoteRepository.insert.ELSE",
+                            e.localizedMessage!!
+                        )
+                    }
+                }
+            }
+        } else {
+            noteDao.insert(note)
+        }
     }
 
     suspend fun delete(note: Note) {
@@ -134,14 +172,14 @@ class NoteRepository @Inject constructor(
                                 ApiError::class.java
                             )
                             Log.e(
-                                "com.vaultsec.vaultsec.repository.deleteSelectedNotes.HTTP",
+                                "com.vaultsec.vaultsec.repository.NoteRepository.deleteSelectedNotes.HTTP",
                                 apiError.error
                             )
                             return Resource.Error<Any>(ErrorTypes.HTTP, apiError.error)
                         }
                         else -> {
                             Log.e(
-                                "com.vaultsec.vaultsec.repository.deleteSelectedNotes.ELSE",
+                                "com.vaultsec.vaultsec.repository.NoteRepository.deleteSelectedNotes.ELSE",
                                 e.localizedMessage!!
                             )
                             return Resource.Error<Any>(ErrorTypes.GENERAL)
@@ -215,13 +253,13 @@ class NoteRepository @Inject constructor(
                                     ApiError::class.java
                                 )
                                 Log.e(
-                                    "com.vaultsec.vaultsec.repository.undoDeletedNotes.HTTP",
+                                    "com.vaultsec.vaultsec.repository.NoteRepository.undoDeletedNotes.HTTP",
                                     apiError.error
                                 )
                             }
                             else -> {
                                 Log.e(
-                                    "com.vaultsec.vaultsec.repository.undoDeletedNotes.ELSE",
+                                    "com.vaultsec.vaultsec.repository.NoteRepository.undoDeletedNotes.ELSE",
                                     e.localizedMessage!!
                                 )
                             }

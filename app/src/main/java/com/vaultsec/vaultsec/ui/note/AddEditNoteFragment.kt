@@ -8,6 +8,7 @@ import android.view.*
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
@@ -20,6 +21,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.databinding.FragmentAddEditNoteBinding
 import com.vaultsec.vaultsec.util.hideKeyboard
+import com.vaultsec.vaultsec.util.setProgressBarDrawable
 import com.vaultsec.vaultsec.util.showKeyboard
 import com.vaultsec.vaultsec.viewmodel.AddEditNoteViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -49,6 +51,7 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setProgressBarDrawable(binding.progressbarAddEditNote)
 
         binding.apply {
             textviewDateEdited.text = getString(
@@ -327,6 +330,10 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
                             is AddEditNoteViewModel.AddEditNoteEvent.NavigateBackWithoutResult -> {
                                 hideKeyboard(requireActivity())
                                 findNavController().popBackStack()
+                            }
+                            is AddEditNoteViewModel.AddEditNoteEvent.DoShowLoading -> {
+                                hideKeyboard(requireActivity())
+                                binding.progressbarAddEditNote.isVisible = event.visible
                             }
                         }
                     }

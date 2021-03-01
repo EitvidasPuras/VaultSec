@@ -38,4 +38,10 @@ interface PasswordManagerApi {
         @Body syncedNotesIds: ArrayList<Int>,
         @Header("Authorization") header: String
     ): JsonObject
+
+    @POST("api/notes/singular")
+    suspend fun postSingleNote(
+        @Body note: Note,
+        @Header("Authorization") header: String
+    ): Int
 }

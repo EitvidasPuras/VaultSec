@@ -52,10 +52,6 @@ class NoteViewModel
 
     private var deletionResponse: Resource<*> = Resource.Loading<Any>()
 
-    fun insert(note: Note) = viewModelScope.launch(Dispatchers.IO) {
-        noteRepository.insert(note)
-    }
-
     /*
     * Both of the solutions below work fine.
     * TODO: Test for performance

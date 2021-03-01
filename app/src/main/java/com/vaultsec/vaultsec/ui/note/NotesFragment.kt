@@ -216,7 +216,12 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
                         findNavController().navigate(action)
                     }
                     is NoteViewModel.NotesEvent.ShowNoteSavedConfirmationMessage -> {
-                        Snackbar.make(requireView(), event.message, Snackbar.LENGTH_SHORT).show()
+                        /*
+                        * According to Google Material Design guidelines that's how it should be
+                        * */
+                        Snackbar.make(requireView(), event.message, Snackbar.LENGTH_SHORT)
+                            .setAnchorView(binding.fabNotes)
+                            .show()
                     }
                     is NoteViewModel.NotesEvent.DoShowRefreshing -> {
                         binding.swiperefreshlayout.isRefreshing = event.visible
