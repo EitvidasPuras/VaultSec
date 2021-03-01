@@ -59,6 +59,7 @@ object AppModule {
         val gson = GsonBuilder()
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
             .setExclusionStrategies(AnnotationExclusionStrategy())
+            .serializeNulls()
             .create()
         return Retrofit.Builder()
             .client(okHttpClient)

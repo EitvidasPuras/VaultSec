@@ -6,16 +6,12 @@ import android.app.Activity
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ProgressBar
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.vaultsec.vaultsec.R
-import com.vaultsec.vaultsec.ui.StartActivity
-import kotlinx.android.synthetic.main.activity_bottom_navigation.*
-import kotlinx.android.synthetic.main.activity_start.*
 import java.security.MessageDigest
 
 //private val HEX_CHARS = "0123456789abcdef".toCharArray()
@@ -28,6 +24,18 @@ fun hideKeyboard(activity: Activity) {
         inputManager.hideSoftInputFromWindow(
             activity.currentFocus?.windowToken,
             InputMethodManager.HIDE_NOT_ALWAYS
+        )
+    }
+}
+
+fun showKeyboard(activity: Activity) {
+    val inputManager =
+        activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+
+    activity.currentFocus?.let {
+        inputManager.showSoftInput(
+            activity.currentFocus,
+            InputMethodManager.SHOW_IMPLICIT
         )
     }
 }

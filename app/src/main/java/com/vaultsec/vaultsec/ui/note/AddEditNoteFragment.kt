@@ -20,6 +20,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.databinding.FragmentAddEditNoteBinding
 import com.vaultsec.vaultsec.util.hideKeyboard
+import com.vaultsec.vaultsec.util.showKeyboard
 import com.vaultsec.vaultsec.viewmodel.AddEditNoteViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
@@ -214,6 +215,12 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
         binding.textfieldNoteText.clearFocus()
     }
 
+    override fun onStart() {
+        super.onStart()
+        binding.textfieldNoteText.requestFocus()
+        showKeyboard(requireActivity())
+    }
+
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
         /*
@@ -278,7 +285,9 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
         return when (item.itemId) {
             R.id.item_save_note -> {
                 addEditNoteViewModel.noteTitle =
-                    if (binding.textfieldNoteTitle.text.toString().trim().isBlank()) null else binding.textfieldNoteTitle.text.toString().trim()
+                    if (binding.textfieldNoteTitle.text.toString().trim()
+                            .isBlank()
+                    ) null else binding.textfieldNoteTitle.text.toString().trim()
                 addEditNoteViewModel.noteText = binding.textfieldNoteText.text.toString()
                 addEditNoteViewModel.noteFontSize =
                     (binding.textfieldNoteText.textSize / resources.displayMetrics.scaledDensity).toInt()
@@ -323,7 +332,6 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
                 true
             }
             R.id.item_customize -> {
-                // TODO: 2021-02-02 Maybe set the focus back after confirming / canceling
                 hideKeyboard(requireActivity())
                 binding.textfieldNoteText.clearFocus()
                 binding.textfieldNoteTitle.clearFocus()

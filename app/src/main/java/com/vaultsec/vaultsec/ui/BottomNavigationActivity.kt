@@ -66,6 +66,7 @@ class BottomNavigationActivity : AppCompatActivity() {
 //        NavigationUI.setupWithNavController(bottomNavigationView, navController)
         setupActionBarWithNavController(navController, appBarConfiguration)
         bottomNavigationView.setupWithNavController(navController)
+        bottomNavigationView.setOnNavigationItemReselectedListener {}
 
         playOpeningAnimation(view)
 
@@ -87,6 +88,10 @@ class BottomNavigationActivity : AppCompatActivity() {
                             .show()
                     }
                     TokenViewModel.TokenEvent.SuccessfulLogout -> {
+                        /*
+                        * To prevent the empty recycler view message from briefly flashing on the screen
+                        * */
+                        binding.fragmentContainerView.visibility = View.INVISIBLE
                         openStartActivity()
                     }
                     is TokenViewModel.TokenEvent.ShowProgressBar -> {
@@ -128,6 +133,7 @@ class BottomNavigationActivity : AppCompatActivity() {
             }
         })
     }
+
 
     // TODO: Implement soft logout?
 //    override fun onBackPressed() {

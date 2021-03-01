@@ -2,9 +2,7 @@ package com.vaultsec.vaultsec.viewmodel
 
 import android.util.Patterns
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.PasswordManagerPreferences

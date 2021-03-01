@@ -64,7 +64,6 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
         playSlidingAnimation(true, requireActivity())
-        NetworkMonitor(requireActivity()).startNetworkCallback()
 
         val mainKey = MasterKey.Builder(requireContext())
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
@@ -80,7 +79,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
                 adapter = noteAdapter
                 layoutManager = layoutM
                 setHasFixedSize(true)
-                itemAnimator?.changeDuration = 0
+//                itemAnimator?.changeDuration = 0
                 addItemDecoration(NoteOffsetDecoration(resources.getInteger(R.integer.staggered_grid_layout_offset_spacing)))
                 addOnScrollListener(object : RecyclerView.OnScrollListener() {
                     override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
@@ -164,23 +163,16 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
             * causes items to be displayed misaligned.
             * The code below submits null as a list forcing the recycler to redraw all of the items
             * */
-
-            Log.e("Are lists the same?", "${it.data?.equals(noteAdapter.currentList)}")
             if (it.data?.equals(noteAdapter.currentList) == false) {
                 noteAdapter.submitList(null)
                 noteAdapter.submitList(it.data) {
                     binding.recyclerviewNotes.scheduleLayoutAnimation()
                 }
             }
-            binding.swiperefreshlayout.isRefreshing = it is Holder.Loading
+            binding.swiperefreshlayout.isRefreshing = it is Resource.Loading
 
-            // TODO: 2021-02-17 Fix the empty notes message flash on logout
             binding.recyclerviewNotes.isVisible = !it.data.isNullOrEmpty()
             binding.textviewEmptyNotes.isVisible = it.data.isNullOrEmpty()
-//            viewLifecycleOwner.lifecycleScope.launch {
-//                delay(50L)
-//                noteViewModel.onDisplayEmptyRecyclerViewMessage()
-//            }
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
@@ -222,19 +214,17 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
                     is NoteViewModel.NotesEvent.ShowNoteSavedConfirmationMessage -> {
                         Snackbar.make(requireView(), event.message, Snackbar.LENGTH_SHORT).show()
                     }
-                    is NoteViewModel.NotesEvent.ShowEmptyRecyclerViewMessage -> {
-                        binding.textviewEmptyNotes.visibility = View.VISIBLE
-                        binding.recyclerviewNotes.visibility = View.GONE
+                    is NoteViewModel.NotesEvent.DoShowRefreshing -> {
+                        binding.swiperefreshlayout.isRefreshing = event.visible
                     }
-                    is NoteViewModel.NotesEvent.HideEmptyRecyclerViewMessage -> {
-                        binding.textviewEmptyNotes.visibility = View.GONE
-                        binding.recyclerviewNotes.visibility = View.VISIBLE
+                    is NoteViewModel.NotesEvent.DoShowEmptyRecyclerViewMessage -> {
+                        binding.textviewEmptyNotes.isVisible = event.visible
+                        binding.recyclerviewNotes.isVisible = !event.visible
                     }
                 }
             }
         }
 
-        noteViewModel.onDisplayEmptyRecyclerViewMessage()
     }
 
     private fun test101(text: String, password: String) {
@@ -327,7 +317,6 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
             noteViewModel.onMultiSelectActionModeClose()
             tracker?.clearSelection()
             mActionMode = null
-            noteViewModel.onDisplayEmptyRecyclerViewMessage()
         }
     }
 
@@ -419,21 +408,31 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
 
     override fun onResume() {
         super.onResume()
+        Log.e("onResume", "onResume")
 //        test101("textToEncrypt", "password123")
 //        Log.e("hashString", hashString("masterpasswordamazing"))
 //        Log.e("hashString length", hashString("masterpasswordamazing").length.toString())
-        noteViewModel.onDisplayEmptyRecyclerViewMessage()
+//        noteViewModel.onManualNoteSync()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         mActionMode?.finish()
+        binding.recyclerviewNotes.adapter = null
         _binding = null
     }
 
     override fun onStart() {
         super.onStart()
-        Log.e("NetworkMonitor START", "$isNetworkConnected")
+        NetworkUtil().checkNetworkInfo(requireContext(), object : OnConnectionStatusChange {
+            override fun onChange(isAvailable: Boolean) {
+                if (isAvailable) {
+                    Log.e("$isNetworkAvailable", "AVAILABLE")
+                } else {
+                    Log.e("$isNetworkAvailable", "UNAVAILABLE")
+                }
+            }
+        })
         Log.e("hasInternetConnection START", "${hasInternetConnection(requireActivity())}")
         noteViewModel.onStart()
     }

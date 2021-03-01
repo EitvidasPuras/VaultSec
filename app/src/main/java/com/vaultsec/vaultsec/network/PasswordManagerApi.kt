@@ -4,10 +4,7 @@ import com.google.gson.JsonObject
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.network.entity.ApiNote
 import com.vaultsec.vaultsec.network.entity.ApiUser
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.Header
-import retrofit2.http.POST
+import retrofit2.http.*
 
 interface PasswordManagerApi {
     @POST("api/register")
@@ -20,8 +17,14 @@ interface PasswordManagerApi {
     suspend fun postLogout(@Header("Authorization") header: String): JsonObject
 
     @POST("api/notes")
-    suspend fun postUnsyncedNotes(
-        @Body unsyncedNotes: List<Note>,
+    suspend fun postStoreNotes(
+        @Body notes: List<Note>,
+        @Header("Authorization") header: String
+    ): ArrayList<ApiNote>
+
+    @POST("api/notes/recover")
+    suspend fun postRecoverNotes(
+        @Body notes: List<Note>,
         @Header("Authorization") header: String
     ): ArrayList<ApiNote>
 
@@ -29,4 +32,10 @@ interface PasswordManagerApi {
     suspend fun getUserNotes(
         @Header("Authorization") header: String
     ): ArrayList<ApiNote>
+
+    @HTTP(method = "DELETE", hasBody = true, path = "api/notes/delete")
+    suspend fun deleteNotes(
+        @Body syncedNotesIds: ArrayList<Int>,
+        @Header("Authorization") header: String
+    ): JsonObject
 }

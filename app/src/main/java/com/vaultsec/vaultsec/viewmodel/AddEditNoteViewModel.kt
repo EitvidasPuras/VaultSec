@@ -100,7 +100,7 @@ class AddEditNoteViewModel
                     fontSize = noteFontSize,
                     createdAt = noteDateCreated,
                     updatedAt = noteDateUpdated,
-                    synced = false
+                    isSynced = false
                 )
                 updateNote(updatedNote)
             }

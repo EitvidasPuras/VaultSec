@@ -75,7 +75,7 @@ class NoteAdapter(
                 holder.textViewTitle.text = currentNote.title
                 holder.textViewText.text = currentNote.text
                 holder.textViewText.textSize = currentNote.fontSize.toFloat()
-                holder.textViewSynced.text = "Synced : ${currentNote.synced}"
+                holder.textViewSynced.text = "Synced : ${currentNote.isSynced}"
 
                 holder.container.setCardBackgroundColor(Color.parseColor(currentNote.color))
                 if (holder.textViewTitle.text.isNullOrEmpty()) {
@@ -88,7 +88,7 @@ class NoteAdapter(
                 holder.textViewTitle.text = currentNote.title
                 holder.textViewText.text = currentNote.text
                 holder.textViewText.textSize = currentNote.fontSize.toFloat()
-                holder.textViewSynced.text = "Synced : ${currentNote.synced}"
+                holder.textViewSynced.text = "Synced : ${currentNote.isSynced}"
 
                 holder.container.setCardBackgroundColor(Color.parseColor(currentNote.color))
                 if (holder.textViewTitle.text.isNullOrEmpty()) {

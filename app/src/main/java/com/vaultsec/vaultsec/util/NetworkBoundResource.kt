@@ -17,29 +17,28 @@ inline fun <ResultType, RequestType> networkBoundResource(
     crossinline onFetchFailed: () -> Unit = { }
 ) = channelFlow {
     val data = query().first()
-    Log.e("data", "$data")
-
+//    Log.e("data", "$data")
 
     if (shouldFetch(data)) {
         val loading = launch {
-            query().collect { send(Holder.Loading(it)) }
+            query().collect { send(Resource.Loading(it)) }
         }
 
         try {
-            delay(500)
+            delay(300)
             saveFetchResult(fetch())
             onFetchSuccess()
             loading.cancel()
             Log.e("onFetchSuccess", "")
-            query().collect { send(Holder.Success(it)) }
+            query().collect { send(Resource.Success(it)) }
         } catch (e: Exception) {
-            onFetchFailed()
             Log.e("onFetchFailed", "")
+            onFetchFailed()
             loading.cancel()
-            query().collect { send(Holder.Error(e, it)) }
+            query().collect { send(Resource.Error(e, it)) }
         }
     } else {
 //        loading.cancel()
-        query().collect { send(Holder.Success(it)) }
+        query().collect { send(Resource.Success(it)) }
     }
 }

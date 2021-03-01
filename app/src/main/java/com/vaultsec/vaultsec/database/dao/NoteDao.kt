@@ -3,7 +3,6 @@ package com.vaultsec.vaultsec.database.dao
 import androidx.room.*
 import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.entity.Note
-import com.vaultsec.vaultsec.network.entity.ApiNote
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -30,6 +29,9 @@ interface NoteDao {
     @Query("""SELECT * FROM vault_notes WHERE synced = 0""")
     fun getUnsyncedNotes(): Flow<List<Note>>
 
+    @Query("""SELECT id FROM vault_notes WHERE synced = 1 AND deleted = 1""")
+    fun getSyncedDeletedNotesIds(): Flow<List<Int>>
+
     fun getNotes(searchQuery: String, sortOrder: SortOrder, isAsc: Boolean): Flow<List<Note>> =
         when (sortOrder) {
             SortOrder.BY_TITLE -> getNotesSortedByTitle(searchQuery, isAsc)
@@ -45,37 +47,37 @@ interface NoteDao {
     * the text or title of the note would have to end with the search query
     * */
     @Query(
-        """SELECT * FROM vault_notes WHERE title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%' ORDER BY
+        """SELECT * FROM vault_notes WHERE deleted = 0 AND (title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%') ORDER BY
             CASE WHEN :isAsc = 1 THEN title END ASC,
-            CASE WHEN :isAsc = 1 AND title = "" THEN text END ASC,
+            CASE WHEN :isAsc = 1 AND title IS NULL THEN text END ASC,
             CASE WHEN :isAsc = 0 THEN title END DESC,
-            CASE WHEN :isAsc = 0 AND title = "" THEN text END DESC"""
+            CASE WHEN :isAsc = 0 AND title IS NULL THEN text END DESC"""
     )
     fun getNotesSortedByTitle(searchQuery: String, isAsc: Boolean): Flow<List<Note>>
 
     @Query(
-        """SELECT * FROM vault_notes WHERE title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%' ORDER BY
+        """SELECT * FROM vault_notes WHERE deleted = 0 AND (title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%') ORDER BY
             CASE WHEN :isAsc = 1 THEN created_at_local END ASC,
             CASE WHEN :isAsc = 0 THEN created_at_local END DESC """
     )
     fun getNotesSortedByDateCreated(searchQuery: String, isAsc: Boolean): Flow<List<Note>>
 
     @Query(
-        """SELECT * FROM vault_notes WHERE title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%' ORDER BY
+        """SELECT * FROM vault_notes WHERE deleted = 0 AND (title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%') ORDER BY
             CASE WHEN :isAsc = 1 THEN updated_at_local END ASC,
             CASE WHEN :isAsc = 0 THEN updated_at_local END DESC """
     )
     fun getNotesSortedByDateUpdated(searchQuery: String, isAsc: Boolean): Flow<List<Note>>
 
     @Query(
-        """SELECT * FROM vault_notes WHERE title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%' ORDER BY
+        """SELECT * FROM vault_notes WHERE deleted = 0 AND (title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%') ORDER BY
             CASE WHEN :isAsc = 1 THEN color END ASC,
             CASE WHEN :isAsc = 0 THEN color END DESC """
     )
     fun getNotesSortedByColor(searchQuery: String, isAsc: Boolean): Flow<List<Note>>
 
     @Query(
-        """SELECT * FROM vault_notes WHERE title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%' ORDER BY
+        """SELECT * FROM vault_notes WHERE deleted = 0 AND (title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%') ORDER BY
             CASE WHEN :isAsc = 1 THEN font_size END ASC,
             CASE WHEN :isAsc = 0 THEN font_size END DESC """
     )

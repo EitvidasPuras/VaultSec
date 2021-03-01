@@ -28,7 +28,7 @@ class StartActivity : AppCompatActivity() {
     private val tokenViewModel: TokenViewModel by viewModels()
 
     companion object {
-        const val EXTRA_LOGOUT = "com.vaultsec.vaultsec.EXTRA_LOGOUT"
+        const val EXTRA_LOGOUT = "com.vaultsec.vaultsec.ui.EXTRA_LOGOUT"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

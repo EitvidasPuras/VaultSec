@@ -2,19 +2,16 @@ package com.vaultsec.vaultsec.repository
 
 import android.util.Log
 import com.google.gson.Gson
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
-import com.google.gson.JsonPrimitive
 import com.vaultsec.vaultsec.database.PasswordManagerDatabase
-import com.vaultsec.vaultsec.database.dao.TokenDao
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.database.entity.Token
 import com.vaultsec.vaultsec.network.PasswordManagerApi
-import com.vaultsec.vaultsec.network.entity.*
-import com.vaultsec.vaultsec.util.Holder
+import com.vaultsec.vaultsec.network.entity.ApiError
+import com.vaultsec.vaultsec.network.entity.ApiResponse
+import com.vaultsec.vaultsec.network.entity.ApiUser
+import com.vaultsec.vaultsec.network.entity.ErrorTypes
 import kotlinx.coroutines.flow.first
 import retrofit2.HttpException
-import java.lang.IllegalStateException
 import java.net.ConnectException
 import java.net.SocketException
 import java.net.SocketTimeoutException
@@ -108,7 +105,7 @@ class TokenRepository
                 loginResponse = loginResponse.get("success").asJsonObject
                 if (loginResponse.has("token")) {
                     val notesResponse = getUserNotes(loginResponse["token"].asString)
-                    if (notesResponse is ApiResponse.Success){
+                    if (notesResponse is ApiResponse.Success) {
                         val token = Token(loginResponse["token"].asString)
                         tokenDao.deleteAll()
                         tokenDao.insert(token)
@@ -167,8 +164,10 @@ class TokenRepository
     suspend fun postLogout(header: String): ApiResponse<*> {
         try {
             // Sync noted before logout
+            val syncedButDeleted = noteDao.getSyncedDeletedNotesIds()
             val unsyncedNotes = noteDao.getUnsyncedNotes()
-            api.postUnsyncedNotes(unsyncedNotes.first(), header)
+            api.deleteNotes(syncedButDeleted.first() as ArrayList<Int>, header)
+            api.postStoreNotes(unsyncedNotes.first(), header)
             // Actually logout
             api.postLogout(header)
             // Empty the database
@@ -178,6 +177,7 @@ class TokenRepository
             when (e) {
                 is HttpException -> {
                     val errorBody = e.response()?.errorBody()
+                    Log.e("errorBody", errorBody!!.string())
                     val apiError: ApiError = Gson().fromJson(
                         errorBody!!.charStream(),
                         ApiError::class.java
@@ -186,11 +186,17 @@ class TokenRepository
                     return ApiResponse.Error<Any>(ErrorTypes.HTTP, apiError.error)
                 }
                 is SocketTimeoutException -> {
-                    Log.e("com.vaultsec.vaultsec.repository.postLogout.TIMEOUT", e.message.toString())
+                    Log.e(
+                        "com.vaultsec.vaultsec.repository.postLogout.TIMEOUT",
+                        e.message.toString()
+                    )
                     return ApiResponse.Error<Any>(ErrorTypes.SOCKET_TIMEOUT)
                 }
                 is ConnectException -> {
-                    Log.e("com.vaultsec.vaultsec.repository.postLogout.CONNECTION", e.message.toString())
+                    Log.e(
+                        "com.vaultsec.vaultsec.repository.postLogout.CONNECTION",
+                        e.message.toString()
+                    )
                     return ApiResponse.Error<Any>(ErrorTypes.CONNECTION)
                 }
                 is SocketException -> {
@@ -198,7 +204,10 @@ class TokenRepository
                     return ApiResponse.Error<Any>(ErrorTypes.SOCKET)
                 }
                 else -> {
-                    Log.e("com.vaultsec.vaultsec.repository.postLogout.GENERAL", e.message.toString())
+                    Log.e(
+                        "com.vaultsec.vaultsec.repository.postLogout.GENERAL",
+                        e.message.toString()
+                    )
                     return ApiResponse.Error<Any>(ErrorTypes.GENERAL)
                 }
             }
@@ -218,7 +227,7 @@ class TokenRepository
                         fontSize = it.font_size,
                         createdAt = it.created_at_device,
                         updatedAt = it.updated_at_device,
-                        synced = true,
+                        isSynced = true,
                         id = it.id
                     )
                 )
@@ -236,19 +245,31 @@ class TokenRepository
                     return ApiResponse.Error<Any>(ErrorTypes.HTTP, apiError.error)
                 }
                 is SocketTimeoutException -> {
-                    Log.e("com.vaultsec.vaultsec.repository.getUserNotes.TIMEOUT", e.message.toString())
+                    Log.e(
+                        "com.vaultsec.vaultsec.repository.getUserNotes.TIMEOUT",
+                        e.message.toString()
+                    )
                     return ApiResponse.Error<Any>(ErrorTypes.SOCKET_TIMEOUT)
                 }
                 is ConnectException -> {
-                    Log.e("com.vaultsec.vaultsec.repository.getUserNotes.CONNECTION", e.message.toString())
+                    Log.e(
+                        "com.vaultsec.vaultsec.repository.getUserNotes.CONNECTION",
+                        e.message.toString()
+                    )
                     return ApiResponse.Error<Any>(ErrorTypes.CONNECTION)
                 }
                 is SocketException -> {
-                    Log.e("com.vaultsec.vaultsec.repository.getUserNotes.SOCKET", e.message.toString())
+                    Log.e(
+                        "com.vaultsec.vaultsec.repository.getUserNotes.SOCKET",
+                        e.message.toString()
+                    )
                     return ApiResponse.Error<Any>(ErrorTypes.SOCKET)
                 }
                 else -> {
-                    Log.e("com.vaultsec.vaultsec.repository.getUserNotes.GENERAL", e.message.toString())
+                    Log.e(
+                        "com.vaultsec.vaultsec.repository.getUserNotes.GENERAL",
+                        e.message.toString()
+                    )
                     return ApiResponse.Error<Any>(ErrorTypes.GENERAL)
                 }
             }
