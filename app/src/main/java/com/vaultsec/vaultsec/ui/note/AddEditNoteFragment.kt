@@ -217,8 +217,10 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
 
     override fun onStart() {
         super.onStart()
-        binding.textfieldNoteText.requestFocus()
-        showKeyboard(requireActivity())
+        if (addEditNoteViewModel.note == null) {
+            binding.textfieldNoteText.requestFocus()
+            showKeyboard(requireActivity())
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
