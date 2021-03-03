@@ -68,7 +68,11 @@ class NoteViewModel
                 searchQuery = query,
                 sortOrder = prefs.sortOrder,
                 isAsc = prefs.isAsc,
-                onFetchComplete = {}
+                onFetchComplete = {
+                    viewModelScope.launch(Dispatchers.IO) {
+                        refreshTriggerChannel.send(Refresh.DIDNT)
+                    }
+                }
             )
         }
     }.asLiveData()

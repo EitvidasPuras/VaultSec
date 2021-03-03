@@ -39,6 +39,7 @@ class NoteRepository @Inject constructor(
                 )
                 noteDao.insert(newNote)
             } catch (e: Exception) {
+                noteDao.insert(note)
                 when (e) {
                     is HttpException -> {
                         val errorBody = e.response()?.errorBody()
