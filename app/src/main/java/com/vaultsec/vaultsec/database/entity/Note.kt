@@ -23,9 +23,7 @@ data class Note(
     @ColumnInfo(name = "created_at_local") @TypeConverters(DateConverter::class) val createdAt: Timestamp,
     @SerializedName("updated_at_device")
     @ColumnInfo(name = "updated_at_local") @TypeConverters(DateConverter::class) val updatedAt: Timestamp,
-    @ColumnInfo(name = "synced") @Exclude var isSynced: Boolean = false,
-    @ColumnInfo(name = "deleted") @Exclude var isDeleted: Boolean = false,
-//    @ColumnInfo val idS: Int = 0,
+    @ColumnInfo(name = "sync_state") @Exclude var syncState: Int = 1,
     @ColumnInfo(index = true)
-    @PrimaryKey(autoGenerate = true) @Exclude val id: Int = 0
+    @PrimaryKey(autoGenerate = true) val id: Int = 0
 ) : Parcelable

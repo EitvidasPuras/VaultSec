@@ -44,4 +44,11 @@ interface PasswordManagerApi {
         @Body note: Note,
         @Header("Authorization") header: String
     ): Int
+
+    @PUT("api/notes/{id}")
+    suspend fun putNoteUpdate(
+        @Path("id") id: Int,
+        @Body note: Note,
+        @Header("Authorization") header: String
+    ): Int
 }

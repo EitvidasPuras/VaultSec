@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.repository.NoteRepository
+import com.vaultsec.vaultsec.util.SyncType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -70,6 +71,25 @@ class AddEditNoteViewModel
             state.set("noteDateUpdated", value)
         }
 
+//    var noteIsSynced = state.get<Boolean>("noteIsSynced") ?: note?.isSynced ?: false
+//        set(value) {
+//            field = value
+//            state.set("noteIsSynced", value)
+//        }
+
+//    var noteSyncState = state.get<SyncType>("noteSyncState") ?: note?.syncState ?: SyncType.CREATE
+//        set(value) {
+//            field = value
+//            state.set("noteSyncState", value)
+//        }
+
+    var noteSyncStateInt =
+        state.get<Int>("noteSyncStateInt") ?: note?.syncState ?: SyncType.CREATE_REQUIRED
+        set(value) {
+            field = value
+            state.set("noteSyncStateInt", value)
+        }
+
     private fun areNotesTheSame(): Boolean {
         return (note!!.title == noteTitle
                 && note.text == noteText
@@ -100,7 +120,7 @@ class AddEditNoteViewModel
                     fontSize = noteFontSize,
                     createdAt = noteDateCreated,
                     updatedAt = noteDateUpdated,
-                    isSynced = false
+                    syncState = noteSyncStateInt
                 )
                 updateNote(updatedNote)
             }
@@ -125,7 +145,9 @@ class AddEditNoteViewModel
     }
 
     private fun updateNote(updatedNote: Note) = viewModelScope.launch(Dispatchers.IO) {
+        addEditNoteEventChannel.send(AddEditNoteEvent.DoShowLoading(true))
         noteRepository.update(updatedNote)
+        addEditNoteEventChannel.send(AddEditNoteEvent.DoShowLoading(false))
         addEditNoteEventChannel.send(AddEditNoteEvent.NavigateBackWithResult(EDIT_NOTE_RESULT_OK))
     }
 

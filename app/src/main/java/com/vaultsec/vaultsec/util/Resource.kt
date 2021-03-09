@@ -7,8 +7,10 @@ sealed class Resource<T>(
 ) {
     class Success<T>(data: T? = null) : Resource<T>(data)
     class Loading<T>(data: T? = null) : Resource<T>(data)
-    class Error<T>(type: ErrorTypes, message: String? = null, data: T? = null) :
+    class Error<T>(type: ErrorTypes? = null, message: String? = null, data: T? = null) :
         Resource<T>(data, type, message)
+
+    class Empty<T> : Resource<T>()
 }
 
 enum class ErrorTypes {

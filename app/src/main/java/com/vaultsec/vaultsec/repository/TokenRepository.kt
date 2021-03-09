@@ -10,6 +10,7 @@ import com.vaultsec.vaultsec.network.entity.ApiError
 import com.vaultsec.vaultsec.network.entity.ApiUser
 import com.vaultsec.vaultsec.util.ErrorTypes
 import com.vaultsec.vaultsec.util.Resource
+import com.vaultsec.vaultsec.util.SyncType
 import kotlinx.coroutines.flow.first
 import retrofit2.HttpException
 import java.net.ConnectException
@@ -125,6 +126,7 @@ class TokenRepository
             when (e) {
                 is HttpException -> {
                     val errorBody = e.response()?.errorBody()
+                    Log.e("errorBody", errorBody!!.string())
                     val apiError: ApiError = Gson().fromJson(
                         errorBody!!.charStream(),
                         ApiError::class.java
@@ -163,11 +165,16 @@ class TokenRepository
 
     suspend fun postLogout(header: String): Resource<*> {
         try {
+            val combinedNotes = arrayListOf<Note>()
             // Sync noted before logout
             val syncedButDeleted = noteDao.getSyncedDeletedNotesIds()
             val unsyncedNotes = noteDao.getUnsyncedNotes()
             api.deleteNotes(syncedButDeleted.first() as ArrayList<Int>, header)
-            api.postStoreNotes(unsyncedNotes.first(), header)
+
+            combinedNotes.addAll(noteDao.getSyncedUpdatedNotes().first())
+            combinedNotes.addAll(noteDao.getUnsyncedNotes().first())
+
+            api.postStoreNotes(combinedNotes, header)
             // Actually logout
             api.postLogout(header)
             // Empty the database
@@ -227,7 +234,7 @@ class TokenRepository
                         fontSize = it.font_size,
                         createdAt = it.created_at_device,
                         updatedAt = it.updated_at_device,
-                        isSynced = true,
+                        syncState = SyncType.NOTHING_REQUIRED,
                         id = it.id
                     )
                 )

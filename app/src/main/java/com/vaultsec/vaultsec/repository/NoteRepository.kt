@@ -7,8 +7,8 @@ import com.vaultsec.vaultsec.database.dao.NoteDao
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.network.PasswordManagerApi
 import com.vaultsec.vaultsec.network.entity.ApiError
-import com.vaultsec.vaultsec.util.ErrorTypes
 import com.vaultsec.vaultsec.util.Resource
+import com.vaultsec.vaultsec.util.SyncType
 import com.vaultsec.vaultsec.util.isNetworkAvailable
 import com.vaultsec.vaultsec.util.networkBoundResource
 import kotlinx.coroutines.flow.Flow
@@ -34,7 +34,7 @@ class NoteRepository @Inject constructor(
                     fontSize = note.fontSize,
                     createdAt = note.createdAt,
                     updatedAt = note.updatedAt,
-                    isSynced = true,
+                    syncState = SyncType.NOTHING_REQUIRED,
                     id = id
                 )
                 noteDao.insert(newNote)
@@ -71,7 +71,70 @@ class NoteRepository @Inject constructor(
     }
 
     suspend fun update(note: Note) {
-        noteDao.update(note)
+        if (isNetworkAvailable) {
+            try {
+                if (note.syncState == SyncType.NOTHING_REQUIRED || note.syncState == SyncType.UPDATE_REQUIRED) {
+                    /*
+                    * The id will stay the same, this is just a security measure
+                    * */
+                    val id = api.putNoteUpdate(
+                        note.id,
+                        note,
+                        "Bearer ${tokenRepository.getToken().token}"
+                    )
+                    val newNote = note.copy(
+                        title = note.title,
+                        text = note.text,
+                        color = note.color,
+                        fontSize = note.fontSize,
+                        createdAt = note.createdAt,
+                        updatedAt = note.updatedAt,
+                        syncState = SyncType.NOTHING_REQUIRED,
+                        id = id
+                    )
+                    noteDao.update(newNote)
+                } else {
+                    /*
+                    * Insert it since it isn't synced with the server
+                    * */
+                    insert(note)
+                }
+            } catch (e: Exception) {
+                if (note.syncState == SyncType.NOTHING_REQUIRED || note.syncState == SyncType.UPDATE_REQUIRED) {
+                    note.syncState = SyncType.UPDATE_REQUIRED
+                    noteDao.update(note)
+                } else {
+                    insert(note)
+                }
+                when (e) {
+                    is HttpException -> {
+                        val errorBody = e.response()?.errorBody()
+                        Log.e("errorBody", errorBody!!.string())
+                        val apiError: ApiError = Gson().fromJson(
+                            errorBody!!.charStream(),
+                            ApiError::class.java
+                        )
+                        Log.e(
+                            "com.vaultsec.vaultsec.repository.NoteRepository.insert.HTTP",
+                            apiError.error
+                        )
+                    }
+                    else -> {
+                        Log.e(
+                            "com.vaultsec.vaultsec.repository.NoteRepository.insert.ELSE",
+                            e.localizedMessage!!
+                        )
+                    }
+                }
+            }
+        } else {
+            if (note.syncState == SyncType.NOTHING_REQUIRED || note.syncState == SyncType.UPDATE_REQUIRED) {
+                note.syncState = SyncType.UPDATE_REQUIRED
+                noteDao.update(note)
+            } else {
+                insert(note)
+            }
+        }
     }
 
     suspend fun deleteAll() {
@@ -93,8 +156,12 @@ class NoteRepository @Inject constructor(
                         "Bearer ${tokenRepository.getToken().token}"
                     )
                 }
+                val combinedNotes = arrayListOf<Note>()
+                combinedNotes.addAll(noteDao.getSyncedUpdatedNotes().first())
+                combinedNotes.addAll(noteDao.getUnsyncedNotes().first())
+                Log.e("combinedNotes", "$combinedNotes")
                 val notes = api.postStoreNotes(
-                    noteDao.getUnsyncedNotes().first(),
+                    combinedNotes,
                     "Bearer ${tokenRepository.getToken().token}"
                 )
                 notes
@@ -110,7 +177,7 @@ class NoteRepository @Inject constructor(
                             fontSize = it.font_size,
                             createdAt = it.created_at_device,
                             updatedAt = it.updated_at_device,
-                            isSynced = true,
+                            syncState = 0,
                             id = it.id
                         )
                     )
@@ -121,7 +188,8 @@ class NoteRepository @Inject constructor(
             shouldFetch = {
                 if (didRefresh) {
                     noteDao.getUnsyncedNotes().first().isNotEmpty() ||
-                            noteDao.getSyncedDeletedNotesIds().first().isNotEmpty()
+                            noteDao.getSyncedDeletedNotesIds().first().isNotEmpty() ||
+                            noteDao.getSyncedUpdatedNotes().first().isNotEmpty()
                 } else {
                     false
                 }
@@ -130,14 +198,42 @@ class NoteRepository @Inject constructor(
             onFetchFailed = onFetchComplete
         )
 
-    suspend fun deleteSelectedNotes(noteList: ArrayList<Note>): Resource<*> {
+    suspend fun deleteSelectedNotes(noteList: ArrayList<Note>): Resource<Any> {
         didPerformDeletionAPICall = false
+        /*
+        * Creating a copy of the list, so that the original list that is passed here wouldn't be affected
+        * by the changes made. Have to copy an actual Note object, not just the list itself
+        * */
+        val noteListCopy = arrayListOf<Note>()
+        with(noteList.iterator()) {
+            forEach {
+                noteListCopy.add(it.copy())
+            }
+        }
+
         val unsyncedNotesIds = arrayListOf<Int>()
         val syncedNotesIds = arrayListOf<Int>()
         val syncedNotes = arrayListOf<Note>()
-        noteList.map {
-            it.isDeleted = true
-            if (it.isSynced) {
+//        with(noteList.iterator()) {
+//            forEach {
+//                /*
+//                * Already deleted notes (syncStateInt = 2) should never come here
+//                * */
+//                if (it.syncState == SyncType.NOTHING_REQUIRED || it.syncState == SyncType.UPDATE_REQUIRED) {
+//                    it.syncState = SyncType.DELETE_REQUIRED
+//                    syncedNotesIds.add(it.id)
+//                    syncedNotes.add(it)
+//                } else {
+//                    unsyncedNotesIds.add(it.id)
+//                }
+//            }
+//        }
+        noteListCopy.map {
+            /*
+            * Already deleted notes (syncStateInt = 2) should never come here
+            * */
+            if (it.syncState == SyncType.NOTHING_REQUIRED || it.syncState == SyncType.UPDATE_REQUIRED) {
+                it.syncState = SyncType.DELETE_REQUIRED
                 syncedNotesIds.add(it.id)
                 syncedNotes.add(it)
             } else {
@@ -162,7 +258,7 @@ class NoteRepository @Inject constructor(
                     )
                     didPerformDeletionAPICall = true
                     noteDao.deleteSelectedNotes(syncedNotesIds)
-                    return Resource.Success<Any>()
+                    return Resource.Success()
                 } catch (e: Exception) {
                     when (e) {
                         is HttpException -> {
@@ -176,37 +272,50 @@ class NoteRepository @Inject constructor(
                                 "com.vaultsec.vaultsec.repository.NoteRepository.deleteSelectedNotes.HTTP",
                                 apiError.error
                             )
-                            return Resource.Error<Any>(ErrorTypes.HTTP, apiError.error)
+                            return Resource.Error()
                         }
                         else -> {
                             Log.e(
                                 "com.vaultsec.vaultsec.repository.NoteRepository.deleteSelectedNotes.ELSE",
                                 e.localizedMessage!!
                             )
-                            return Resource.Error<Any>(ErrorTypes.GENERAL)
+                            return Resource.Error()
                         }
                     }
                 }
             } else {
-                return Resource.Success<Any>()
+                return Resource.Success()
             }
         } else {
-            return Resource.Success<Any>()
+            return Resource.Success()
         }
     }
 
     suspend fun undoDeletedNotes(noteList: ArrayList<Note>) {
+        Log.e("Notes that come to undoDelete", "$noteList")
         val unsyncedNotes = arrayListOf<Note>()
         val syncedNotes = arrayListOf<Note>()
+        val bothNotesCombinedForSmoothInsertion = arrayListOf<Note>()
         noteList.map {
-            it.isDeleted = false
-            if (it.isSynced) {
-                syncedNotes.add(it)
-            } else {
-                unsyncedNotes.add(it)
+//            it.isDeleted = false
+//            if (it.isSynced) {
+//                syncedNotes.add(it)
+//            } else {
+//                unsyncedNotes.add(it)
+//            }
+            when (it.syncState) {
+                SyncType.UPDATE_REQUIRED, SyncType.NOTHING_REQUIRED -> {
+                    syncedNotes.add(it)
+                }
+                SyncType.CREATE_REQUIRED -> {
+                    unsyncedNotes.add(it)
+                }
+                else -> Log.e(
+                    "com.vaultsec.vaultsec.repository.NoteRepository.undoDeletedNotes.WHEN",
+                    "Invalid operation"
+                )
             }
         }
-        noteDao.insertList(unsyncedNotes)
         if (isNetworkAvailable) {
             if (syncedNotes.isNotEmpty()) {
                 /*
@@ -229,21 +338,27 @@ class NoteRepository @Inject constructor(
                                     fontSize = it.font_size,
                                     createdAt = it.created_at_device,
                                     updatedAt = it.updated_at_device,
-                                    isSynced = true,
+                                    syncState = SyncType.NOTHING_REQUIRED,
                                     id = it.id
                                 )
                             )
                         }
-                        noteDao.insertList(notes)
+                        bothNotesCombinedForSmoothInsertion.addAll(unsyncedNotes)
+                        bothNotesCombinedForSmoothInsertion.addAll(notes)
+                        noteDao.insertList(bothNotesCombinedForSmoothInsertion)
                     } catch (e: Exception) {
                         if (didPerformDeletionAPICall) {
                             syncedNotes.map {
-                                it.isSynced = false
+                                it.syncState = SyncType.CREATE_REQUIRED
                             }
-                            noteDao.insertList(syncedNotes)
+                            bothNotesCombinedForSmoothInsertion.addAll(unsyncedNotes)
+                            bothNotesCombinedForSmoothInsertion.addAll(syncedNotes)
+                            noteDao.insertList(bothNotesCombinedForSmoothInsertion)
                             didPerformDeletionAPICall = false
                         } else {
-                            noteDao.insertList(syncedNotes)
+                            bothNotesCombinedForSmoothInsertion.addAll(unsyncedNotes)
+                            bothNotesCombinedForSmoothInsertion.addAll(syncedNotes)
+                            noteDao.insertList(bothNotesCombinedForSmoothInsertion)
                         }
                         when (e) {
                             is HttpException -> {
@@ -267,18 +382,30 @@ class NoteRepository @Inject constructor(
                         }
                     }
                 } else {
-                    noteDao.insertList(syncedNotes)
+                    bothNotesCombinedForSmoothInsertion.addAll(unsyncedNotes)
+                    bothNotesCombinedForSmoothInsertion.addAll(syncedNotes)
+                    noteDao.insertList(bothNotesCombinedForSmoothInsertion)
                 }
+            } else {
+                noteDao.insertList(unsyncedNotes)
             }
         } else {
-            if (didPerformDeletionAPICall) {
-                syncedNotes.map {
-                    it.isSynced = false
+            if (syncedNotes.isNotEmpty()) {
+                if (didPerformDeletionAPICall) {
+                    syncedNotes.map {
+                        it.syncState = SyncType.CREATE_REQUIRED
+                    }
+                    bothNotesCombinedForSmoothInsertion.addAll(unsyncedNotes)
+                    bothNotesCombinedForSmoothInsertion.addAll(syncedNotes)
+                    noteDao.insertList(bothNotesCombinedForSmoothInsertion)
+                    didPerformDeletionAPICall = false
+                } else {
+                    bothNotesCombinedForSmoothInsertion.addAll(unsyncedNotes)
+                    bothNotesCombinedForSmoothInsertion.addAll(syncedNotes)
+                    noteDao.insertList(bothNotesCombinedForSmoothInsertion)
                 }
-                noteDao.insertList(syncedNotes)
-                didPerformDeletionAPICall = false
             } else {
-                noteDao.insertList(syncedNotes)
+                noteDao.insertList(unsyncedNotes)
             }
         }
     }

@@ -26,11 +26,14 @@ interface NoteDao {
     @Query("""DELETE FROM vault_notes WHERE id IN (:idList)""")
     suspend fun deleteSelectedNotes(idList: ArrayList<Int>)
 
-    @Query("""SELECT * FROM vault_notes WHERE synced = 0""")
+    @Query("""SELECT * FROM vault_notes WHERE sync_state = 1""")
     fun getUnsyncedNotes(): Flow<List<Note>>
 
-    @Query("""SELECT id FROM vault_notes WHERE synced = 1 AND deleted = 1""")
+    @Query("""SELECT id FROM vault_notes WHERE sync_state = 2""")
     fun getSyncedDeletedNotesIds(): Flow<List<Int>>
+
+    @Query("""SELECT * FROM vault_notes WHERE sync_state = 3""")
+    fun getSyncedUpdatedNotes(): Flow<List<Note>>
 
     fun getNotes(searchQuery: String, sortOrder: SortOrder, isAsc: Boolean): Flow<List<Note>> =
         when (sortOrder) {
@@ -47,7 +50,7 @@ interface NoteDao {
     * the text or title of the note would have to end with the search query
     * */
     @Query(
-        """SELECT * FROM vault_notes WHERE deleted = 0 AND (title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%') ORDER BY
+        """SELECT * FROM vault_notes WHERE sync_state != 2 AND (title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%') ORDER BY
             CASE WHEN :isAsc = 1 THEN title END ASC,
             CASE WHEN :isAsc = 1 AND title IS NULL THEN text END ASC,
             CASE WHEN :isAsc = 0 THEN title END DESC,
@@ -56,28 +59,28 @@ interface NoteDao {
     fun getNotesSortedByTitle(searchQuery: String, isAsc: Boolean): Flow<List<Note>>
 
     @Query(
-        """SELECT * FROM vault_notes WHERE deleted = 0 AND (title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%') ORDER BY
+        """SELECT * FROM vault_notes WHERE sync_state != 2 AND (title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%') ORDER BY
             CASE WHEN :isAsc = 1 THEN created_at_local END ASC,
             CASE WHEN :isAsc = 0 THEN created_at_local END DESC """
     )
     fun getNotesSortedByDateCreated(searchQuery: String, isAsc: Boolean): Flow<List<Note>>
 
     @Query(
-        """SELECT * FROM vault_notes WHERE deleted = 0 AND (title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%') ORDER BY
+        """SELECT * FROM vault_notes WHERE sync_state != 2 AND (title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%') ORDER BY
             CASE WHEN :isAsc = 1 THEN updated_at_local END ASC,
             CASE WHEN :isAsc = 0 THEN updated_at_local END DESC """
     )
     fun getNotesSortedByDateUpdated(searchQuery: String, isAsc: Boolean): Flow<List<Note>>
 
     @Query(
-        """SELECT * FROM vault_notes WHERE deleted = 0 AND (title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%') ORDER BY
+        """SELECT * FROM vault_notes WHERE sync_state != 2 AND (title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%') ORDER BY
             CASE WHEN :isAsc = 1 THEN color END ASC,
             CASE WHEN :isAsc = 0 THEN color END DESC """
     )
     fun getNotesSortedByColor(searchQuery: String, isAsc: Boolean): Flow<List<Note>>
 
     @Query(
-        """SELECT * FROM vault_notes WHERE deleted = 0 AND (title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%') ORDER BY
+        """SELECT * FROM vault_notes WHERE sync_state != 2 AND (title LIKE '%' || :searchQuery || '%' OR text LIKE '%' || :searchQuery || '%') ORDER BY
             CASE WHEN :isAsc = 1 THEN font_size END ASC,
             CASE WHEN :isAsc = 0 THEN font_size END DESC """
     )

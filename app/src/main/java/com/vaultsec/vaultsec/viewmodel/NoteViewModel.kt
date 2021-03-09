@@ -10,12 +10,9 @@ import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.repository.NoteRepository
 import com.vaultsec.vaultsec.util.Resource
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class NoteViewModel
@@ -41,6 +38,9 @@ class NoteViewModel
     }
 
     private val refreshAction = MutableLiveData(Refresh.DIDNT)
+
+    private val deleteNotesState = MutableStateFlow<Resource<*>>(Resource.Empty<Any>())
+//    val uiState: StateFlow<Resource<*>> = _uiState
 
     private val refreshTriggerChannel = Channel<Refresh>()
     private val refreshTrigger = refreshTriggerChannel.receiveAsFlow()
@@ -124,12 +124,12 @@ class NoteViewModel
         multiSelectedNotes.remove(note)
     }
 
-    fun onDeleteSelectedNotesClick() = viewModelScope.launch(Dispatchers.IO) {
+    fun onDeleteSelectedNotesClick() = viewModelScope.launch {
+        deleteNotesState.value = Resource.Loading<Any>()
         if (multiSelectedNotes.isNotEmpty()) {
             val multiSelectedNotesClone = multiSelectedNotes.clone() as ArrayList<Note>
-            viewModelScope.launch {
-                deletionResponse = noteRepository.deleteSelectedNotes(multiSelectedNotesClone)
-                Log.e("deletionResponse", "$deletionResponse")
+            viewModelScope.launch(Dispatchers.IO) {
+                deleteNotesState.value = noteRepository.deleteSelectedNotes(multiSelectedNotesClone)
             }
             notesEventChannel.send(NotesEvent.ShowUndoDeleteNoteMessage(multiSelectedNotesClone))
             multiSelectedNotes.clear()
@@ -142,19 +142,25 @@ class NoteViewModel
 
     fun onUndoDeleteClick(noteList: ArrayList<Note>) = viewModelScope.launch(Dispatchers.IO) {
         notesEventChannel.send(NotesEvent.DoShowRefreshing(true))
-        /*
-        * The app continuously executes this part of code for (iterations*delay/1000) seconds while waiting
-        * for the noteRepository.deleteSelectedNotes to return a response. Only then does the app
-        * try to recover deleted notes.
-        * */
-        if (deletionResponse is Resource.Loading) {
-            for (i in (0..400)) {
-                delay(25)
-                if (deletionResponse is Resource.Success || deletionResponse is Resource.Error) {
-                    noteRepository.undoDeletedNotes(noteList)
-                    notesEventChannel.send(NotesEvent.DoShowRefreshing(false))
-                    deletionResponse = Resource.Loading<Any>()
-                    return@launch
+
+        if (deleteNotesState.value is Resource.Loading) {
+            viewModelScope.launch {
+                deleteNotesState.collect {
+                    Log.e("deleteNotesState.value collect", "${deleteNotesState.value}")
+                    when (it) {
+                        is Resource.Success -> {
+                            noteRepository.undoDeletedNotes(noteList)
+                            deleteNotesState.value = Resource.Empty<Any>()
+                            notesEventChannel.send(NotesEvent.DoShowRefreshing(false))
+                            cancel()
+                        }
+                        is Resource.Error -> {
+                            noteRepository.undoDeletedNotes(noteList)
+                            deleteNotesState.value = Resource.Empty<Any>()
+                            notesEventChannel.send(NotesEvent.DoShowRefreshing(false))
+                            cancel()
+                        }
+                    }
                 }
             }
         } else {
