@@ -25,7 +25,6 @@ import com.vaultsec.vaultsec.util.setProgressBarDrawable
 import com.vaultsec.vaultsec.viewmodel.HTTP_NONE_ERROR
 import com.vaultsec.vaultsec.viewmodel.TokenViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlin.math.hypot
 
@@ -93,7 +92,6 @@ class BottomNavigationActivity : AppCompatActivity() {
                         * To prevent the empty recycler view message from briefly flashing on the screen
                         * */
                         binding.fragmentContainerView.visibility = View.INVISIBLE
-                        delay(30)
                         openStartActivity()
                     }
                     is TokenViewModel.TokenEvent.ShowProgressBar -> {

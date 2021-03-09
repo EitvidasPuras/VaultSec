@@ -234,7 +234,7 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
 //        if (addEditNoteViewModel.note == null) {
 //            inflater.inflate(R.menu.new_note_menu, menu)
 //        }
-        inflater.inflate(R.menu.new_note_menu, menu)
+        inflater.inflate(R.menu.add_edit_note_menu, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

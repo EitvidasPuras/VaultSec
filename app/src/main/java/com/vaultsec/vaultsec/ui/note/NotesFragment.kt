@@ -172,7 +172,8 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
             binding.swiperefreshlayout.isRefreshing = it is Resource.Loading
 
             binding.recyclerviewNotes.isVisible = !it.data.isNullOrEmpty()
-            binding.textviewEmptyNotes.isVisible = it.data.isNullOrEmpty()
+            binding.textviewEmptyNotes.isVisible =
+                it.data.isNullOrEmpty() && it !is Resource.Loading
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {

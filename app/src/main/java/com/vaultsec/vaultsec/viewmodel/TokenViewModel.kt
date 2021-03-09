@@ -346,9 +346,9 @@ class TokenViewModel
         val response: Resource<*> = tokenRepository.postLogout("Bearer ${getToken().token}")
         tokenEventChannel.send(TokenEvent.ShowProgressBar(false))
         if (response is Resource.Success) {
+            tokenEventChannel.send(TokenEvent.SuccessfulLogout)
             prefsManager.updateSortOrder(SortOrder.BY_TITLE) // Reset to default
             prefsManager.updateSortDirection(true) // Reset to default
-            tokenEventChannel.send(TokenEvent.SuccessfulLogout)
         } else {
             when (response.type) {
                 ErrorTypes.HTTP -> tokenEventChannel.send(

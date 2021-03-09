@@ -60,6 +60,7 @@
     <string name="add_edit_note_text_hint">Note</string>
     <string name="add_edit_note_save">Save</string>
     <string name="add_edit_note_customize">Font size and note color</string>
+    <string name="add_edit_note_camera">Camera</string>
     <string name="new_note_fab_description">Add new note</string>
     <string name="add_edit_note_edit_time_text">Edited %s</string>
     <string name="add_edit_note_text_input_error">Text cannot be empty</string>

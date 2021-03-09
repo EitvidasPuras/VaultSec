@@ -177,7 +177,7 @@ class NoteRepository @Inject constructor(
                             fontSize = it.font_size,
                             createdAt = it.created_at_device,
                             updatedAt = it.updated_at_device,
-                            syncState = 0,
+                            syncState = SyncType.NOTHING_REQUIRED,
                             id = it.id
                         )
                     )
@@ -214,20 +214,7 @@ class NoteRepository @Inject constructor(
         val unsyncedNotesIds = arrayListOf<Int>()
         val syncedNotesIds = arrayListOf<Int>()
         val syncedNotes = arrayListOf<Note>()
-//        with(noteList.iterator()) {
-//            forEach {
-//                /*
-//                * Already deleted notes (syncStateInt = 2) should never come here
-//                * */
-//                if (it.syncState == SyncType.NOTHING_REQUIRED || it.syncState == SyncType.UPDATE_REQUIRED) {
-//                    it.syncState = SyncType.DELETE_REQUIRED
-//                    syncedNotesIds.add(it.id)
-//                    syncedNotes.add(it)
-//                } else {
-//                    unsyncedNotesIds.add(it.id)
-//                }
-//            }
-//        }
+
         noteListCopy.map {
             /*
             * Already deleted notes (syncStateInt = 2) should never come here
