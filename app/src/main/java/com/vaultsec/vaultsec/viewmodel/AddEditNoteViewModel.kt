@@ -30,6 +30,8 @@ class AddEditNoteViewModel
     private val addEditNoteEventChannel = Channel<AddEditNoteEvent>()
     val addEditTaskEvent = addEditNoteEventChannel.receiveAsFlow()
 
+    var noteColorOnExit = -1
+    var noteFontSizeOnExit = -1f
 
     var noteTitle: String? = state.get<String>("noteTitle") ?: note?.title ?: ""
         set(value) {
@@ -151,10 +153,17 @@ class AddEditNoteViewModel
         addEditNoteEventChannel.send(AddEditNoteEvent.NavigateBackWithResult(EDIT_NOTE_RESULT_OK))
     }
 
+    fun onOpenCamera(color: Int, fontSize: Float) = viewModelScope.launch(Dispatchers.IO) {
+        noteFontSizeOnExit = fontSize
+        noteColorOnExit = color
+        addEditNoteEventChannel.send(AddEditNoteEvent.NavigateToCameraFragment)
+    }
+
     sealed class AddEditNoteEvent {
         data class ShowInvalidInputMessage(val message: Int) : AddEditNoteEvent()
         data class NavigateBackWithResult(val result: Int) : AddEditNoteEvent()
         object NavigateBackWithoutResult : AddEditNoteEvent()
         data class DoShowLoading(val visible: Boolean) : AddEditNoteEvent()
+        object NavigateToCameraFragment : AddEditNoteEvent()
     }
 }

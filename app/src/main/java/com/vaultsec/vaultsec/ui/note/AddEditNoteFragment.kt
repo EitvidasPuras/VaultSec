@@ -1,16 +1,22 @@
 package com.vaultsec.vaultsec.ui.note
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.LinearLayout
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -35,8 +41,10 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
 
 //    var mActionMode: ActionMode? = null
 
-    private val addEditNoteViewModel: AddEditNoteViewModel by viewModels()
+    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
+    private var scanTextResult: String? = null
 
+    private val addEditNoteViewModel: AddEditNoteViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,6 +55,24 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
         setHasOptionsMenu(true)
         // Inflate the layout for this fragment
         return binding.root
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        requestPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                if (isGranted) {
+                    addEditNoteViewModel.onOpenCamera(
+                        binding.textfieldNoteText.backgroundTintList?.defaultColor!!,
+                        binding.textfieldNoteText.textSize / resources.displayMetrics.scaledDensity
+                    )
+                } else {
+                    Log.e(
+                        "com.vaultsec.vaultsec.ui.note.AddEditNoteFragment",
+                        "Permission not granted"
+                    )
+                }
+            }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -77,6 +103,33 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
 //                textfieldNoteText.showSoftInputOnFocus = false
 //                textfieldNoteText.isCursorVisible = false
 //            }
+        }
+
+        setFragmentResultListener("com.vaultsec.vaultsec.ui.CameraFragment.recognizedText") { _, bundle ->
+            scanTextResult = bundle.getString("Text")
+            if (scanTextResult?.isNotEmpty() == true) {
+                binding.textfieldNoteText.append(scanTextResult)
+            }
+        }
+
+        requireActivity().supportFragmentManager.setFragmentResultListener(
+            "com.vaultsec.vaultsec.ui.CameraFragment.restoreSettings",
+            viewLifecycleOwner
+        ) { _, bundle ->
+            val result = bundle.getBoolean("RestoreSettings")
+            if (result) {
+                if (addEditNoteViewModel.noteColorOnExit != -1 && addEditNoteViewModel.noteFontSizeOnExit != -1f) {
+                    binding.textfieldNoteText.textSize = addEditNoteViewModel.noteFontSizeOnExit
+
+                    binding.textfieldNoteText.backgroundTintList = ColorStateList.valueOf(
+                        addEditNoteViewModel.noteColorOnExit
+                    )
+                    binding.textfieldNoteTitle.backgroundTintList = ColorStateList.valueOf(
+                        addEditNoteViewModel.noteColorOnExit
+                    )
+                    binding.textviewDateEdited.setBackgroundColor(addEditNoteViewModel.noteColorOnExit)
+                }
+            }
         }
 
         /*
@@ -218,14 +271,6 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
         binding.textfieldNoteText.clearFocus()
     }
 
-    override fun onStart() {
-        super.onStart()
-        if (addEditNoteViewModel.note == null) {
-            binding.textfieldNoteText.requestFocus()
-            showKeyboard(requireActivity())
-        }
-    }
-
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
         /*
@@ -287,6 +332,51 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
         holderLayout.addView(colorLayout)
         holderLayout.addView(fontSizeSlider)
 
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            addEditNoteViewModel.addEditTaskEvent.collect { event ->
+                when (event) {
+                    is AddEditNoteViewModel.AddEditNoteEvent.ShowInvalidInputMessage -> {
+                        hideKeyboard(requireActivity())
+                        binding.textfieldNoteText.clearFocus()
+                        binding.textfieldNoteTitle.clearFocus()
+                        Snackbar.make(requireView(), event.message, Snackbar.LENGTH_LONG)
+                            .show()
+                    }
+                    is AddEditNoteViewModel.AddEditNoteEvent.NavigateBackWithResult -> {
+                        hideKeyboard(requireActivity())
+                        setFragmentResult(
+                            "com.vaultsec.vaultsec.ui.note.AddEditNoteFragment",
+                            bundleOf(
+                                "AddEditResult" to event.result
+                            )
+                        )
+                        findNavController().popBackStack()
+//                                findNavController().navigateUp()
+                    }
+                    is AddEditNoteViewModel.AddEditNoteEvent.NavigateBackWithoutResult -> {
+                        hideKeyboard(requireActivity())
+                        findNavController().popBackStack()
+                    }
+                    is AddEditNoteViewModel.AddEditNoteEvent.DoShowLoading -> {
+                        hideKeyboard(requireActivity())
+                        binding.progressbarAddEditNote.isVisible = event.visible
+                    }
+                    is AddEditNoteViewModel.AddEditNoteEvent.NavigateToCameraFragment -> {
+                        hideKeyboard(requireActivity())
+                        requireActivity().supportFragmentManager.setFragmentResult(
+                            "com.vaultsec.vaultsec.ui.note.AddEditNoteFragment.openCamera",
+                            bundleOf(
+                                "OpenCamera" to true
+                            )
+                        )
+                        val action =
+                            AddEditNoteFragmentDirections.actionFragmentAddEditNoteToCameraFragment()
+                        findNavController().navigate(action)
+                    }
+                }
+            }
+        }
+
         return when (item.itemId) {
             R.id.item_save_note -> {
                 addEditNoteViewModel.noteTitle =
@@ -305,39 +395,6 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
                 }
 
                 addEditNoteViewModel.onSaveNoteClick()
-
-                viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-                    addEditNoteViewModel.addEditTaskEvent.collect { event ->
-                        when (event) {
-                            is AddEditNoteViewModel.AddEditNoteEvent.ShowInvalidInputMessage -> {
-                                hideKeyboard(requireActivity())
-                                binding.textfieldNoteText.clearFocus()
-                                binding.textfieldNoteTitle.clearFocus()
-                                Snackbar.make(requireView(), event.message, Snackbar.LENGTH_LONG)
-                                    .show()
-                            }
-                            is AddEditNoteViewModel.AddEditNoteEvent.NavigateBackWithResult -> {
-                                hideKeyboard(requireActivity())
-                                setFragmentResult(
-                                    "com.vaultsec.vaultsec.ui.note.AddEditNoteFragment",
-                                    bundleOf(
-                                        "AddEditResult" to event.result
-                                    )
-                                )
-                                findNavController().popBackStack()
-//                                findNavController().navigateUp()
-                            }
-                            is AddEditNoteViewModel.AddEditNoteEvent.NavigateBackWithoutResult -> {
-                                hideKeyboard(requireActivity())
-                                findNavController().popBackStack()
-                            }
-                            is AddEditNoteViewModel.AddEditNoteEvent.DoShowLoading -> {
-                                hideKeyboard(requireActivity())
-                                binding.progressbarAddEditNote.isVisible = event.visible
-                            }
-                        }
-                    }
-                }
                 true
             }
             R.id.item_customize -> {
@@ -365,7 +422,43 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
                         binding.textfieldNoteText.textSize = fontSizeSlider.value
                         dialog.cancel()
                     }
+                    .setCancelable(false)
                     .show()
+                true
+            }
+            R.id.item_camera -> {
+                hideKeyboard(requireActivity())
+                when {
+                    ContextCompat.checkSelfPermission(
+                        requireContext(),
+                        Manifest.permission.CAMERA
+                    ) == PackageManager.PERMISSION_GRANTED -> {
+                        addEditNoteViewModel.onOpenCamera(noteColorIntValue, currentFontSize)
+                    }
+                    shouldShowRequestPermissionRationale(Manifest.permission.CAMERA) -> {
+                        MaterialAlertDialogBuilder(
+                            requireContext(),
+                            R.style.ThemeOverlay_App_MaterialAlertDialog
+                        )
+                            .setTitle(R.string.add_edit_note_camera_permission_title)
+                            .setMessage(R.string.add_edit_note_camera_permission_message)
+                            .setNegativeButton("Cancel") { dialog, _ ->
+                                dialog.cancel()
+                            }
+                            .setPositiveButton("OK") { dialog, _ ->
+                                requestPermissionLauncher.launch(
+                                    Manifest.permission.CAMERA
+                                )
+                                dialog.cancel()
+                            }
+                            .show()
+                    }
+                    else -> {
+                        requestPermissionLauncher.launch(
+                            Manifest.permission.CAMERA
+                        )
+                    }
+                }
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -441,5 +534,14 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
                 binding.textviewDateEdited.setBackgroundResource(color)
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (addEditNoteViewModel.note == null && scanTextResult == null) {
+            binding.textfieldNoteText.requestFocus()
+            showKeyboard(requireActivity())
+        }
+        scanTextResult = null
     }
 }

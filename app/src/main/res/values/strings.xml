@@ -60,12 +60,17 @@
     <string name="add_edit_note_text_hint">Note</string>
     <string name="add_edit_note_save">Save</string>
     <string name="add_edit_note_customize">Font size and note color</string>
-    <string name="add_edit_note_camera">Camera</string>
+    <string name="add_edit_note_camera_menu">Camera</string>
+    <string name="add_edit_note_camera_permission_title">Camera required</string>
+    <string name="add_edit_note_camera_permission_message">Camera permission is required in order to read the text</string>
     <string name="new_note_fab_description">Add new note</string>
     <string name="add_edit_note_edit_time_text">Edited %s</string>
     <string name="add_edit_note_text_input_error">Text cannot be empty</string>
     <string name="add_note_confirmation">Note created</string>
     <string name="edit_note_confirmation">Note updated</string>
+
+    <string name="camera_activity_shutter_description">Take a photo</string>
+    <string name="camera_activity_flashlight_description">Flashlight control</string>
 
     <string name="notes_empty_text">There are no notes</string>
     <string name="notes_one_deleted">%d note deleted</string>

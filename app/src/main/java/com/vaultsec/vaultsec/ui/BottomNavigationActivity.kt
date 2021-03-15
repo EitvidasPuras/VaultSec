@@ -1,13 +1,14 @@
 package com.vaultsec.vaultsec.ui
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewAnimationUtils
+import android.util.TypedValue
+import android.view.*
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
@@ -63,10 +64,53 @@ class BottomNavigationActivity : AppCompatActivity() {
                 R.id.fragment_generator
             )
         )
-//        NavigationUI.setupWithNavController(bottomNavigationView, navController)
         setupActionBarWithNavController(navController, appBarConfiguration)
         bottomNavigationView.setupWithNavController(navController)
         bottomNavigationView.setOnNavigationItemReselectedListener {}
+
+        supportFragmentManager.setFragmentResultListener(
+            "com.vaultsec.vaultsec.ui.note.AddEditNoteFragment.openCamera",
+            this
+        ) { _, bundle ->
+            val result = bundle.getBoolean("OpenCamera")
+            if (result) {
+                window.decorView.systemUiVisibility += View.SYSTEM_UI_FLAG_FULLSCREEN
+                binding.toolbar.isVisible = false
+                val params =
+                    binding.fragmentContainerView.layoutParams as ViewGroup.MarginLayoutParams
+                params.setMargins(0, 0, 0, 0)
+                binding.fragmentContainerView.requestLayout()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    window.attributes.layoutInDisplayCutoutMode =
+                        WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                }
+            }
+        }
+
+        supportFragmentManager.setFragmentResultListener(
+            "com.vaultsec.vaultsec.ui.CameraFragment.closeCamera",
+            this
+        ) { _, bundle ->
+            val result = bundle.getBoolean("CloseCamera")
+            if (result) {
+                supportFragmentManager.setFragmentResult(
+                    "com.vaultsec.vaultsec.ui.CameraFragment.restoreSettings",
+                    bundleOf(
+                        "RestoreSettings" to true
+                    )
+                )
+                window.decorView.systemUiVisibility -= View.SYSTEM_UI_FLAG_FULLSCREEN
+                binding.toolbar.isVisible = true
+                val actionBarSize = calculateActionBarSize()
+                val params =
+                    binding.fragmentContainerView.layoutParams as ViewGroup.MarginLayoutParams
+                params.setMargins(0, actionBarSize, 0, 0)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    window.attributes.layoutInDisplayCutoutMode =
+                        WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
+                }
+            }
+        }
 
         playOpeningAnimation(view)
 
@@ -102,6 +146,13 @@ class BottomNavigationActivity : AppCompatActivity() {
         }
     }
 
+    private fun calculateActionBarSize(): Int {
+        val tv = TypedValue()
+        if (theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
+            return TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics)
+        }
+        return -1
+    }
 
     override fun onSupportNavigateUp(): Boolean {
         hideKeyboard(this)
