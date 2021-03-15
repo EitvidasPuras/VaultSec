@@ -397,17 +397,3 @@ class NoteRepository @Inject constructor(
         }
     }
 }
-
-// TODO: 2021-02-17 --------------------------------------------------------------------------------
-//  Pass the whole list here for deletion.
-//  Split the list into synced and unsynced notes. Unsynced notes can be deleted immediately.
-//  For the synced notes try to perform an API request to delete them from the server.
-//  If it succeeds: delete the notes inside Room
-//  If it fails: mark the isDeleted to true and try to sync later
-
-// TODO: 2021-02-17 --------------------------------------------------------------------------------
-//  Upon clicking the undo button, pass the whole list here.
-//  Split the list into synced and unsynced notes. Unsynced notes can be restored immediately.
-//  For the synced notes try to perform an API request to restore them in the server.
-//  If it succeeds: restore the notes inside Room
-//  If it fails: mark the isDeleted to false and try to sync later
