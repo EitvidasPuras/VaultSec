@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import androidx.activity.addCallback
 import androidx.camera.core.*
 import androidx.camera.extensions.HdrImageCaptureExtender
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -51,19 +50,6 @@ class CameraFragment : Fragment(R.layout.fragment_camera) {
                     imageCapture!!.targetRotation = rotation
                 }
             }
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        activity?.onBackPressedDispatcher?.addCallback {
-            requireActivity().supportFragmentManager.setFragmentResult(
-                "com.vaultsec.vaultsec.ui.CameraFragment.closeCamera",
-                bundleOf(
-                    "CloseCamera" to true
-                )
-            )
-            findNavController().popBackStack()
         }
     }
 
@@ -254,7 +240,6 @@ class CameraFragment : Fragment(R.layout.fragment_camera) {
                     )
                 )
                 findNavController().popBackStack()
-
                 languageIdentifier.identifyPossibleLanguages(it.text)
                     .addOnSuccessListener { identifiedLanguages ->
                         for (language in identifiedLanguages) {

@@ -39,6 +39,8 @@ class BottomNavigationActivity : AppCompatActivity() {
     private lateinit var backToast: Toast
     private lateinit var navController: NavController
 
+    private var defaultStatusBarColor: Int = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityBottomNavigationBinding.inflate(layoutInflater)
@@ -74,7 +76,10 @@ class BottomNavigationActivity : AppCompatActivity() {
         ) { _, bundle ->
             val result = bundle.getBoolean("OpenCamera")
             if (result) {
+                defaultStatusBarColor = window.statusBarColor
+                window.statusBarColor = getColor(R.color.color_black)
                 window.decorView.systemUiVisibility += View.SYSTEM_UI_FLAG_FULLSCREEN
+                window.decorView.systemUiVisibility += View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                 binding.toolbar.isVisible = false
                 val params =
                     binding.fragmentContainerView.layoutParams as ViewGroup.MarginLayoutParams
@@ -157,6 +162,33 @@ class BottomNavigationActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         hideKeyboard(this)
         return navController.navigateUp() || super.onSupportNavigateUp()
+    }
+
+    override fun onBackPressed() {
+        if (navController.currentDestination?.id == R.id.cameraFragment) {
+            supportFragmentManager.setFragmentResult(
+                "com.vaultsec.vaultsec.ui.CameraFragment.restoreSettings",
+                bundleOf(
+                    "RestoreSettings" to true
+                )
+            )
+            window.statusBarColor = defaultStatusBarColor
+            /*
+            * These are apparently deprecated in Android 12 ... Oh well
+            * */
+            window.decorView.systemUiVisibility -= View.SYSTEM_UI_FLAG_FULLSCREEN
+            window.decorView.systemUiVisibility -= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            binding.toolbar.isVisible = true
+            val actionBarSize = calculateActionBarSize()
+            val params =
+                binding.fragmentContainerView.layoutParams as ViewGroup.MarginLayoutParams
+            params.setMargins(0, actionBarSize, 0, 0)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                window.attributes.layoutInDisplayCutoutMode =
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
+            }
+        }
+        super.onBackPressed()
     }
 
     private fun playOpeningAnimation(view: View) {
