@@ -104,7 +104,12 @@ class BottomNavigationActivity : AppCompatActivity() {
                         "RestoreSettings" to true
                     )
                 )
+                window.statusBarColor = defaultStatusBarColor
+                /*
+                * These are apparently deprecated in Android 12 ... Oh well
+                * */
                 window.decorView.systemUiVisibility -= View.SYSTEM_UI_FLAG_FULLSCREEN
+                window.decorView.systemUiVisibility -= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                 binding.toolbar.isVisible = true
                 val actionBarSize = calculateActionBarSize()
                 val params =
