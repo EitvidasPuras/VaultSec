@@ -22,7 +22,6 @@ import com.vaultsec.vaultsec.util.hasInternetConnection
 import com.vaultsec.vaultsec.util.hideKeyboard
 import com.vaultsec.vaultsec.viewmodel.*
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.activity_start.*
 import kotlinx.coroutines.flow.collect
 
 @AndroidEntryPoint
@@ -107,7 +106,9 @@ class RegistrationFragment : Fragment(R.layout.fragment_registration) {
                         binding.textfieldRegistrationPasswordRetypeLayout.error = null
                     }
                     is TokenViewModel.TokenEvent.ShowProgressBar -> {
-                        requireActivity().progressbar_start.isVisible = event.doShow
+                        val progressbar =
+                            requireActivity().findViewById<View>(R.id.progressbar_start)
+                        progressbar.isVisible = event.doShow
                     }
                     TokenViewModel.TokenEvent.SuccessfulRegistration -> {
                         setFragmentResult(

@@ -1,6 +1,5 @@
 package com.vaultsec.vaultsec.ui
 
-import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -87,15 +86,9 @@ class StartActivity : AppCompatActivity() {
     private fun isUserLoggedIn() {
         try {
             tokenViewModel.getToken().token
-            openBottomNavigationActivity()
+            navController.navigate(R.id.fragment_master_password)
         } catch (e: NullPointerException) {
         }
-    }
-
-    private fun openBottomNavigationActivity() {
-        val bottomNavIntent = Intent(this, BottomNavigationActivity::class.java)
-        startActivity(bottomNavIntent)
-        finish()
     }
 
     override fun onSupportNavigateUp(): Boolean {

@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
 import com.vaultsec.vaultsec.database.converter.DateConverter
 import com.vaultsec.vaultsec.util.exclusion.Exclude
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import java.sql.Timestamp
 
 @Entity(tableName = "vault_notes")

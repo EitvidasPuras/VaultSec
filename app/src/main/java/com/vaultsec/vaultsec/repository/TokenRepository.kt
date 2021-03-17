@@ -1,17 +1,16 @@
 package com.vaultsec.vaultsec.repository
 
 import android.util.Log
-import com.google.gson.Gson
 import com.vaultsec.vaultsec.database.PasswordManagerDatabase
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.database.entity.Token
 import com.vaultsec.vaultsec.network.PasswordManagerApi
-import com.vaultsec.vaultsec.network.entity.ApiError
 import com.vaultsec.vaultsec.network.entity.ApiUser
 import com.vaultsec.vaultsec.util.ErrorTypes
 import com.vaultsec.vaultsec.util.Resource
 import com.vaultsec.vaultsec.util.SyncType
 import kotlinx.coroutines.flow.first
+import org.json.JSONObject
 import retrofit2.HttpException
 import java.net.ConnectException
 import java.net.SocketException
@@ -29,6 +28,8 @@ class TokenRepository
 //    private val database = PasswordManagerDatabase.getInstance(application)
 //    private val tokenDao = database.tokenDao()
 //    private val api: PasswordManagerApi = PasswordManagerService().apiService
+
+    private var apiError = JSONObject()
 
     suspend fun insert(token: Token) {
         tokenDao.insert(token)
@@ -58,14 +59,21 @@ class TokenRepository
         } catch (e: Exception) {
             when (e) {
                 is HttpException -> {
-                    val errorBody = e.response()?.errorBody()
-//                    Log.e("errorBody", errorBody!!.string())
-                    val apiError: ApiError = Gson().fromJson(
-                        errorBody!!.charStream(),
-                        ApiError::class.java
+                    /*
+                    * To prevent it from displaying previously shown errors, in case the
+                    * errorBody()?.charStream()!! doesn't work
+                    * */
+                    apiError = JSONObject()
+                    apiError = JSONObject(e.response()?.errorBody()?.charStream()!!.readText())
+                    Log.e(
+                        "errorBody",
+                        apiError.toString()
                     )
-                    Log.e("com.vaultsec.vaultsec.repository.postRegister.HTTP", apiError.error)
-                    return Resource.Error<Any>(ErrorTypes.HTTP, apiError.error)
+                    Log.e(
+                        "com.vaultsec.vaultsec.repository.TokenRepository.postRegister.HTTP",
+                        apiError.getString("error")
+                    )
+                    return Resource.Error<Any>(ErrorTypes.HTTP, apiError.getString("error"))
                 }
                 is SocketTimeoutException -> {
                     Log.e(
@@ -125,14 +133,17 @@ class TokenRepository
         } catch (e: Exception) {
             when (e) {
                 is HttpException -> {
-                    val errorBody = e.response()?.errorBody()
-                    Log.e("errorBody", errorBody!!.string())
-                    val apiError: ApiError = Gson().fromJson(
-                        errorBody!!.charStream(),
-                        ApiError::class.java
+                    apiError = JSONObject()
+                    apiError = JSONObject(e.response()?.errorBody()?.charStream()!!.readText())
+                    Log.e(
+                        "errorBody",
+                        apiError.toString()
                     )
-                    Log.e("com.vaultsec.vaultsec.repository.postLogin.HTTP", apiError.error)
-                    return Resource.Error<Any>(ErrorTypes.HTTP, apiError.error)
+                    Log.e(
+                        "com.vaultsec.vaultsec.repository.TokenRepository.postLogin.HTTP",
+                        apiError.getString("error")
+                    )
+                    return Resource.Error<Any>(ErrorTypes.HTTP, apiError.getString("error"))
                 }
                 is SocketTimeoutException -> {
                     Log.e(
@@ -168,7 +179,6 @@ class TokenRepository
             val combinedNotes = arrayListOf<Note>()
             // Sync noted before logout
             val syncedButDeleted = noteDao.getSyncedDeletedNotesIds()
-            val unsyncedNotes = noteDao.getUnsyncedNotes()
             api.deleteNotes(syncedButDeleted.first() as ArrayList<Int>, header)
 
             combinedNotes.addAll(noteDao.getSyncedUpdatedNotes().first())
@@ -183,14 +193,17 @@ class TokenRepository
         } catch (e: Exception) {
             when (e) {
                 is HttpException -> {
-                    val errorBody = e.response()?.errorBody()
-                    Log.e("errorBody", errorBody!!.string())
-                    val apiError: ApiError = Gson().fromJson(
-                        errorBody!!.charStream(),
-                        ApiError::class.java
+                    apiError = JSONObject()
+                    apiError = JSONObject(e.response()?.errorBody()?.charStream()!!.readText())
+                    Log.e(
+                        "errorBody",
+                        apiError.toString()
                     )
-                    Log.e("com.vaultsec.vaultsec.repository.postLogout.HTTP", apiError.error)
-                    return Resource.Error<Any>(ErrorTypes.HTTP, apiError.error)
+                    Log.e(
+                        "com.vaultsec.vaultsec.repository.TokenRepository.postLogout.HTTP",
+                        apiError.getString("error")
+                    )
+                    return Resource.Error<Any>(ErrorTypes.HTTP, apiError.getString("error"))
                 }
                 is SocketTimeoutException -> {
                     Log.e(
@@ -243,13 +256,17 @@ class TokenRepository
         } catch (e: Exception) {
             when (e) {
                 is HttpException -> {
-                    val errorBody = e.response()?.errorBody()
-                    val apiError: ApiError = Gson().fromJson(
-                        errorBody!!.charStream(),
-                        ApiError::class.java
+                    apiError = JSONObject()
+                    apiError = JSONObject(e.response()?.errorBody()?.charStream()!!.readText())
+                    Log.e(
+                        "errorBody",
+                        apiError.toString()
                     )
-                    Log.e("com.vaultsec.vaultsec.repository.getUserNotes.HTTP", apiError.error)
-                    return Resource.Error<Any>(ErrorTypes.HTTP, apiError.error)
+                    Log.e(
+                        "com.vaultsec.vaultsec.repository.TokenRepository.getUserNotes.HTTP",
+                        apiError.getString("error")
+                    )
+                    return Resource.Error<Any>(ErrorTypes.HTTP, apiError.getString("error"))
                 }
                 is SocketTimeoutException -> {
                     Log.e(

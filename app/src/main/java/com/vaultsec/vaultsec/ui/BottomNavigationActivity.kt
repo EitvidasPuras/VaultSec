@@ -170,7 +170,7 @@ class BottomNavigationActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (navController.currentDestination?.id == R.id.cameraFragment) {
+        if (navController.currentDestination?.id == R.id.fragment_camera) {
             supportFragmentManager.setFragmentResult(
                 "com.vaultsec.vaultsec.ui.CameraFragment.restoreSettings",
                 bundleOf(

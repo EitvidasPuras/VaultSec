@@ -25,7 +25,6 @@ import com.vaultsec.vaultsec.viewmodel.HTTP_EMAIL_ERROR
 import com.vaultsec.vaultsec.viewmodel.HTTP_PASSWORD_ERROR
 import com.vaultsec.vaultsec.viewmodel.TokenViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.activity_start.*
 import kotlinx.coroutines.flow.collect
 
 @AndroidEntryPoint
@@ -118,11 +117,11 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                         binding.textfieldLoginPasswordLayout.error = null
                     }
                     is TokenViewModel.TokenEvent.ShowProgressBar -> {
-                        requireActivity().progressbar_start.isVisible = event.doShow
+                        val progressbar =
+                            requireActivity().findViewById<View>(R.id.progressbar_start)
+                        progressbar.isVisible = event.doShow
+//                        requireActivity().progressbar_start.isVisible = event.doShow
                     }
-//                    is TokenViewModel.TokenEvent.HideProgressBar -> {
-//                        requireActivity().progressbar_in_start.visibility = View.INVISIBLE
-//                    }
                     is TokenViewModel.TokenEvent.ShowHttpError -> {
                         when (event.whereToDisplay) {
                             HTTP_EMAIL_ERROR -> {

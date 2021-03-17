@@ -5,10 +5,13 @@
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-feature android:name="android.hardware.camera2"
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-feature
+        android:name="android.hardware.camera2"
         android:required="true" />
-    <uses-feature android:name="android.hardware.camera"
+    <uses-feature
+        android:name="android.hardware.camera"
         android:required="true" />
 
     <application
@@ -17,23 +20,22 @@
         android:fullBackupContent="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:resizeableActivity="false"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:resizeableActivity="false"
-
         android:usesCleartextTraffic="true"
         tools:ignore="LockedOrientationActivity">
         <activity
             android:name=".ui.BottomNavigationActivity"
             android:screenOrientation="portrait"
+            android:supportsPictureInPicture="false"
             android:theme="@style/AfterLoginTheme"
-            android:windowSoftInputMode="stateVisible|adjustPan"
-            android:supportsPictureInPicture="false"/>
+            android:windowSoftInputMode="stateVisible|adjustPan" />
         <activity
             android:name=".ui.StartActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme"
-            android:supportsPictureInPicture="false">
+            android:supportsPictureInPicture="false"
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

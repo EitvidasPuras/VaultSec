@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.entity.Note
-import kotlinx.android.synthetic.main.note_item.view.*
+//import kotlinx.android.synthetic.main.note_item.view.*
 
 class NoteAdapter(
     private val listener: OnItemClickListener
@@ -40,10 +40,10 @@ class NoteAdapter(
     }
 
     inner class NoteHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var container: MaterialCardView = itemView.cardview_note
-        var textViewTitle: TextView = itemView.textview_note_title
-        var textViewText: TextView = itemView.textview_note_text
-        var textViewSynced: TextView = itemView.textview_test_synced
+        var container: MaterialCardView = itemView.findViewById(R.id.cardview_note)
+        var textViewTitle: TextView = itemView.findViewById(R.id.textview_note_title)
+        var textViewText: TextView = itemView.findViewById(R.id.textview_note_text)
+        var textViewSynced: TextView = itemView.findViewById(R.id.textview_test_synced)
 
         init {
             itemView.setOnClickListener {

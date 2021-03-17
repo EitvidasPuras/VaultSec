@@ -370,7 +370,7 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
                             )
                         )
                         val action =
-                            AddEditNoteFragmentDirections.actionFragmentAddEditNoteToCameraFragment()
+                            AddEditNoteFragmentDirections.actionFragmentAddEditNoteToFragmentCamera()
                         findNavController().navigate(action)
                     }
                 }

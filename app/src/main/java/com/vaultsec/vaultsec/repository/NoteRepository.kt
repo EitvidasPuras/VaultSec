@@ -1,18 +1,17 @@
 package com.vaultsec.vaultsec.repository
 
 import android.util.Log
-import com.google.gson.Gson
 import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.dao.NoteDao
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.network.PasswordManagerApi
-import com.vaultsec.vaultsec.network.entity.ApiError
 import com.vaultsec.vaultsec.util.Resource
 import com.vaultsec.vaultsec.util.SyncType
 import com.vaultsec.vaultsec.util.isNetworkAvailable
 import com.vaultsec.vaultsec.util.networkBoundResource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import org.json.JSONObject
 import retrofit2.HttpException
 import javax.inject.Inject
 
@@ -22,6 +21,7 @@ class NoteRepository @Inject constructor(
     private val tokenRepository: TokenRepository
 ) {
     private var didPerformDeletionAPICall: Boolean = false
+    private var apiError = JSONObject()
 
     suspend fun insert(note: Note) {
         if (isNetworkAvailable) {
@@ -42,15 +42,15 @@ class NoteRepository @Inject constructor(
                 noteDao.insert(note)
                 when (e) {
                     is HttpException -> {
-                        val errorBody = e.response()?.errorBody()
-                        Log.e("errorBody", errorBody!!.string())
-                        val apiError: ApiError = Gson().fromJson(
-                            errorBody!!.charStream(),
-                            ApiError::class.java
+                        apiError = JSONObject()
+                        apiError = JSONObject(e.response()?.errorBody()?.charStream()!!.readText())
+                        Log.e(
+                            "errorBody",
+                            apiError.toString()
                         )
                         Log.e(
                             "com.vaultsec.vaultsec.repository.NoteRepository.insert.HTTP",
-                            apiError.error
+                            apiError.getString("error")
                         )
                     }
                     else -> {
@@ -108,20 +108,20 @@ class NoteRepository @Inject constructor(
                 }
                 when (e) {
                     is HttpException -> {
-                        val errorBody = e.response()?.errorBody()
-                        Log.e("errorBody", errorBody!!.string())
-                        val apiError: ApiError = Gson().fromJson(
-                            errorBody!!.charStream(),
-                            ApiError::class.java
+                        apiError = JSONObject()
+                        apiError = JSONObject(e.response()?.errorBody()?.charStream()!!.readText())
+                        Log.e(
+                            "errorBody",
+                            apiError.toString()
                         )
                         Log.e(
-                            "com.vaultsec.vaultsec.repository.NoteRepository.insert.HTTP",
-                            apiError.error
+                            "com.vaultsec.vaultsec.repository.NoteRepository.update.HTTP",
+                            apiError.getString("error")
                         )
                     }
                     else -> {
                         Log.e(
-                            "com.vaultsec.vaultsec.repository.NoteRepository.insert.ELSE",
+                            "com.vaultsec.vaultsec.repository.NoteRepository.update.ELSE",
                             e.localizedMessage!!
                         )
                     }
@@ -249,15 +249,16 @@ class NoteRepository @Inject constructor(
                 } catch (e: Exception) {
                     when (e) {
                         is HttpException -> {
-                            val errorBody = e.response()?.errorBody()
-                            Log.e("errorBody", errorBody!!.string())
-                            val apiError: ApiError = Gson().fromJson(
-                                errorBody!!.charStream(),
-                                ApiError::class.java
+                            apiError = JSONObject()
+                            apiError =
+                                JSONObject(e.response()?.errorBody()?.charStream()!!.readText())
+                            Log.e(
+                                "errorBody",
+                                apiError.toString()
                             )
                             Log.e(
                                 "com.vaultsec.vaultsec.repository.NoteRepository.deleteSelectedNotes.HTTP",
-                                apiError.error
+                                apiError.getString("error")
                             )
                             return Resource.Error()
                         }
@@ -349,15 +350,16 @@ class NoteRepository @Inject constructor(
                         }
                         when (e) {
                             is HttpException -> {
-                                val errorBody = e.response()?.errorBody()
-                                Log.e("errorBody", errorBody!!.string())
-                                val apiError: ApiError = Gson().fromJson(
-                                    errorBody!!.charStream(),
-                                    ApiError::class.java
+                                apiError = JSONObject()
+                                apiError =
+                                    JSONObject(e.response()?.errorBody()?.charStream()!!.readText())
+                                Log.e(
+                                    "errorBody",
+                                    apiError.toString()
                                 )
                                 Log.e(
                                     "com.vaultsec.vaultsec.repository.NoteRepository.undoDeletedNotes.HTTP",
-                                    apiError.error
+                                    apiError.getString("error")
                                 )
                             }
                             else -> {
