@@ -1,7 +1,6 @@
 package com.vaultsec.vaultsec.ui.note
 
 import android.os.Bundle
-import android.util.Base64
 import android.util.Log
 import android.view.*
 import androidx.appcompat.widget.SearchView
@@ -17,7 +16,6 @@ import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import androidx.security.crypto.MasterKey
 import com.google.android.material.snackbar.Snackbar
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.SortOrder
@@ -29,12 +27,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import java.security.SecureRandom
-import javax.crypto.Cipher
-import javax.crypto.SecretKeyFactory
-import javax.crypto.spec.IvParameterSpec
-import javax.crypto.spec.PBEKeySpec
-import javax.crypto.spec.SecretKeySpec
 
 /**
  * A simple [Fragment] subclass.
@@ -65,9 +57,10 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
         setHasOptionsMenu(true)
         playSlidingAnimation(true, requireActivity())
 
-        val mainKey = MasterKey.Builder(requireContext())
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
+        /*
+        * FOR TESTING ONLY. WILL BE REMOVED LATER
+        * */
+        noteViewModel.encryptText("1234567890ABCabc")
 
         val layoutM = StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL)
         noteAdapter = NoteAdapter(this)
@@ -233,42 +226,6 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
 
     }
 
-    private fun test101(text: String, password: String) {
-        var saltBytes: ByteArray = getRandomBytes()
-        Log.e("Random bytes", Base64.encodeToString(saltBytes, Base64.DEFAULT))
-
-        val factory: SecretKeyFactory = SecretKeyFactory.getInstance("PBEwithHmacSHA256AndAES_256")
-        Log.e("Factory", factory.toString())
-        val spec = PBEKeySpec(password.toCharArray(), saltBytes, 40000, 256)
-        val secretKey = factory.generateSecret(spec)
-        Log.e("secretKey object", secretKey.toString())
-        Log.e("secretKey base64", Base64.encodeToString(secretKey.encoded, Base64.DEFAULT))
-        val secreyKeySpec = SecretKeySpec(secretKey.encoded, "AES")
-        Log.e("secretKeySpec object", secreyKeySpec.toString())
-        Log.e("secretKeySpec base64", Base64.encodeToString(secreyKeySpec.encoded, Base64.DEFAULT))
-
-        val cipher = Cipher.getInstance("AES_256/CBC/PKCS5Padding")
-        cipher.init(Cipher.ENCRYPT_MODE, secreyKeySpec)
-        val params = cipher.parameters
-        Log.e("Params", Base64.encodeToString(params.encoded, Base64.DEFAULT))
-        val ivBytes = params.getParameterSpec(IvParameterSpec::class.java).iv
-        Log.e("IvBytes", Base64.encodeToString(ivBytes, Base64.DEFAULT))
-        val encrypterByteArray = cipher.doFinal(text.toByteArray(Charsets.UTF_8))
-        Log.e("EncryptedByteArray", Base64.encodeToString(encrypterByteArray, Base64.DEFAULT))
-
-        val everything = ByteArray(saltBytes.size + ivBytes.size + encrypterByteArray.size)
-
-        Log.e("Everything", Base64.encodeToString(everything, Base64.DEFAULT))
-
-        Log.e("Random playaround", "random".encodeToByteArray().decodeToString())
-    }
-
-    private fun getRandomBytes(): ByteArray {
-        val ba = ByteArray(512)
-        SecureRandom().nextBytes(ba)
-        return ba
-    }
-
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.notes_fragment_menu, menu)
 
@@ -412,15 +369,6 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
         })
     }
 
-    override fun onResume() {
-        super.onResume()
-        Log.e("onResume", "onResume")
-//        test101("textToEncrypt", "password123")
-//        Log.e("hashString", hashString("masterpasswordamazing"))
-//        Log.e("hashString length", hashString("masterpasswordamazing").length.toString())
-//        noteViewModel.onManualNoteSync()
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         mActionMode?.finish()
@@ -439,7 +387,6 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
                 }
             }
         })
-        Log.e("hasInternetConnection START", "${hasInternetConnection(requireActivity())}")
         noteViewModel.onStart()
     }
 }

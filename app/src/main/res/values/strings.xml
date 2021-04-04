@@ -31,6 +31,7 @@
     <string name="error_last_name_length">Last name is too long</string>
     <string name="error_last_name_format">Invalid last name</string>
     <string name="error_email_format">Invalid email address</string>
+    <string name="error_master_password_incorrect">Master password is incorrect</string>
     <string name="error_password_length_short">Must be at least 10 characters long</string>
     <string name="error_password_length_long">Password is too long</string>
     <string name="error_password_format">A stronger password is required</string>

@@ -17,7 +17,7 @@ import java.net.SocketException
 import java.net.SocketTimeoutException
 import javax.inject.Inject
 
-class TokenRepository
+class SessionRepository
 @Inject constructor(
     private val db: PasswordManagerDatabase,
     private val api: PasswordManagerApi
@@ -70,7 +70,7 @@ class TokenRepository
                         apiError.toString()
                     )
                     Log.e(
-                        "com.vaultsec.vaultsec.repository.TokenRepository.postRegister.HTTP",
+                        "com.vaultsec.vaultsec.repository.SessionRepository.postRegister.HTTP",
                         apiError.getString("error")
                     )
                     return Resource.Error<Any>(ErrorTypes.HTTP, apiError.getString("error"))
@@ -140,7 +140,7 @@ class TokenRepository
                         apiError.toString()
                     )
                     Log.e(
-                        "com.vaultsec.vaultsec.repository.TokenRepository.postLogin.HTTP",
+                        "com.vaultsec.vaultsec.repository.SessionRepository.postLogin.HTTP",
                         apiError.getString("error")
                     )
                     return Resource.Error<Any>(ErrorTypes.HTTP, apiError.getString("error"))
@@ -200,7 +200,7 @@ class TokenRepository
                         apiError.toString()
                     )
                     Log.e(
-                        "com.vaultsec.vaultsec.repository.TokenRepository.postLogout.HTTP",
+                        "com.vaultsec.vaultsec.repository.SessionRepository.postLogout.HTTP",
                         apiError.getString("error")
                     )
                     return Resource.Error<Any>(ErrorTypes.HTTP, apiError.getString("error"))
@@ -263,7 +263,7 @@ class TokenRepository
                         apiError.toString()
                     )
                     Log.e(
-                        "com.vaultsec.vaultsec.repository.TokenRepository.getUserNotes.HTTP",
+                        "com.vaultsec.vaultsec.repository.SessionRepository.getUserNotes.HTTP",
                         apiError.getString("error")
                     )
                     return Resource.Error<Any>(ErrorTypes.HTTP, apiError.getString("error"))

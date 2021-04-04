@@ -1,6 +1,7 @@
 package com.vaultsec.vaultsec.ui.registration
 
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -18,8 +19,10 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.databinding.FragmentRegistrationBinding
-import com.vaultsec.vaultsec.util.hasInternetConnection
+import com.vaultsec.vaultsec.util.NetworkUtil
+import com.vaultsec.vaultsec.util.OnConnectionStatusChange
 import com.vaultsec.vaultsec.util.hideKeyboard
+import com.vaultsec.vaultsec.util.isNetworkAvailable
 import com.vaultsec.vaultsec.viewmodel.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
@@ -29,7 +32,7 @@ class RegistrationFragment : Fragment(R.layout.fragment_registration) {
     private var _binding: FragmentRegistrationBinding? = null
     private val binding get() = _binding!!
 
-    private val tokenViewModel: TokenViewModel by viewModels()
+    private val sessionViewModel: SessionViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -67,8 +70,8 @@ class RegistrationFragment : Fragment(R.layout.fragment_registration) {
 
         binding.buttonRegistration.setOnClickListener {
             hideKeyboard(requireActivity())
-            if (hasInternetConnection(requireActivity())) {
-                tokenViewModel.onRegisterClick(
+            if (isNetworkAvailable) {
+                sessionViewModel.onRegisterClick(
                     binding.textfieldRegistrationFirstname.text.toString(),
                     binding.textfieldRegistrationLastname.text.toString(),
                     binding.textfieldRegistrationEmail.text.toString(),
@@ -85,32 +88,32 @@ class RegistrationFragment : Fragment(R.layout.fragment_registration) {
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            tokenViewModel.tokenEvent.collect { event ->
+            sessionViewModel.sessionEvent.collect { event ->
                 /*
                 * The cases that belong to LoginFragment won't be handled here
                 * */
                 when (event) {
-                    TokenViewModel.TokenEvent.ClearErrorsFirstName -> {
+                    SessionViewModel.SessionEvent.ClearErrorsFirstName -> {
                         binding.textfieldRegistrationFirstnameLayout.error = null
                     }
-                    TokenViewModel.TokenEvent.ClearErrorsLastName -> {
+                    SessionViewModel.SessionEvent.ClearErrorsLastName -> {
                         binding.textfieldRegistrationLastnameLayout.error = null
                     }
-                    TokenViewModel.TokenEvent.ClearErrorsEmail -> {
+                    SessionViewModel.SessionEvent.ClearErrorsEmail -> {
                         binding.textfieldRegistrationEmailLayout.error = null
                     }
-                    TokenViewModel.TokenEvent.ClearErrorsPassword -> {
+                    SessionViewModel.SessionEvent.ClearErrorsPassword -> {
                         binding.textfieldRegistrationPasswordLayout.error = null
                     }
-                    TokenViewModel.TokenEvent.ClearErrorsPasswordRetype -> {
+                    SessionViewModel.SessionEvent.ClearErrorsPasswordRetype -> {
                         binding.textfieldRegistrationPasswordRetypeLayout.error = null
                     }
-                    is TokenViewModel.TokenEvent.ShowProgressBar -> {
+                    is SessionViewModel.SessionEvent.ShowProgressBar -> {
                         val progressbar =
                             requireActivity().findViewById<View>(R.id.progressbar_start)
                         progressbar.isVisible = event.doShow
                     }
-                    TokenViewModel.TokenEvent.SuccessfulRegistration -> {
+                    SessionViewModel.SessionEvent.SuccessfulRegistration -> {
                         setFragmentResult(
                             "com.vaultsec.vaultsec.ui.registration.RegistrationFragment",
                             bundleOf(
@@ -119,24 +122,24 @@ class RegistrationFragment : Fragment(R.layout.fragment_registration) {
                         )
                         findNavController().popBackStack()
                     }
-                    is TokenViewModel.TokenEvent.ShowFirstNameInputError -> {
+                    is SessionViewModel.SessionEvent.ShowFirstNameInputError -> {
                         binding.textfieldRegistrationFirstnameLayout.error =
                             getString(event.message)
                     }
-                    is TokenViewModel.TokenEvent.ShowLastNameInputError -> {
+                    is SessionViewModel.SessionEvent.ShowLastNameInputError -> {
                         binding.textfieldRegistrationLastnameLayout.error = getString(event.message)
                     }
-                    is TokenViewModel.TokenEvent.ShowEmailInputError -> {
+                    is SessionViewModel.SessionEvent.ShowEmailInputError -> {
                         binding.textfieldRegistrationEmailLayout.error = getString(event.message)
                     }
-                    is TokenViewModel.TokenEvent.ShowPasswordInputError -> {
+                    is SessionViewModel.SessionEvent.ShowPasswordInputError -> {
                         binding.textfieldRegistrationPasswordLayout.error = getString(event.message)
                     }
-                    is TokenViewModel.TokenEvent.ShowPasswordRetypeInputError -> {
+                    is SessionViewModel.SessionEvent.ShowPasswordRetypeInputError -> {
                         binding.textfieldRegistrationPasswordRetypeLayout.error =
                             getString(event.message)
                     }
-                    is TokenViewModel.TokenEvent.ShowHttpError -> {
+                    is SessionViewModel.SessionEvent.ShowHttpError -> {
                         when (event.whereToDisplay) {
                             HTTP_FIRST_NAME_ERROR -> {
                                 binding.textfieldRegistrationFirstnameLayout.error = event.message
@@ -161,7 +164,7 @@ class RegistrationFragment : Fragment(R.layout.fragment_registration) {
                             }
                         }
                     }
-                    is TokenViewModel.TokenEvent.ShowRequestError -> {
+                    is SessionViewModel.SessionEvent.ShowRequestError -> {
                         Snackbar.make(requireView(), event.message, Snackbar.LENGTH_LONG)
                             .setBackgroundTint(requireContext().getColor(R.color.color_error_snackbar))
                             .show()
@@ -182,6 +185,19 @@ class RegistrationFragment : Fragment(R.layout.fragment_registration) {
     override fun onStop() {
         super.onStop()
         clearFocus()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        NetworkUtil().checkNetworkInfo(requireContext(), object : OnConnectionStatusChange {
+            override fun onChange(isAvailable: Boolean) {
+                if (isAvailable) {
+                    Log.e("$isNetworkAvailable", "AVAILABLE")
+                } else {
+                    Log.e("$isNetworkAvailable", "UNAVAILABLE")
+                }
+            }
+        })
     }
 
     private fun clearFocus() {

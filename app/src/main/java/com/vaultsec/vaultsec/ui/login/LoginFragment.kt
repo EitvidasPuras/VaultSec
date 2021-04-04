@@ -2,6 +2,7 @@ package com.vaultsec.vaultsec.ui.login
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -19,11 +20,13 @@ import com.google.android.material.snackbar.Snackbar
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.databinding.FragmentLoginBinding
 import com.vaultsec.vaultsec.ui.BottomNavigationActivity
-import com.vaultsec.vaultsec.util.hasInternetConnection
+import com.vaultsec.vaultsec.util.NetworkUtil
+import com.vaultsec.vaultsec.util.OnConnectionStatusChange
 import com.vaultsec.vaultsec.util.hideKeyboard
+import com.vaultsec.vaultsec.util.isNetworkAvailable
 import com.vaultsec.vaultsec.viewmodel.HTTP_EMAIL_ERROR
 import com.vaultsec.vaultsec.viewmodel.HTTP_PASSWORD_ERROR
-import com.vaultsec.vaultsec.viewmodel.TokenViewModel
+import com.vaultsec.vaultsec.viewmodel.SessionViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 
@@ -32,7 +35,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
 
-    private val tokenViewModel: TokenViewModel by viewModels()
+    private val sessionViewModel: SessionViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,7 +58,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             "com.vaultsec.vaultsec.ui.registration.RegistrationFragment"
         ) { _, bundle ->
             val result = bundle.getBoolean("RegistrationResult")
-            tokenViewModel.onRegistrationResult(result)
+            sessionViewModel.onRegistrationResult(result)
         }
 
         binding.textfieldLoginPassword.setOnEditorActionListener(object :
@@ -70,8 +73,8 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         })
         binding.buttonLogin.setOnClickListener {
             hideKeyboard(requireActivity())
-            if (hasInternetConnection(requireActivity())) {
-                tokenViewModel.onLoginClick(
+            if (isNetworkAvailable) {
+                sessionViewModel.onLoginClick(
                     binding.textfieldLoginEmail.text.toString(),
                     binding.textfieldLoginPassword.text.toString()
                 )
@@ -85,44 +88,43 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         }
 
         binding.textviewLoginCreate.setOnClickListener {
-            tokenViewModel.onCreateAccountClick()
+            sessionViewModel.onCreateAccountClick()
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            tokenViewModel.tokenEvent.collect { event ->
+            sessionViewModel.sessionEvent.collect { event ->
                 /*
                 * The cases that belong to RegistrationFragment won't be handled here
                 * */
                 when (event) {
-                    is TokenViewModel.TokenEvent.NavigateToRegistrationFragment -> {
+                    is SessionViewModel.SessionEvent.NavigateToRegistrationFragment -> {
                         val action =
                             LoginFragmentDirections.actionFragmentLoginToFragmentRegistration()
                         findNavController().navigate(action)
                     }
-                    is TokenViewModel.TokenEvent.ShowSuccessfulRegistrationMessage -> {
+                    is SessionViewModel.SessionEvent.ShowSuccessfulRegistrationMessage -> {
                         Snackbar.make(requireView(), event.message, Snackbar.LENGTH_LONG)
                             .setBackgroundTint(requireContext().getColor(R.color.color_successful_snackbar))
                             .show()
                     }
-                    is TokenViewModel.TokenEvent.ShowEmailInputError -> {
+                    is SessionViewModel.SessionEvent.ShowEmailInputError -> {
                         binding.textfieldLoginEmailLayout.error = getString(event.message)
                     }
-                    is TokenViewModel.TokenEvent.ShowPasswordInputError -> {
+                    is SessionViewModel.SessionEvent.ShowPasswordInputError -> {
                         binding.textfieldLoginPasswordLayout.error = getString(event.message)
                     }
-                    is TokenViewModel.TokenEvent.ClearErrorsEmail -> {
+                    is SessionViewModel.SessionEvent.ClearErrorsEmail -> {
                         binding.textfieldLoginEmailLayout.error = null
                     }
-                    is TokenViewModel.TokenEvent.ClearErrorsPassword -> {
+                    is SessionViewModel.SessionEvent.ClearErrorsPassword -> {
                         binding.textfieldLoginPasswordLayout.error = null
                     }
-                    is TokenViewModel.TokenEvent.ShowProgressBar -> {
+                    is SessionViewModel.SessionEvent.ShowProgressBar -> {
                         val progressbar =
                             requireActivity().findViewById<View>(R.id.progressbar_start)
                         progressbar.isVisible = event.doShow
-//                        requireActivity().progressbar_start.isVisible = event.doShow
                     }
-                    is TokenViewModel.TokenEvent.ShowHttpError -> {
+                    is SessionViewModel.SessionEvent.ShowHttpError -> {
                         when (event.whereToDisplay) {
                             HTTP_EMAIL_ERROR -> {
                                 binding.textfieldLoginEmailLayout.error = event.message
@@ -137,12 +139,12 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                             }
                         }
                     }
-                    is TokenViewModel.TokenEvent.ShowRequestError -> {
+                    is SessionViewModel.SessionEvent.ShowRequestError -> {
                         Snackbar.make(requireView(), event.message, Snackbar.LENGTH_LONG)
                             .setBackgroundTint(requireContext().getColor(R.color.color_error_snackbar))
                             .show()
                     }
-                    TokenViewModel.TokenEvent.SuccessfulLogin -> {
+                    SessionViewModel.SessionEvent.SuccessfulLogin -> {
                         openBottomNavigationActivity()
                     }
                 }
@@ -159,6 +161,19 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     override fun onStop() {
         super.onStop()
         clearFocus()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        NetworkUtil().checkNetworkInfo(requireContext(), object : OnConnectionStatusChange {
+            override fun onChange(isAvailable: Boolean) {
+                if (isAvailable) {
+                    Log.e("$isNetworkAvailable", "AVAILABLE")
+                } else {
+                    Log.e("$isNetworkAvailable", "UNAVAILABLE")
+                }
+            }
+        })
     }
 
     private fun clearInputs() {

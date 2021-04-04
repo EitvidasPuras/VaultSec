@@ -5,14 +5,13 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vaultsec.vaultsec.R
+import com.vaultsec.vaultsec.database.PasswordManagerEncryptedSharedPreferences
 import com.vaultsec.vaultsec.database.PasswordManagerPreferences
 import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.entity.Token
 import com.vaultsec.vaultsec.network.entity.ApiUser
-import com.vaultsec.vaultsec.repository.TokenRepository
-import com.vaultsec.vaultsec.util.ErrorTypes
-import com.vaultsec.vaultsec.util.Resource
-import com.vaultsec.vaultsec.util.hashString
+import com.vaultsec.vaultsec.repository.SessionRepository
+import com.vaultsec.vaultsec.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -27,32 +26,34 @@ const val HTTP_EMAIL_ERROR = 3
 const val HTTP_PASSWORD_ERROR = 4
 const val HTTP_PASSWORD_RE_ERROR = 5
 
-class TokenViewModel
+class SessionViewModel
 @ViewModelInject constructor(
-    private val tokenRepository: TokenRepository,
-    private val prefsManager: PasswordManagerPreferences
+    private val sessionRepository: SessionRepository,
+    private val prefsManager: PasswordManagerPreferences,
+    private val encryptedPrefsManager: PasswordManagerEncryptedSharedPreferences
 ) : ViewModel() {
-//    private val tokenRepository: TokenRepository = TokenRepository(application)
+//    private val sessionRepository: SessionRepository = SessionRepository(application)
 
-    private val tokenEventChannel = Channel<TokenEvent>()
-    val tokenEvent = tokenEventChannel.receiveAsFlow()
+
+    private val sessionEventChannel = Channel<SessionEvent>()
+    val sessionEvent = sessionEventChannel.receiveAsFlow()
 
     fun insert(token: Token) = viewModelScope.launch(Dispatchers.IO) {
-        tokenRepository.insert(token)
+        sessionRepository.insert(token)
     }
 
     fun delete(token: Token) = viewModelScope.launch(Dispatchers.IO) {
-        tokenRepository.delete(token)
+        sessionRepository.delete(token)
     }
 
     fun getToken(): Token {
         return runBlocking {
-            tokenRepository.getToken()
+            sessionRepository.getToken()
         }
     }
 
     fun onCreateAccountClick() = viewModelScope.launch(Dispatchers.IO) {
-        tokenEventChannel.send(TokenEvent.NavigateToRegistrationFragment)
+        sessionEventChannel.send(SessionEvent.NavigateToRegistrationFragment)
     }
 
     fun onRegistrationResult(result: Boolean) {
@@ -63,40 +64,47 @@ class TokenViewModel
 
     private fun showSuccessfulRegistrationMessage(message: Int) =
         viewModelScope.launch(Dispatchers.IO) {
-            tokenEventChannel.send(TokenEvent.ShowSuccessfulRegistrationMessage(message))
+            sessionEventChannel.send(SessionEvent.ShowSuccessfulRegistrationMessage(message))
         }
 
     fun onLoginClick(emailInput: String, passInput: String) {
         if (isLoginInputValid(emailInput, passInput)) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ShowProgressBar(true))
+                sessionEventChannel.send(SessionEvent.ShowProgressBar(true))
                 val user = ApiUser(
                     email = emailInput,
-                    password = hashString(passInput)
+                    password = hashString(passInput, 1)
                 )
-                val response: Resource<*> = tokenRepository.postLogin(user)
-                tokenEventChannel.send(TokenEvent.ShowProgressBar(false))
+                val response: Resource<*> = sessionRepository.postLogin(user)
                 if (response is Resource.Success) {
-                    tokenEventChannel.send(TokenEvent.SuccessfulLogin)
+                    if (encryptedPrefsManager.storeCredentials(
+                            hashString(passInput, 2), hashString(emailInput, 2))) {
+                        sessionEventChannel.send(SessionEvent.ShowProgressBar(false))
+                        sessionEventChannel.send(SessionEvent.SuccessfulLogin)
+                    } else {
+                        sessionEventChannel.send(SessionEvent.ShowProgressBar(false))
+                        onLogoutClick()
+                    }
                 } else {
+                    sessionEventChannel.send(SessionEvent.ShowProgressBar(false))
                     when (response.type) {
-                        ErrorTypes.HTTP -> tokenEventChannel.send(
-                            TokenEvent.ShowHttpError(
+                        ErrorTypes.HTTP -> sessionEventChannel.send(
+                            SessionEvent.ShowHttpError(
                                 response.message!!,
                                 whereToDisplayHttpError(response)
                             )
                         )
-                        ErrorTypes.SOCKET_TIMEOUT -> tokenEventChannel.send(
-                            TokenEvent.ShowRequestError(R.string.error_connection_timed_out)
+                        ErrorTypes.SOCKET_TIMEOUT -> sessionEventChannel.send(
+                            SessionEvent.ShowRequestError(R.string.error_connection_timed_out)
                         )
-                        ErrorTypes.CONNECTION -> tokenEventChannel.send(
-                            TokenEvent.ShowRequestError(R.string.error_connection_timed_out)
+                        ErrorTypes.CONNECTION -> sessionEventChannel.send(
+                            SessionEvent.ShowRequestError(R.string.error_connection_timed_out)
                         )
-                        ErrorTypes.SOCKET -> tokenEventChannel.send(
-                            TokenEvent.ShowRequestError(R.string.error_connection_lost)
+                        ErrorTypes.SOCKET -> sessionEventChannel.send(
+                            SessionEvent.ShowRequestError(R.string.error_connection_lost)
                         )
-                        ErrorTypes.GENERAL -> tokenEventChannel.send(
-                            TokenEvent.ShowRequestError(R.string.error_generic_connection)
+                        ErrorTypes.GENERAL -> sessionEventChannel.send(
+                            SessionEvent.ShowRequestError(R.string.error_generic_connection)
                         )
                     }
                 }
@@ -132,27 +140,27 @@ class TokenViewModel
         var noErrors = true
         if (emailInput.isEmpty()) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ShowEmailInputError(R.string.error_email_required))
+                sessionEventChannel.send(SessionEvent.ShowEmailInputError(R.string.error_email_required))
             }
             noErrors = false
         } else if (!Patterns.EMAIL_ADDRESS.matcher(emailInput).matches()) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ShowEmailInputError(R.string.error_email_format))
+                sessionEventChannel.send(SessionEvent.ShowEmailInputError(R.string.error_email_format))
             }
             noErrors = false
         } else {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ClearErrorsEmail)
+                sessionEventChannel.send(SessionEvent.ClearErrorsEmail)
             }
         }
         if (passInput.isEmpty()) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ShowPasswordInputError(R.string.error_password_required))
+                sessionEventChannel.send(SessionEvent.ShowPasswordInputError(R.string.error_password_required))
             }
             noErrors = false
         } else {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ClearErrorsPassword)
+                sessionEventChannel.send(SessionEvent.ClearErrorsPassword)
             }
         }
         return noErrors
@@ -174,37 +182,37 @@ class TokenViewModel
             )
         ) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ShowProgressBar(true))
+                sessionEventChannel.send(SessionEvent.ShowProgressBar(true))
                 val user = ApiUser(
                     first_name = firstNameInput,
                     last_name = lastNameInput,
                     email = emailInput,
-                    password = hashString(passwordInput),
-                    password_confirmation = hashString(passwordRetypeInput)
+                    password = hashString(passwordInput, 1),
+                    password_confirmation = hashString(passwordRetypeInput, 1)
                 )
-                val response: Resource<*> = tokenRepository.postRegister(user)
-                tokenEventChannel.send(TokenEvent.ShowProgressBar(false))
+                val response: Resource<*> = sessionRepository.postRegister(user)
+                sessionEventChannel.send(SessionEvent.ShowProgressBar(false))
                 if (response is Resource.Success) {
-                    tokenEventChannel.send(TokenEvent.SuccessfulRegistration)
+                    sessionEventChannel.send(SessionEvent.SuccessfulRegistration)
                 } else {
                     when (response.type) {
-                        ErrorTypes.HTTP -> tokenEventChannel.send(
-                            TokenEvent.ShowHttpError(
+                        ErrorTypes.HTTP -> sessionEventChannel.send(
+                            SessionEvent.ShowHttpError(
                                 response.message!!,
                                 whereToDisplayHttpError(response)
                             )
                         )
-                        ErrorTypes.SOCKET_TIMEOUT -> tokenEventChannel.send(
-                            TokenEvent.ShowRequestError(R.string.error_connection_timed_out)
+                        ErrorTypes.SOCKET_TIMEOUT -> sessionEventChannel.send(
+                            SessionEvent.ShowRequestError(R.string.error_connection_timed_out)
                         )
-                        ErrorTypes.CONNECTION -> tokenEventChannel.send(
-                            TokenEvent.ShowRequestError(R.string.error_connection_timed_out)
+                        ErrorTypes.CONNECTION -> sessionEventChannel.send(
+                            SessionEvent.ShowRequestError(R.string.error_connection_timed_out)
                         )
-                        ErrorTypes.SOCKET -> tokenEventChannel.send(
-                            TokenEvent.ShowRequestError(R.string.error_connection_lost)
+                        ErrorTypes.SOCKET -> sessionEventChannel.send(
+                            SessionEvent.ShowRequestError(R.string.error_connection_lost)
                         )
-                        ErrorTypes.GENERAL -> tokenEventChannel.send(
-                            TokenEvent.ShowRequestError(R.string.error_generic_connection)
+                        ErrorTypes.GENERAL -> sessionEventChannel.send(
+                            SessionEvent.ShowRequestError(R.string.error_generic_connection)
                         )
                     }
                 }
@@ -232,80 +240,80 @@ class TokenViewModel
 
         if (firstNameInput.isEmpty()) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ShowFirstNameInputError(R.string.error_first_name_required))
+                sessionEventChannel.send(SessionEvent.ShowFirstNameInputError(R.string.error_first_name_required))
             }
             noErrors = false
         } else if (!firstNameInput.chars().allMatch(Character::isLetter)) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ShowFirstNameInputError(R.string.error_first_name_format))
+                sessionEventChannel.send(SessionEvent.ShowFirstNameInputError(R.string.error_first_name_format))
             }
             noErrors = false
         } else if (firstNameInput.first().isLowerCase()) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ShowFirstNameInputError(R.string.error_name_first_letter))
+                sessionEventChannel.send(SessionEvent.ShowFirstNameInputError(R.string.error_name_first_letter))
             }
             noErrors = false
         } else if (firstNameInput.length > 30) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ShowFirstNameInputError(R.string.error_first_name_length))
+                sessionEventChannel.send(SessionEvent.ShowFirstNameInputError(R.string.error_first_name_length))
             }
             noErrors = false
         } else {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ClearErrorsFirstName)
+                sessionEventChannel.send(SessionEvent.ClearErrorsFirstName)
             }
         }
 
         if (lastNameInput.isEmpty()) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ShowLastNameInputError(R.string.error_last_name_required))
+                sessionEventChannel.send(SessionEvent.ShowLastNameInputError(R.string.error_last_name_required))
             }
             noErrors = false
         } else if (lastNameInput.length > 30) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ShowLastNameInputError(R.string.error_last_name_length))
+                sessionEventChannel.send(SessionEvent.ShowLastNameInputError(R.string.error_last_name_length))
             }
             noErrors = false
         } else if (lastNameInput.first().isLowerCase()) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ShowLastNameInputError(R.string.error_name_first_letter))
+                sessionEventChannel.send(SessionEvent.ShowLastNameInputError(R.string.error_name_first_letter))
             }
             noErrors = false
         } else if (!lastNameInput.matches(lastNameRegex.toRegex())) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ShowLastNameInputError(R.string.error_last_name_format))
+                sessionEventChannel.send(SessionEvent.ShowLastNameInputError(R.string.error_last_name_format))
             }
             noErrors = false
         } else {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ClearErrorsLastName)
+                sessionEventChannel.send(SessionEvent.ClearErrorsLastName)
             }
         }
 
         if (emailInput.isEmpty()) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ShowEmailInputError(R.string.error_email_required))
+                sessionEventChannel.send(SessionEvent.ShowEmailInputError(R.string.error_email_required))
             }
             noErrors = false
         } else if (!Patterns.EMAIL_ADDRESS.matcher(emailInput).matches()) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ShowEmailInputError(R.string.error_email_format))
+                sessionEventChannel.send(SessionEvent.ShowEmailInputError(R.string.error_email_format))
             }
             noErrors = false
         } else {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ClearErrorsEmail)
+                sessionEventChannel.send(SessionEvent.ClearErrorsEmail)
             }
         }
 
         if (passwordInput.isEmpty()) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ShowPasswordInputError(R.string.error_password_required))
+                sessionEventChannel.send(SessionEvent.ShowPasswordInputError(R.string.error_password_required))
             }
             noErrors = false
         } else if (passwordInput.length < 10) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ShowPasswordInputError(R.string.error_password_length_short))
+                sessionEventChannel.send(SessionEvent.ShowPasswordInputError(R.string.error_password_length_short))
             }
             noErrors = false
         } else if (!letterLowercase.matcher(passwordInput).find()
@@ -314,120 +322,121 @@ class TokenViewModel
             || !specialChar.matcher(passwordInput).find()
         ) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ShowPasswordInputError(R.string.error_password_format))
+                sessionEventChannel.send(SessionEvent.ShowPasswordInputError(R.string.error_password_format))
             }
             noErrors = false
         } else if (passwordInput.length > 50) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ShowPasswordInputError(R.string.error_password_length_long))
+                sessionEventChannel.send(SessionEvent.ShowPasswordInputError(R.string.error_password_length_long))
             }
             noErrors = false
         } else {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ClearErrorsPassword)
+                sessionEventChannel.send(SessionEvent.ClearErrorsPassword)
             }
         }
 
         if (passwordRetypeInput != passwordInput && passwordInput.isNotEmpty()) {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ShowPasswordRetypeInputError(R.string.error_password_match))
+                sessionEventChannel.send(SessionEvent.ShowPasswordRetypeInputError(R.string.error_password_match))
             }
             noErrors = false
         } else {
             viewModelScope.launch(Dispatchers.IO) {
-                tokenEventChannel.send(TokenEvent.ClearErrorsPasswordRetype)
+                sessionEventChannel.send(SessionEvent.ClearErrorsPasswordRetype)
             }
         }
         return noErrors
     }
 
     fun onLogoutClick() = viewModelScope.launch(Dispatchers.IO) {
-        tokenEventChannel.send(TokenEvent.ShowProgressBar(true))
-        val response: Resource<*> = tokenRepository.postLogout("Bearer ${getToken().token}")
-        tokenEventChannel.send(TokenEvent.ShowProgressBar(false))
+        sessionEventChannel.send(SessionEvent.ShowProgressBar(true))
+        val response: Resource<*> = sessionRepository.postLogout("Bearer ${getToken().token}")
+        sessionEventChannel.send(SessionEvent.ShowProgressBar(false))
         if (response is Resource.Success) {
-            tokenEventChannel.send(TokenEvent.SuccessfulLogout)
-            prefsManager.updateSortOrder(SortOrder.BY_TITLE) // Reset to default
-            prefsManager.updateSortDirection(true) // Reset to default
+            if (encryptedPrefsManager.emptyEncryptedSharedPrefs()) {
+                sessionEventChannel.send(SessionEvent.SuccessfulLogout)
+                prefsManager.updateSortOrder(SortOrder.BY_TITLE) // Reset to default
+                prefsManager.updateSortDirection(true) // Reset to default
+            }
         } else {
             when (response.type) {
-                ErrorTypes.HTTP -> tokenEventChannel.send(
-                    TokenEvent.ShowHttpError(
+                ErrorTypes.HTTP -> sessionEventChannel.send(
+                    SessionEvent.ShowHttpError(
                         response.message!!,
                         whereToDisplayHttpError(response)
                     )
                 )
-                ErrorTypes.SOCKET_TIMEOUT -> tokenEventChannel.send(
-                    TokenEvent.ShowRequestError(R.string.error_connection_timed_out)
+                ErrorTypes.SOCKET_TIMEOUT -> sessionEventChannel.send(
+                    SessionEvent.ShowRequestError(R.string.error_connection_timed_out)
                 )
-                ErrorTypes.CONNECTION -> tokenEventChannel.send(
-                    TokenEvent.ShowRequestError(R.string.error_connection_timed_out)
+                ErrorTypes.CONNECTION -> sessionEventChannel.send(
+                    SessionEvent.ShowRequestError(R.string.error_connection_timed_out)
                 )
-                ErrorTypes.SOCKET -> tokenEventChannel.send(
-                    TokenEvent.ShowRequestError(R.string.error_connection_lost)
+                ErrorTypes.SOCKET -> sessionEventChannel.send(
+                    SessionEvent.ShowRequestError(R.string.error_connection_lost)
                 )
-                ErrorTypes.GENERAL -> tokenEventChannel.send(
-                    TokenEvent.ShowRequestError(R.string.error_generic_connection)
+                ErrorTypes.GENERAL -> sessionEventChannel.send(
+                    SessionEvent.ShowRequestError(R.string.error_generic_connection)
                 )
             }
         }
-
     }
 
-    sealed class TokenEvent {
+    sealed class SessionEvent {
         // Handled in LoginFragment
-        object NavigateToRegistrationFragment : TokenEvent()
+        object NavigateToRegistrationFragment : SessionEvent()
 
         // Handled in RegistrationFragment
-        object ClearErrorsFirstName : TokenEvent()
+        object ClearErrorsFirstName : SessionEvent()
 
         // Handled in RegistrationFragment
-        object ClearErrorsLastName : TokenEvent()
+        object ClearErrorsLastName : SessionEvent()
 
         // Handled in LoginFragment and RegistrationFragment
-        object ClearErrorsEmail : TokenEvent()
+        object ClearErrorsEmail : SessionEvent()
 
         // Handled in LoginFragment and RegistrationFragment
-        object ClearErrorsPassword : TokenEvent()
+        object ClearErrorsPassword : SessionEvent()
 
         // Handled in RegistrationFragment
-        object ClearErrorsPasswordRetype : TokenEvent()
+        object ClearErrorsPasswordRetype : SessionEvent()
 
         // Handled in LoginFragment
-        object SuccessfulLogin : TokenEvent()
+        object SuccessfulLogin : SessionEvent()
 
         // Handled in RegistrationFragment
-        object SuccessfulRegistration : TokenEvent()
+        object SuccessfulRegistration : SessionEvent()
 
         // Handled in BottomNavigationActivity
-        object SuccessfulLogout : TokenEvent()
+        object SuccessfulLogout : SessionEvent()
 
         // Handled in LoginFragment, RegistrationFragment and BottomNavigationActivity
-        data class ShowProgressBar(val doShow: Boolean) : TokenEvent()
+        data class ShowProgressBar(val doShow: Boolean) : SessionEvent()
 
         // Handled in LoginFragment
-        data class ShowSuccessfulRegistrationMessage(val message: Int) : TokenEvent()
+        data class ShowSuccessfulRegistrationMessage(val message: Int) : SessionEvent()
 
         // Handled in LoginFragment, RegistrationFragment and BottomNavigationActivity
-        data class ShowHttpError(val message: String, val whereToDisplay: Int) : TokenEvent()
+        data class ShowHttpError(val message: String, val whereToDisplay: Int) : SessionEvent()
 
         // Handled in LoginFragment, RegistrationFragment and BottomNavigationActivity
-        data class ShowRequestError(val message: Int) : TokenEvent()
+        data class ShowRequestError(val message: Int) : SessionEvent()
 
         // Handled in RegistrationFragment
-        data class ShowFirstNameInputError(val message: Int) : TokenEvent()
+        data class ShowFirstNameInputError(val message: Int) : SessionEvent()
 
         // Handled in RegistrationFragment
-        data class ShowLastNameInputError(val message: Int) : TokenEvent()
+        data class ShowLastNameInputError(val message: Int) : SessionEvent()
 
         // Handled in LoginFragment and RegistrationFragment
-        data class ShowEmailInputError(val message: Int) : TokenEvent()
+        data class ShowEmailInputError(val message: Int) : SessionEvent()
 
         // Handled in LoginFragment and RegistrationFragment
-        data class ShowPasswordInputError(val message: Int) : TokenEvent()
+        data class ShowPasswordInputError(val message: Int) : SessionEvent()
 
         // Handled in RegistrationFragment
-        data class ShowPasswordRetypeInputError(val message: Int) : TokenEvent()
+        data class ShowPasswordRetypeInputError(val message: Int) : SessionEvent()
     }
 
 }

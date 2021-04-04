@@ -1,7 +1,10 @@
 package com.vaultsec.vaultsec.di
 
 import android.app.Application
+import android.content.SharedPreferences
 import androidx.room.Room
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.google.gson.GsonBuilder
 import com.vaultsec.vaultsec.database.PasswordManagerDatabase
 import com.vaultsec.vaultsec.network.PasswordManagerApi
@@ -72,4 +75,15 @@ object AppModule {
     @Singleton
     fun provideApiService(retrofit: Retrofit): PasswordManagerApi =
         retrofit.create(PasswordManagerApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideEncryptedSharedPrefs(application: Application): SharedPreferences =
+        EncryptedSharedPreferences.create(
+            application,
+            "VaultSecESP",
+            MasterKey.Builder(application).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
 }

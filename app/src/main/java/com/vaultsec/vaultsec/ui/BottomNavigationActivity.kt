@@ -24,7 +24,7 @@ import com.vaultsec.vaultsec.databinding.ActivityBottomNavigationBinding
 import com.vaultsec.vaultsec.util.hideKeyboard
 import com.vaultsec.vaultsec.util.setProgressBarDrawable
 import com.vaultsec.vaultsec.viewmodel.HTTP_NONE_ERROR
-import com.vaultsec.vaultsec.viewmodel.TokenViewModel
+import com.vaultsec.vaultsec.viewmodel.SessionViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlin.math.hypot
@@ -33,7 +33,7 @@ import kotlin.math.hypot
 class BottomNavigationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityBottomNavigationBinding
 
-    private val tokenViewModel: TokenViewModel by viewModels()
+    private val sessionViewModel: SessionViewModel by viewModels()
 
     private var wasDoubleBackToExitPressed = false
     private lateinit var backToast: Toast
@@ -125,9 +125,9 @@ class BottomNavigationActivity : AppCompatActivity() {
         playOpeningAnimation(view)
 
         lifecycleScope.launchWhenStarted {
-            tokenViewModel.tokenEvent.collect { event ->
+            sessionViewModel.sessionEvent.collect { event ->
                 when (event) {
-                    is TokenViewModel.TokenEvent.ShowHttpError -> {
+                    is SessionViewModel.SessionEvent.ShowHttpError -> {
                         when (event.whereToDisplay) {
                             HTTP_NONE_ERROR -> {
                                 Snackbar.make(view, event.message, Snackbar.LENGTH_LONG)
@@ -136,19 +136,19 @@ class BottomNavigationActivity : AppCompatActivity() {
                             }
                         }
                     }
-                    is TokenViewModel.TokenEvent.ShowRequestError -> {
+                    is SessionViewModel.SessionEvent.ShowRequestError -> {
                         Snackbar.make(view, event.message, Snackbar.LENGTH_LONG)
                             .setBackgroundTint(getColor(R.color.color_error_snackbar))
                             .show()
                     }
-                    TokenViewModel.TokenEvent.SuccessfulLogout -> {
+                    SessionViewModel.SessionEvent.SuccessfulLogout -> {
                         /*
                         * To prevent the empty recycler view message from briefly flashing on the screen
                         * */
                         binding.fragmentContainerView.visibility = View.INVISIBLE
                         openStartActivity()
                     }
-                    is TokenViewModel.TokenEvent.ShowProgressBar -> {
+                    is SessionViewModel.SessionEvent.ShowProgressBar -> {
                         binding.progressbarBottomNavigation.isVisible = event.doShow
                     }
                 }
@@ -241,7 +241,7 @@ class BottomNavigationActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.item_logout -> {
-                tokenViewModel.onLogoutClick()
+                sessionViewModel.onLogoutClick()
                 true
             }
             R.id.item_settings -> {

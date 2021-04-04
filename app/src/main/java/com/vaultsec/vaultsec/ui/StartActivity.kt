@@ -15,7 +15,7 @@ import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.databinding.ActivityStartBinding
 import com.vaultsec.vaultsec.util.hideKeyboard
 import com.vaultsec.vaultsec.util.setProgressBarDrawable
-import com.vaultsec.vaultsec.viewmodel.TokenViewModel
+import com.vaultsec.vaultsec.viewmodel.SessionViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlin.math.hypot
 
@@ -24,7 +24,7 @@ class StartActivity : AppCompatActivity() {
     private lateinit var binding: ActivityStartBinding
     private lateinit var navController: NavController
 
-    private val tokenViewModel: TokenViewModel by viewModels()
+    private val sessionViewModel: SessionViewModel by viewModels()
 
     companion object {
         const val EXTRA_LOGOUT = "com.vaultsec.vaultsec.ui.EXTRA_LOGOUT"
@@ -85,7 +85,7 @@ class StartActivity : AppCompatActivity() {
 
     private fun isUserLoggedIn() {
         try {
-            tokenViewModel.getToken().token
+            sessionViewModel.getToken().token
             navController.navigate(R.id.fragment_master_password)
         } catch (e: NullPointerException) {
         }

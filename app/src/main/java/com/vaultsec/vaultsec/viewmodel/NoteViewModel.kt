@@ -9,16 +9,19 @@ import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.repository.NoteRepository
 import com.vaultsec.vaultsec.util.Resource
+import com.vaultsec.vaultsec.util.cipher.CipherManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class NoteViewModel
 @ViewModelInject constructor(
     private val noteRepository: NoteRepository,
-    private val prefsManager: PasswordManagerPreferences
+    private val prefsManager: PasswordManagerPreferences,
+    private val cipherManager: CipherManager
 ) : ViewModel() {
     /*
     * In case you want to store search query into the SavedStateArguments
@@ -210,6 +213,27 @@ class NoteViewModel
         viewModelScope.launch {
             if (notes.value !is Resource.Loading) {
                 refreshTriggerChannel.send(Refresh.DID)
+            }
+        }
+    }
+
+    /*
+    * FOR TESTING ONLY. WILL BE REMOVED LATER
+    * */
+    fun encryptText(input: String) {
+        viewModelScope.launch {
+            val output = cipherManager.encrypt(input)
+            if (output != null) {
+                Log.e("encrypted text", output)
+                delay(100)
+                val backToOriginal = cipherManager.decrypt(output)
+                if (backToOriginal != null) {
+                    Log.e("decrypted text", backToOriginal)
+                } else {
+                    return@launch
+                }
+            } else {
+                return@launch
             }
         }
     }

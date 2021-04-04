@@ -28,7 +28,7 @@
         tools:layout="@layout/fragment_registration" />
     <fragment
         android:id="@+id/fragment_master_password"
-        android:name="com.vaultsec.vaultsec.ui.MasterPasswordFragment"
+        android:name="com.vaultsec.vaultsec.ui.masterpassword.MasterPasswordFragment"
         android:label="fragment_master_password"
         tools:layout="@layout/fragment_master_password" >
     </fragment>

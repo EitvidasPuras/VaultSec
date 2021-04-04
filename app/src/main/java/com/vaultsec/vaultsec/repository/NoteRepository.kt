@@ -1,8 +1,9 @@
 package com.vaultsec.vaultsec.repository
 
 import android.util.Log
+import androidx.room.withTransaction
+import com.vaultsec.vaultsec.database.PasswordManagerDatabase
 import com.vaultsec.vaultsec.database.SortOrder
-import com.vaultsec.vaultsec.database.dao.NoteDao
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.network.PasswordManagerApi
 import com.vaultsec.vaultsec.util.Resource
@@ -16,17 +17,19 @@ import retrofit2.HttpException
 import javax.inject.Inject
 
 class NoteRepository @Inject constructor(
-    private val noteDao: NoteDao,
+    private val db: PasswordManagerDatabase,
     private val api: PasswordManagerApi,
-    private val tokenRepository: TokenRepository
+    private val sessionRepository: SessionRepository
 ) {
+    private val noteDao = db.noteDao()
+
     private var didPerformDeletionAPICall: Boolean = false
     private var apiError = JSONObject()
 
     suspend fun insert(note: Note) {
         if (isNetworkAvailable) {
             try {
-                val id = api.postSingleNote(note, "Bearer ${tokenRepository.getToken().token}")
+                val id = api.postSingleNote(note, "Bearer ${sessionRepository.getToken().token}")
                 val newNote = note.copy(
                     title = note.title,
                     text = note.text,
@@ -80,7 +83,7 @@ class NoteRepository @Inject constructor(
                     val id = api.putNoteUpdate(
                         note.id,
                         note,
-                        "Bearer ${tokenRepository.getToken().token}"
+                        "Bearer ${sessionRepository.getToken().token}"
                     )
                     val newNote = note.copy(
                         title = note.title,
@@ -153,7 +156,7 @@ class NoteRepository @Inject constructor(
                 if (noteDao.getSyncedDeletedNotesIds().first().isNotEmpty()) {
                     api.deleteNotes(
                         noteDao.getSyncedDeletedNotesIds().first() as ArrayList<Int>,
-                        "Bearer ${tokenRepository.getToken().token}"
+                        "Bearer ${sessionRepository.getToken().token}"
                     )
                 }
                 val combinedNotes = arrayListOf<Note>()
@@ -162,7 +165,7 @@ class NoteRepository @Inject constructor(
                 Log.e("combinedNotes", "$combinedNotes")
                 val notes = api.postStoreNotes(
                     combinedNotes,
-                    "Bearer ${tokenRepository.getToken().token}"
+                    "Bearer ${sessionRepository.getToken().token}"
                 )
                 notes
             },
@@ -182,8 +185,14 @@ class NoteRepository @Inject constructor(
                         )
                     )
                 }
-                noteDao.deleteAll()
-                noteDao.insertList(notes)
+                /*
+                * withTransaction either performs all the code inside the block or none of it.
+                * If one operation fails - it rolls back and doesn't change the database
+                * */
+                db.withTransaction {
+                    noteDao.deleteAll()
+                    noteDao.insertList(notes)
+                }
             },
             shouldFetch = {
                 if (didRefresh) {
@@ -241,7 +250,7 @@ class NoteRepository @Inject constructor(
                 try {
                     api.deleteNotes(
                         syncedNotesIds,
-                        "Bearer ${tokenRepository.getToken().token}"
+                        "Bearer ${sessionRepository.getToken().token}"
                     )
                     didPerformDeletionAPICall = true
                     noteDao.deleteSelectedNotes(syncedNotesIds)
@@ -314,7 +323,7 @@ class NoteRepository @Inject constructor(
                     try {
                         val notesApi = api.postRecoverNotes(
                             syncedNotes,
-                            "Bearer ${tokenRepository.getToken().token}"
+                            "Bearer ${sessionRepository.getToken().token}"
                         )
                         val notes = arrayListOf<Note>()
                         notesApi.map {
