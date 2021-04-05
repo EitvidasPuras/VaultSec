@@ -1,7 +1,6 @@
 package com.vaultsec.vaultsec.viewmodel
 
 import android.util.Patterns
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vaultsec.vaultsec.R
@@ -12,11 +11,13 @@ import com.vaultsec.vaultsec.repository.SessionRepository
 import com.vaultsec.vaultsec.util.ErrorTypes
 import com.vaultsec.vaultsec.util.Resource
 import com.vaultsec.vaultsec.util.hashString
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.util.regex.Pattern
+import javax.inject.Inject
 
 const val HTTP_NONE_ERROR = 0
 const val HTTP_FIRST_NAME_ERROR = 1
@@ -25,13 +26,13 @@ const val HTTP_EMAIL_ERROR = 3
 const val HTTP_PASSWORD_ERROR = 4
 const val HTTP_PASSWORD_RE_ERROR = 5
 
+@HiltViewModel
 class SessionViewModel
-@ViewModelInject constructor(
+@Inject constructor(
     private val sessionRepository: SessionRepository,
     private val prefsManager: PasswordManagerPreferences
 ) : ViewModel() {
 //    private val sessionRepository: SessionRepository = SessionRepository(application)
-
 
     private val sessionEventChannel = Channel<SessionEvent>()
     val sessionEvent = sessionEventChannel.receiveAsFlow()

@@ -10,19 +10,22 @@ import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.repository.NoteRepository
 import com.vaultsec.vaultsec.util.SyncType
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.sql.Timestamp
+import javax.inject.Inject
 
 const val ADD_NOTE_RESULT_OK = Activity.RESULT_FIRST_USER
 const val EDIT_NOTE_RESULT_OK = Activity.RESULT_FIRST_USER + 1
 
+@HiltViewModel
 class AddEditNoteViewModel
-@ViewModelInject constructor(
+@Inject constructor(
     private val noteRepository: NoteRepository,
-    @Assisted private val state: SavedStateHandle
+    private val state: SavedStateHandle
 ) : ViewModel() {
 
     val note = state.get<Note>("note")

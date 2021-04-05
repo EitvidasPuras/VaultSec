@@ -1,7 +1,6 @@
 package com.vaultsec.vaultsec.viewmodel
 
 import android.util.Log
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.PasswordManagerPreferences
@@ -10,6 +9,7 @@ import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.repository.NoteRepository
 import com.vaultsec.vaultsec.util.Resource
 import com.vaultsec.vaultsec.util.cipher.CipherManager
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
@@ -17,9 +17,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
+import javax.inject.Inject
 
+@HiltViewModel
 class NoteViewModel
-@ViewModelInject constructor(
+@Inject constructor(
     private val noteRepository: NoteRepository,
     private val prefsManager: PasswordManagerPreferences,
     private val cipherManager: CipherManager
@@ -223,7 +225,6 @@ class NoteViewModel
     * */
     fun encryptText(input: String) {
         viewModelScope.launch {
-            delay(100)
             val output = cipherManager.encrypt(input)
             if (output.isNotEmpty()) {
                 Log.e("encrypted text", output)

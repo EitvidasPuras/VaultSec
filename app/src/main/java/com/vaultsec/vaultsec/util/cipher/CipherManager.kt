@@ -23,14 +23,14 @@ class CipherManager @Inject constructor(
     fun encrypt(input: String): String {
         return try {
             val cipher: Cipher = Cipher.getInstance(CIPHER_TRANSFORMATION)
-            cipher.init(Cipher.ENCRYPT_MODE, keyManager.edKey)
+            cipher.init(Cipher.ENCRYPT_MODE, keyManager.getKey())
 
             val param: AlgorithmParameters = cipher.parameters
             val ivBytes: ByteArray = param.getParameterSpec(IvParameterSpec::class.java).iv
             val encryptedByteArray = cipher.doFinal(input.toByteArray(Charsets.UTF_8))
 
             if (encryptedSharedPrefs.getSalt() == null) {
-                Log.e("com.vaultsec.vaultsec.util.cipher.CipherManager.encrypt",
+                Log.e("com.vaultsec.vaultsec.util.cipher.CipherManager.encrypt:getSalt",
                     "${encryptedSharedPrefs.getSalt()}")
             }
             val encodedPackage = encryptedSharedPrefs.getSalt()!! + ivBytes + encryptedByteArray
@@ -57,7 +57,7 @@ class CipherManager @Inject constructor(
             val encryptedTextBytes = ByteArray(buffer.capacity() - saltBytes.size - ivBytes.size)
             buffer.get(encryptedTextBytes)
 
-            cipher.init(Cipher.DECRYPT_MODE, keyManager.edKey, IvParameterSpec(ivBytes))
+            cipher.init(Cipher.DECRYPT_MODE, keyManager.getKey(), IvParameterSpec(ivBytes))
 
             val decryptedTextBytes = cipher.doFinal(encryptedTextBytes)
             return String(decryptedTextBytes)

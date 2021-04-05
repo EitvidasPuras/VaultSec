@@ -25,15 +25,13 @@ class KeyManager @Inject constructor(
         private const val SECRET_KEY_SPEC_ALG = "AES"
     }
 
-    val edKey: SecretKeySpec? = generateKey()
-
     private fun getRandomBytes(): ByteArray {
         val ba = ByteArray(SALT_LENGTH)
         SecureRandom().nextBytes(ba)
         return ba
     }
 
-    private fun generateKey(): SecretKeySpec? {
+    fun getKey(): SecretKeySpec? {
         return try {
             val credentials = encryptedSharedPrefs.getCredentials() ?: return null
             val saltBytes: ByteArray = getRandomBytes()

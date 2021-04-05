@@ -12,7 +12,7 @@ import com.vaultsec.vaultsec.util.exclusion.AnnotationExclusionStrategy
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ApplicationComponent
+import dagger.hilt.components.SingletonComponent
 import net.sqlcipher.database.SupportFactory
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -24,7 +24,7 @@ import javax.inject.Singleton
 * @Module is a way of telling Dagger how to provide dependencies from the dependency graph
 * */
 @Module
-@InstallIn(ApplicationComponent::class)
+@InstallIn(SingletonComponent::class)
 object AppModule {
 
     /*

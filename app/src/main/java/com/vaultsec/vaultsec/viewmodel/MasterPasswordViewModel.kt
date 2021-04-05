@@ -7,13 +7,16 @@ import androidx.lifecycle.viewModelScope
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.PasswordManagerEncryptedSharedPreferences
 import com.vaultsec.vaultsec.util.hashString
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@HiltViewModel
 class MasterPasswordViewModel
-@ViewModelInject constructor(
+@Inject constructor(
     private val encryptedSharedPrefs: PasswordManagerEncryptedSharedPreferences
 ) : ViewModel() {
 
