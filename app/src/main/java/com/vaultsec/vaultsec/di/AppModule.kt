@@ -13,6 +13,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ApplicationComponent
+import net.sqlcipher.database.SupportFactory
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -31,16 +32,20 @@ object AppModule {
     * */
     @Provides
     @Singleton
-    fun provideDatabase(application: Application, callback: PasswordManagerDatabase.Callback) =
+    fun provideDatabase(
+        application: Application, callback: PasswordManagerDatabase.Callback
+    ) =
         Room.databaseBuilder(
             application, PasswordManagerDatabase::class.java, "vaultsec-database"
         )
             .fallbackToDestructiveMigration()
+            .openHelperFactory(
+                SupportFactory(
+                    "123".toByteArray() // TESTING PURPOSES ONLY. WILL BE REMOVED LATER
+                )
+            )
 //            .addCallback(callback)
             .build()
-
-    @Provides
-    fun provideTokenDao(database: PasswordManagerDatabase) = database.tokenDao()
 
     @Provides
     fun provideNoteDao(database: PasswordManagerDatabase) = database.noteDao()

@@ -55,16 +55,41 @@ class PasswordManagerEncryptedSharedPreferences @Inject constructor(
         }
     }
 
+    fun storeAccessToken(token: String): Boolean {
+        return try {
+            if (!encryptedSharedPrefs.contains(EncryptedSharedPreferenceKeys.TOKEN_KEY)) {
+                with(encryptedSharedPrefs.edit()) {
+                    putString(
+                        EncryptedSharedPreferenceKeys.TOKEN_KEY,
+                        token
+                    )
+                    apply()
+                }
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            Log.e(
+                "com.vaultsec.vaultsec.database.PasswordManagerEncryptedSharedPreferences.storeAccessToken",
+                e.localizedMessage!!
+            )
+            false
+        }
+    }
+
     fun emptyEncryptedSharedPrefs(): Boolean {
         return try {
             if (encryptedSharedPrefs.contains(EncryptedSharedPreferenceKeys.PASSWORD_KEY)
                 && encryptedSharedPrefs.contains(EncryptedSharedPreferenceKeys.EMAIL_KEY)
                 && encryptedSharedPrefs.contains(EncryptedSharedPreferenceKeys.SALT_KEY)
+                && encryptedSharedPrefs.contains(EncryptedSharedPreferenceKeys.TOKEN_KEY)
             ) {
                 with(encryptedSharedPrefs.edit()) {
                     remove(EncryptedSharedPreferenceKeys.PASSWORD_KEY)
                     remove(EncryptedSharedPreferenceKeys.EMAIL_KEY)
                     remove(EncryptedSharedPreferenceKeys.SALT_KEY)
+                    remove(EncryptedSharedPreferenceKeys.TOKEN_KEY)
                     apply()
                 }
                 true
@@ -107,7 +132,8 @@ class PasswordManagerEncryptedSharedPreferences @Inject constructor(
     fun getSalt(): ByteArray? {
         return try {
             if (encryptedSharedPrefs.contains(EncryptedSharedPreferenceKeys.SALT_KEY)) {
-                encryptedSharedPrefs.getString(EncryptedSharedPreferenceKeys.SALT_KEY, null)?.toByteArray(Charsets.ISO_8859_1)
+                encryptedSharedPrefs.getString(EncryptedSharedPreferenceKeys.SALT_KEY, null)
+                    ?.toByteArray(Charsets.ISO_8859_1)
             } else {
                 null
             }
@@ -120,9 +146,26 @@ class PasswordManagerEncryptedSharedPreferences @Inject constructor(
         }
     }
 
+    fun getToken(): String? {
+        return try {
+            if (encryptedSharedPrefs.contains(EncryptedSharedPreferenceKeys.TOKEN_KEY)) {
+                encryptedSharedPrefs.getString(EncryptedSharedPreferenceKeys.TOKEN_KEY, null)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.e(
+                "com.vaultsec.vaultsec.database.PasswordManagerEncryptedSharedPreferences.getToken",
+                e.localizedMessage!!
+            )
+            null
+        }
+    }
+
     object EncryptedSharedPreferenceKeys {
         const val PASSWORD_KEY = "UPHed"
         const val EMAIL_KEY = "UEHed"
         const val SALT_KEY = "EDSalt"
+        const val TOKEN_KEY = "AT"
     }
 }

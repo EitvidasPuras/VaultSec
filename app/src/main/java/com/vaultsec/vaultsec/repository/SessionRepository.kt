@@ -2,6 +2,7 @@ package com.vaultsec.vaultsec.repository
 
 import android.util.Log
 import com.vaultsec.vaultsec.database.PasswordManagerDatabase
+import com.vaultsec.vaultsec.database.PasswordManagerEncryptedSharedPreferences
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.database.entity.Token
 import com.vaultsec.vaultsec.network.PasswordManagerApi
@@ -9,6 +10,7 @@ import com.vaultsec.vaultsec.network.entity.ApiUser
 import com.vaultsec.vaultsec.util.ErrorTypes
 import com.vaultsec.vaultsec.util.Resource
 import com.vaultsec.vaultsec.util.SyncType
+import com.vaultsec.vaultsec.util.hashString
 import kotlinx.coroutines.flow.first
 import org.json.JSONObject
 import retrofit2.HttpException
@@ -20,10 +22,9 @@ import javax.inject.Inject
 class SessionRepository
 @Inject constructor(
     private val db: PasswordManagerDatabase,
-    private val api: PasswordManagerApi
+    private val api: PasswordManagerApi,
+    private val encryptedSharedPrefs: PasswordManagerEncryptedSharedPreferences
 ) {
-
-    private val tokenDao = db.tokenDao()
     private val noteDao = db.noteDao()
 //    private val database = PasswordManagerDatabase.getInstance(application)
 //    private val tokenDao = database.tokenDao()
@@ -31,17 +32,10 @@ class SessionRepository
 
     private var apiError = JSONObject()
 
-    suspend fun insert(token: Token) {
-        tokenDao.insert(token)
+    private fun getToken(): String {
+        return encryptedSharedPrefs.getToken()!!
     }
 
-    suspend fun delete(token: Token) {
-        tokenDao.delete(token)
-    }
-
-    suspend fun getToken(): Token {
-        return tokenDao.getToken()
-    }
 
     suspend fun postRegister(user: ApiUser): Resource<*> {
         try {
@@ -116,10 +110,14 @@ class SessionRepository
                     val notesResponse = getUserNotes(loginResponse["token"].asString)
                     if (notesResponse is Resource.Success) {
                         val token = Token(loginResponse["token"].asString)
-                        tokenDao.deleteAll()
-                        tokenDao.insert(token)
+                        encryptedSharedPrefs.storeAccessToken(loginResponse["token"].asString)
                         noteDao.deleteAll()
                         noteDao.insertList(notesResponse.data as ArrayList<Note>)
+
+                        encryptedSharedPrefs.storeCredentials(
+                            hashString(user.password, 1),
+                            hashString(user.email, 2)
+                        )
                         return Resource.Success<Any>()
                     } else {
                         return notesResponse
@@ -174,21 +172,23 @@ class SessionRepository
         }
     }
 
-    suspend fun postLogout(header: String): Resource<*> {
+    suspend fun postLogout(): Resource<*> {
         try {
             val combinedNotes = arrayListOf<Note>()
             // Sync noted before logout
             val syncedButDeleted = noteDao.getSyncedDeletedNotesIds()
-            api.deleteNotes(syncedButDeleted.first() as ArrayList<Int>, header)
+            api.deleteNotes(syncedButDeleted.first() as ArrayList<Int>, "Bearer ${getToken()}")
 
             combinedNotes.addAll(noteDao.getSyncedUpdatedNotes().first())
             combinedNotes.addAll(noteDao.getUnsyncedNotes().first())
 
-            api.postStoreNotes(combinedNotes, header)
+            api.postStoreNotes(combinedNotes, "Bearer ${getToken()}")
             // Actually logout
-            api.postLogout(header)
+            api.postLogout("Bearer ${getToken()}")
             // Empty the database
             db.clearAllTables()
+            // Clear encrypted shared preferences
+            encryptedSharedPrefs.emptyEncryptedSharedPrefs()
             return Resource.Success<Any>()
         } catch (e: Exception) {
             when (e) {
@@ -298,5 +298,9 @@ class SessionRepository
                 }
             }
         }
+    }
+
+    fun isUserLoggedIn(): Boolean {
+        return encryptedSharedPrefs.getToken() != null && encryptedSharedPrefs.getCredentials() != null
     }
 }

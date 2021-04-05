@@ -20,7 +20,7 @@ class CipherManager @Inject constructor(
         private const val CIPHER_TRANSFORMATION = "AES_256/CBC/PKCS5Padding"
     }
 
-    fun encrypt(input: String): String? {
+    fun encrypt(input: String): String {
         return try {
             val cipher: Cipher = Cipher.getInstance(CIPHER_TRANSFORMATION)
             cipher.init(Cipher.ENCRYPT_MODE, keyManager.edKey)
@@ -29,6 +29,10 @@ class CipherManager @Inject constructor(
             val ivBytes: ByteArray = param.getParameterSpec(IvParameterSpec::class.java).iv
             val encryptedByteArray = cipher.doFinal(input.toByteArray(Charsets.UTF_8))
 
+            if (encryptedSharedPrefs.getSalt() == null) {
+                Log.e("com.vaultsec.vaultsec.util.cipher.CipherManager.encrypt",
+                    "${encryptedSharedPrefs.getSalt()}")
+            }
             val encodedPackage = encryptedSharedPrefs.getSalt()!! + ivBytes + encryptedByteArray
             return Base64.encodeToString(encodedPackage, Base64.DEFAULT)
         } catch (e: Exception) {
@@ -36,11 +40,11 @@ class CipherManager @Inject constructor(
                 "com.vaultsec.vaultsec.util.cipher.CipherManager.encrypt",
                 e.localizedMessage!!
             )
-            null
+            ""
         }
     }
 
-    fun decrypt(input: String): String? {
+    fun decrypt(input: String): String {
         return try {
             val buffer = ByteBuffer.wrap(Base64.decode(input, Base64.DEFAULT))
 
@@ -62,7 +66,7 @@ class CipherManager @Inject constructor(
                 "com.vaultsec.vaultsec.util.cipher.CipherManager.decrypt",
                 e.localizedMessage!!
             )
-            null
+            ""
         }
     }
 }

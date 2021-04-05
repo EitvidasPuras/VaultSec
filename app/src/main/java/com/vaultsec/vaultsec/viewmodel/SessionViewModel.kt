@@ -5,18 +5,17 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vaultsec.vaultsec.R
-import com.vaultsec.vaultsec.database.PasswordManagerEncryptedSharedPreferences
 import com.vaultsec.vaultsec.database.PasswordManagerPreferences
 import com.vaultsec.vaultsec.database.SortOrder
-import com.vaultsec.vaultsec.database.entity.Token
 import com.vaultsec.vaultsec.network.entity.ApiUser
 import com.vaultsec.vaultsec.repository.SessionRepository
-import com.vaultsec.vaultsec.util.*
+import com.vaultsec.vaultsec.util.ErrorTypes
+import com.vaultsec.vaultsec.util.Resource
+import com.vaultsec.vaultsec.util.hashString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.util.regex.Pattern
 
 const val HTTP_NONE_ERROR = 0
@@ -29,28 +28,13 @@ const val HTTP_PASSWORD_RE_ERROR = 5
 class SessionViewModel
 @ViewModelInject constructor(
     private val sessionRepository: SessionRepository,
-    private val prefsManager: PasswordManagerPreferences,
-    private val encryptedPrefsManager: PasswordManagerEncryptedSharedPreferences
+    private val prefsManager: PasswordManagerPreferences
 ) : ViewModel() {
 //    private val sessionRepository: SessionRepository = SessionRepository(application)
 
 
     private val sessionEventChannel = Channel<SessionEvent>()
     val sessionEvent = sessionEventChannel.receiveAsFlow()
-
-    fun insert(token: Token) = viewModelScope.launch(Dispatchers.IO) {
-        sessionRepository.insert(token)
-    }
-
-    fun delete(token: Token) = viewModelScope.launch(Dispatchers.IO) {
-        sessionRepository.delete(token)
-    }
-
-    fun getToken(): Token {
-        return runBlocking {
-            sessionRepository.getToken()
-        }
-    }
 
     fun onCreateAccountClick() = viewModelScope.launch(Dispatchers.IO) {
         sessionEventChannel.send(SessionEvent.NavigateToRegistrationFragment)
@@ -76,17 +60,10 @@ class SessionViewModel
                     password = hashString(passInput, 1)
                 )
                 val response: Resource<*> = sessionRepository.postLogin(user)
+                sessionEventChannel.send(SessionEvent.ShowProgressBar(false))
                 if (response is Resource.Success) {
-                    if (encryptedPrefsManager.storeCredentials(
-                            hashString(passInput, 2), hashString(emailInput, 2))) {
-                        sessionEventChannel.send(SessionEvent.ShowProgressBar(false))
-                        sessionEventChannel.send(SessionEvent.SuccessfulLogin)
-                    } else {
-                        sessionEventChannel.send(SessionEvent.ShowProgressBar(false))
-                        onLogoutClick()
-                    }
+                    sessionEventChannel.send(SessionEvent.SuccessfulLogin)
                 } else {
-                    sessionEventChannel.send(SessionEvent.ShowProgressBar(false))
                     when (response.type) {
                         ErrorTypes.HTTP -> sessionEventChannel.send(
                             SessionEvent.ShowHttpError(
@@ -351,14 +328,12 @@ class SessionViewModel
 
     fun onLogoutClick() = viewModelScope.launch(Dispatchers.IO) {
         sessionEventChannel.send(SessionEvent.ShowProgressBar(true))
-        val response: Resource<*> = sessionRepository.postLogout("Bearer ${getToken().token}")
+        val response: Resource<*> = sessionRepository.postLogout()
         sessionEventChannel.send(SessionEvent.ShowProgressBar(false))
         if (response is Resource.Success) {
-            if (encryptedPrefsManager.emptyEncryptedSharedPrefs()) {
-                sessionEventChannel.send(SessionEvent.SuccessfulLogout)
-                prefsManager.updateSortOrder(SortOrder.BY_TITLE) // Reset to default
-                prefsManager.updateSortDirection(true) // Reset to default
-            }
+            sessionEventChannel.send(SessionEvent.SuccessfulLogout)
+            prefsManager.updateSortOrder(SortOrder.BY_TITLE) // Reset to default
+            prefsManager.updateSortDirection(true) // Reset to default
         } else {
             when (response.type) {
                 ErrorTypes.HTTP -> sessionEventChannel.send(
@@ -380,6 +355,12 @@ class SessionViewModel
                     SessionEvent.ShowRequestError(R.string.error_generic_connection)
                 )
             }
+        }
+    }
+
+    fun isUserLoggedIn() = viewModelScope.launch {
+        if (sessionRepository.isUserLoggedIn()) {
+            sessionEventChannel.send(SessionEvent.CurrentlyLoggedIn)
         }
     }
 
@@ -410,6 +391,9 @@ class SessionViewModel
 
         // Handled in BottomNavigationActivity
         object SuccessfulLogout : SessionEvent()
+
+        // Handled in StartActivity
+        object CurrentlyLoggedIn : SessionEvent()
 
         // Handled in LoginFragment, RegistrationFragment and BottomNavigationActivity
         data class ShowProgressBar(val doShow: Boolean) : SessionEvent()

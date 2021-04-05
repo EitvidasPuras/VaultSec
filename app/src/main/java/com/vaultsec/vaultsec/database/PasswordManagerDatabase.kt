@@ -6,9 +6,7 @@ import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.vaultsec.vaultsec.database.converter.DateConverter
 import com.vaultsec.vaultsec.database.dao.NoteDao
-import com.vaultsec.vaultsec.database.dao.TokenDao
 import com.vaultsec.vaultsec.database.entity.Note
-import com.vaultsec.vaultsec.database.entity.Token
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -17,11 +15,10 @@ import java.sql.Timestamp
 import javax.inject.Inject
 import javax.inject.Provider
 
-@Database(entities = [Token::class, Note::class], version = 8)
+@Database(entities = [Note::class], version = 8)
 @TypeConverters(DateConverter::class)
 abstract class PasswordManagerDatabase : RoomDatabase() {
 
-    abstract fun tokenDao(): TokenDao
     abstract fun noteDao(): NoteDao
 
     /*
@@ -33,7 +30,7 @@ abstract class PasswordManagerDatabase : RoomDatabase() {
     ) : RoomDatabase.Callback() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
-            val tokenDao = database.get().tokenDao()
+//            val tokenDao = database.get().tokenDao()
             val noteDao = database.get().noteDao()
 
             CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {

@@ -16,6 +16,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.*
 
 class NoteViewModel
 @ViewModelInject constructor(
@@ -222,12 +223,13 @@ class NoteViewModel
     * */
     fun encryptText(input: String) {
         viewModelScope.launch {
+            delay(100)
             val output = cipherManager.encrypt(input)
-            if (output != null) {
+            if (output.isNotEmpty()) {
                 Log.e("encrypted text", output)
                 delay(100)
                 val backToOriginal = cipherManager.decrypt(output)
-                if (backToOriginal != null) {
+                if (backToOriginal.isNotEmpty()) {
                     Log.e("decrypted text", backToOriginal)
                 } else {
                     return@launch

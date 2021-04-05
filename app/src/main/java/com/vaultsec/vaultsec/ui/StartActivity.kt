@@ -7,6 +7,7 @@ import android.view.ViewAnimationUtils
 import android.view.WindowManager
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
@@ -17,6 +18,7 @@ import com.vaultsec.vaultsec.util.hideKeyboard
 import com.vaultsec.vaultsec.util.setProgressBarDrawable
 import com.vaultsec.vaultsec.viewmodel.SessionViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
 import kotlin.math.hypot
 
 @AndroidEntryPoint
@@ -55,6 +57,16 @@ class StartActivity : AppCompatActivity() {
         }
         isUserLoggedIn()
         playOpeningAnimation(view)
+
+        this.lifecycleScope.launchWhenStarted {
+            sessionViewModel.sessionEvent.collect { event ->
+                when (event) {
+                    SessionViewModel.SessionEvent.CurrentlyLoggedIn -> {
+                        navController.navigate(R.id.fragment_master_password)
+                    }
+                }
+            }
+        }
     }
 
     private fun playOpeningAnimation(view: View) {
@@ -84,11 +96,12 @@ class StartActivity : AppCompatActivity() {
     }
 
     private fun isUserLoggedIn() {
-        try {
-            sessionViewModel.getToken().token
-            navController.navigate(R.id.fragment_master_password)
-        } catch (e: NullPointerException) {
-        }
+        sessionViewModel.isUserLoggedIn()
+//        try {
+//            sessionViewModel.getToken().token
+//            navController.navigate(R.id.fragment_master_password)
+//        } catch (e: NullPointerException) {
+//        }
     }
 
     override fun onSupportNavigateUp(): Boolean {

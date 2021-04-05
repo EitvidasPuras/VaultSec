@@ -3,6 +3,7 @@ package com.vaultsec.vaultsec.repository
 import android.util.Log
 import androidx.room.withTransaction
 import com.vaultsec.vaultsec.database.PasswordManagerDatabase
+import com.vaultsec.vaultsec.database.PasswordManagerEncryptedSharedPreferences
 import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.network.PasswordManagerApi
@@ -19,7 +20,7 @@ import javax.inject.Inject
 class NoteRepository @Inject constructor(
     private val db: PasswordManagerDatabase,
     private val api: PasswordManagerApi,
-    private val sessionRepository: SessionRepository
+    private val encryptedSharedPrefs: PasswordManagerEncryptedSharedPreferences
 ) {
     private val noteDao = db.noteDao()
 
@@ -29,7 +30,7 @@ class NoteRepository @Inject constructor(
     suspend fun insert(note: Note) {
         if (isNetworkAvailable) {
             try {
-                val id = api.postSingleNote(note, "Bearer ${sessionRepository.getToken().token}")
+                val id = api.postSingleNote(note, "Bearer ${encryptedSharedPrefs.getToken()}")
                 val newNote = note.copy(
                     title = note.title,
                     text = note.text,
@@ -83,7 +84,7 @@ class NoteRepository @Inject constructor(
                     val id = api.putNoteUpdate(
                         note.id,
                         note,
-                        "Bearer ${sessionRepository.getToken().token}"
+                        "Bearer ${encryptedSharedPrefs.getToken()}"
                     )
                     val newNote = note.copy(
                         title = note.title,
@@ -156,7 +157,7 @@ class NoteRepository @Inject constructor(
                 if (noteDao.getSyncedDeletedNotesIds().first().isNotEmpty()) {
                     api.deleteNotes(
                         noteDao.getSyncedDeletedNotesIds().first() as ArrayList<Int>,
-                        "Bearer ${sessionRepository.getToken().token}"
+                        "Bearer ${encryptedSharedPrefs.getToken()}"
                     )
                 }
                 val combinedNotes = arrayListOf<Note>()
@@ -165,8 +166,9 @@ class NoteRepository @Inject constructor(
                 Log.e("combinedNotes", "$combinedNotes")
                 val notes = api.postStoreNotes(
                     combinedNotes,
-                    "Bearer ${sessionRepository.getToken().token}"
+                    "Bearer ${encryptedSharedPrefs.getToken()}"
                 )
+                Log.e("returned notes", "$notes")
                 notes
             },
             saveFetchResult = { notesApi ->
@@ -250,7 +252,7 @@ class NoteRepository @Inject constructor(
                 try {
                     api.deleteNotes(
                         syncedNotesIds,
-                        "Bearer ${sessionRepository.getToken().token}"
+                        "Bearer ${encryptedSharedPrefs.getToken()}"
                     )
                     didPerformDeletionAPICall = true
                     noteDao.deleteSelectedNotes(syncedNotesIds)
@@ -323,7 +325,7 @@ class NoteRepository @Inject constructor(
                     try {
                         val notesApi = api.postRecoverNotes(
                             syncedNotes,
-                            "Bearer ${sessionRepository.getToken().token}"
+                            "Bearer ${encryptedSharedPrefs.getToken()}"
                         )
                         val notes = arrayListOf<Note>()
                         notesApi.map {
