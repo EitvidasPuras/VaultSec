@@ -13,7 +13,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
@@ -216,27 +215,6 @@ class NoteViewModel
         viewModelScope.launch {
             if (notes.value !is Resource.Loading) {
                 refreshTriggerChannel.send(Refresh.DID)
-            }
-        }
-    }
-
-    /*
-    * FOR TESTING ONLY. WILL BE REMOVED LATER
-    * */
-    fun encryptText(input: String) {
-        viewModelScope.launch {
-            val output = cipherManager.encrypt(input)
-            if (output.isNotEmpty()) {
-                Log.e("encrypted text", output)
-                delay(100)
-                val backToOriginal = cipherManager.decrypt(output)
-                if (backToOriginal.isNotEmpty()) {
-                    Log.e("decrypted text", backToOriginal)
-                } else {
-                    return@launch
-                }
-            } else {
-                return@launch
             }
         }
     }

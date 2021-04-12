@@ -25,13 +25,16 @@ class PasswordManagerPreferences
 @Inject constructor(
     @ApplicationContext application: Context
 ) {
+    companion object {
+        private const val TAG = "com.vaultsec.vaultsec.database.PasswordManagerPreferences"
+    }
 
     private val dataStore = application.createDataStore("user_preferences")
 
     val preferencesFlow = dataStore.data
         .catch {
             if (it is IOException) {
-                Log.e("com.vaultsec.vaultsec.database.PasswordManagerPreferences", it.message!!)
+                Log.e("$TAG.data", it.message!!)
                 emit(emptyPreferences())
             } else {
                 throw it
@@ -62,6 +65,4 @@ class PasswordManagerPreferences
         val SORT_ORDER = stringPreferencesKey("so")
         val SORT_DIR = booleanPreferencesKey("sd")
     }
-
-
 }

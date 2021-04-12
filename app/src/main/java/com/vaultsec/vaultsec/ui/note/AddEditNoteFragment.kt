@@ -46,6 +46,10 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
 
     private val addEditNoteViewModel: AddEditNoteViewModel by viewModels()
 
+    companion object {
+        private const val TAG = "com.vaultsec.vaultsec.ui.note.AddEditNoteFragment"
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -68,7 +72,7 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
                     )
                 } else {
                     Log.e(
-                        "com.vaultsec.vaultsec.ui.note.AddEditNoteFragment",
+                        TAG,
                         "Permission not granted"
                     )
                 }

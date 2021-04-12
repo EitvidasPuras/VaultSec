@@ -43,6 +43,10 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
     private var _binding: FragmentNotesBinding? = null
     private val binding get() = _binding!!
 
+    companion object {
+        const val TAG = "com.vaultsec.vaultsec.ui.note.NotesFragment"
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -57,11 +61,6 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
         setHasOptionsMenu(true)
         playSlidingAnimation(true, requireActivity())
 
-        /*
-        * FOR TESTING ONLY. WILL BE REMOVED LATER
-        * */
-        noteViewModel.encryptText("1234567890ABCabc")
-
         val layoutM = StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL)
         noteAdapter = NoteAdapter(this)
         noteAdapter.stateRestorationPolicy =
@@ -72,7 +71,6 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
                 adapter = noteAdapter
                 layoutManager = layoutM
                 setHasFixedSize(true)
-//                itemAnimator?.changeDuration = 0
                 addItemDecoration(NoteOffsetDecoration(resources.getInteger(R.integer.staggered_grid_layout_offset_spacing)))
                 addOnScrollListener(object : RecyclerView.OnScrollListener() {
                     override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
@@ -135,11 +133,20 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
                         }
                     }
                 } catch (e: Exception) {
-                    Log.e("Error ", e.message!!)
+                    Log.e("$TAG.onItemStateChanged", e.message!!)
                 }
             }
         })
         noteAdapter.tracker = tracker
+
+        requireActivity().supportFragmentManager.setFragmentResultListener(
+            "com.vaultsec.vaultsec.ui.BottomNavigationActivity.seedDatabase",
+            viewLifecycleOwner
+        ) { _, _ ->
+            val fragmentHolder = requireActivity().findViewById<View>(R.id.fragment_container_view)
+            noteViewModel.onManualNoteSync()
+            fragmentHolder.visibility = View.VISIBLE
+        }
 
         setFragmentResultListener("com.vaultsec.vaultsec.ui.note.AddEditNoteFragment") { _, bundle ->
             val result = bundle.getInt("AddEditResult")
@@ -164,9 +171,10 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
             }
             binding.swiperefreshlayout.isRefreshing = it is Resource.Loading
 
+            val fragmentHolder = requireActivity().findViewById<View>(R.id.fragment_container_view)
             binding.recyclerviewNotes.isVisible = !it.data.isNullOrEmpty()
             binding.textviewEmptyNotes.isVisible =
-                it.data.isNullOrEmpty() && it !is Resource.Loading
+                it.data.isNullOrEmpty() && it !is Resource.Loading && fragmentHolder.isVisible
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {

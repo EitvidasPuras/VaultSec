@@ -24,9 +24,9 @@ import com.vaultsec.vaultsec.util.NetworkUtil
 import com.vaultsec.vaultsec.util.OnConnectionStatusChange
 import com.vaultsec.vaultsec.util.hideKeyboard
 import com.vaultsec.vaultsec.util.isNetworkAvailable
+import com.vaultsec.vaultsec.viewmodel.AuthenticationViewModel
 import com.vaultsec.vaultsec.viewmodel.HTTP_EMAIL_ERROR
 import com.vaultsec.vaultsec.viewmodel.HTTP_PASSWORD_ERROR
-import com.vaultsec.vaultsec.viewmodel.SessionViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 
@@ -35,7 +35,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
 
-    private val sessionViewModel: SessionViewModel by viewModels()
+    private val authenticationViewModel: AuthenticationViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,7 +58,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             "com.vaultsec.vaultsec.ui.registration.RegistrationFragment"
         ) { _, bundle ->
             val result = bundle.getBoolean("RegistrationResult")
-            sessionViewModel.onRegistrationResult(result)
+            authenticationViewModel.onRegistrationResult(result)
         }
 
         binding.textfieldLoginPassword.setOnEditorActionListener(object :
@@ -74,7 +74,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         binding.buttonLogin.setOnClickListener {
             hideKeyboard(requireActivity())
             if (isNetworkAvailable) {
-                sessionViewModel.onLoginClick(
+                authenticationViewModel.onLoginClick(
                     binding.textfieldLoginEmail.text.toString(),
                     binding.textfieldLoginPassword.text.toString()
                 )
@@ -88,43 +88,43 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         }
 
         binding.textviewLoginCreate.setOnClickListener {
-            sessionViewModel.onCreateAccountClick()
+            authenticationViewModel.onCreateAccountClick()
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            sessionViewModel.sessionEvent.collect { event ->
+            authenticationViewModel.authenticationEvent.collect { event ->
                 /*
                 * The cases that belong to RegistrationFragment won't be handled here
                 * */
                 when (event) {
-                    is SessionViewModel.SessionEvent.NavigateToRegistrationFragment -> {
+                    is AuthenticationViewModel.SessionEvent.NavigateToRegistrationFragment -> {
                         val action =
                             LoginFragmentDirections.actionFragmentLoginToFragmentRegistration()
                         findNavController().navigate(action)
                     }
-                    is SessionViewModel.SessionEvent.ShowSuccessfulRegistrationMessage -> {
+                    is AuthenticationViewModel.SessionEvent.ShowSuccessfulRegistrationMessage -> {
                         Snackbar.make(requireView(), event.message, Snackbar.LENGTH_LONG)
                             .setBackgroundTint(requireContext().getColor(R.color.color_successful_snackbar))
                             .show()
                     }
-                    is SessionViewModel.SessionEvent.ShowEmailInputError -> {
+                    is AuthenticationViewModel.SessionEvent.ShowEmailInputError -> {
                         binding.textfieldLoginEmailLayout.error = getString(event.message)
                     }
-                    is SessionViewModel.SessionEvent.ShowPasswordInputError -> {
+                    is AuthenticationViewModel.SessionEvent.ShowPasswordInputError -> {
                         binding.textfieldLoginPasswordLayout.error = getString(event.message)
                     }
-                    is SessionViewModel.SessionEvent.ClearErrorsEmail -> {
+                    is AuthenticationViewModel.SessionEvent.ClearErrorsEmail -> {
                         binding.textfieldLoginEmailLayout.error = null
                     }
-                    is SessionViewModel.SessionEvent.ClearErrorsPassword -> {
+                    is AuthenticationViewModel.SessionEvent.ClearErrorsPassword -> {
                         binding.textfieldLoginPasswordLayout.error = null
                     }
-                    is SessionViewModel.SessionEvent.ShowProgressBar -> {
+                    is AuthenticationViewModel.SessionEvent.ShowProgressBar -> {
                         val progressbar =
                             requireActivity().findViewById<View>(R.id.progressbar_start)
                         progressbar.isVisible = event.doShow
                     }
-                    is SessionViewModel.SessionEvent.ShowHttpError -> {
+                    is AuthenticationViewModel.SessionEvent.ShowHttpError -> {
                         when (event.whereToDisplay) {
                             HTTP_EMAIL_ERROR -> {
                                 binding.textfieldLoginEmailLayout.error = event.message
@@ -139,12 +139,12 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                             }
                         }
                     }
-                    is SessionViewModel.SessionEvent.ShowRequestError -> {
+                    is AuthenticationViewModel.SessionEvent.ShowRequestError -> {
                         Snackbar.make(requireView(), event.message, Snackbar.LENGTH_LONG)
                             .setBackgroundTint(requireContext().getColor(R.color.color_error_snackbar))
                             .show()
                     }
-                    SessionViewModel.SessionEvent.SuccessfulLogin -> {
+                    AuthenticationViewModel.SessionEvent.SuccessfulLogin -> {
                         openBottomNavigationActivity()
                     }
                 }
@@ -193,6 +193,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
 
     private fun openBottomNavigationActivity() {
         val bottomNavIntent = Intent(requireContext(), BottomNavigationActivity::class.java)
+        bottomNavIntent.putExtra(BottomNavigationActivity.EXTRA_LOGIN, true)
         startActivity(bottomNavIntent)
         requireActivity().finish()
     }

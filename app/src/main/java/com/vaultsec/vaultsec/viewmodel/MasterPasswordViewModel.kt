@@ -1,7 +1,5 @@
 package com.vaultsec.vaultsec.viewmodel
 
-import android.util.Log
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vaultsec.vaultsec.R

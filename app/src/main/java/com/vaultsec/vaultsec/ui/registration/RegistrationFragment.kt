@@ -32,7 +32,7 @@ class RegistrationFragment : Fragment(R.layout.fragment_registration) {
     private var _binding: FragmentRegistrationBinding? = null
     private val binding get() = _binding!!
 
-    private val sessionViewModel: SessionViewModel by viewModels()
+    private val authenticationViewModel: AuthenticationViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -71,7 +71,7 @@ class RegistrationFragment : Fragment(R.layout.fragment_registration) {
         binding.buttonRegistration.setOnClickListener {
             hideKeyboard(requireActivity())
             if (isNetworkAvailable) {
-                sessionViewModel.onRegisterClick(
+                authenticationViewModel.onRegisterClick(
                     binding.textfieldRegistrationFirstname.text.toString(),
                     binding.textfieldRegistrationLastname.text.toString(),
                     binding.textfieldRegistrationEmail.text.toString(),
@@ -88,32 +88,32 @@ class RegistrationFragment : Fragment(R.layout.fragment_registration) {
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            sessionViewModel.sessionEvent.collect { event ->
+            authenticationViewModel.authenticationEvent.collect { event ->
                 /*
                 * The cases that belong to LoginFragment won't be handled here
                 * */
                 when (event) {
-                    SessionViewModel.SessionEvent.ClearErrorsFirstName -> {
+                    AuthenticationViewModel.SessionEvent.ClearErrorsFirstName -> {
                         binding.textfieldRegistrationFirstnameLayout.error = null
                     }
-                    SessionViewModel.SessionEvent.ClearErrorsLastName -> {
+                    AuthenticationViewModel.SessionEvent.ClearErrorsLastName -> {
                         binding.textfieldRegistrationLastnameLayout.error = null
                     }
-                    SessionViewModel.SessionEvent.ClearErrorsEmail -> {
+                    AuthenticationViewModel.SessionEvent.ClearErrorsEmail -> {
                         binding.textfieldRegistrationEmailLayout.error = null
                     }
-                    SessionViewModel.SessionEvent.ClearErrorsPassword -> {
+                    AuthenticationViewModel.SessionEvent.ClearErrorsPassword -> {
                         binding.textfieldRegistrationPasswordLayout.error = null
                     }
-                    SessionViewModel.SessionEvent.ClearErrorsPasswordRetype -> {
+                    AuthenticationViewModel.SessionEvent.ClearErrorsPasswordRetype -> {
                         binding.textfieldRegistrationPasswordRetypeLayout.error = null
                     }
-                    is SessionViewModel.SessionEvent.ShowProgressBar -> {
+                    is AuthenticationViewModel.SessionEvent.ShowProgressBar -> {
                         val progressbar =
                             requireActivity().findViewById<View>(R.id.progressbar_start)
                         progressbar.isVisible = event.doShow
                     }
-                    SessionViewModel.SessionEvent.SuccessfulRegistration -> {
+                    AuthenticationViewModel.SessionEvent.SuccessfulRegistration -> {
                         setFragmentResult(
                             "com.vaultsec.vaultsec.ui.registration.RegistrationFragment",
                             bundleOf(
@@ -122,24 +122,24 @@ class RegistrationFragment : Fragment(R.layout.fragment_registration) {
                         )
                         findNavController().popBackStack()
                     }
-                    is SessionViewModel.SessionEvent.ShowFirstNameInputError -> {
+                    is AuthenticationViewModel.SessionEvent.ShowFirstNameInputError -> {
                         binding.textfieldRegistrationFirstnameLayout.error =
                             getString(event.message)
                     }
-                    is SessionViewModel.SessionEvent.ShowLastNameInputError -> {
+                    is AuthenticationViewModel.SessionEvent.ShowLastNameInputError -> {
                         binding.textfieldRegistrationLastnameLayout.error = getString(event.message)
                     }
-                    is SessionViewModel.SessionEvent.ShowEmailInputError -> {
+                    is AuthenticationViewModel.SessionEvent.ShowEmailInputError -> {
                         binding.textfieldRegistrationEmailLayout.error = getString(event.message)
                     }
-                    is SessionViewModel.SessionEvent.ShowPasswordInputError -> {
+                    is AuthenticationViewModel.SessionEvent.ShowPasswordInputError -> {
                         binding.textfieldRegistrationPasswordLayout.error = getString(event.message)
                     }
-                    is SessionViewModel.SessionEvent.ShowPasswordRetypeInputError -> {
+                    is AuthenticationViewModel.SessionEvent.ShowPasswordRetypeInputError -> {
                         binding.textfieldRegistrationPasswordRetypeLayout.error =
                             getString(event.message)
                     }
-                    is SessionViewModel.SessionEvent.ShowHttpError -> {
+                    is AuthenticationViewModel.SessionEvent.ShowHttpError -> {
                         when (event.whereToDisplay) {
                             HTTP_FIRST_NAME_ERROR -> {
                                 binding.textfieldRegistrationFirstnameLayout.error = event.message
@@ -164,7 +164,7 @@ class RegistrationFragment : Fragment(R.layout.fragment_registration) {
                             }
                         }
                     }
-                    is SessionViewModel.SessionEvent.ShowRequestError -> {
+                    is AuthenticationViewModel.SessionEvent.ShowRequestError -> {
                         Snackbar.make(requireView(), event.message, Snackbar.LENGTH_LONG)
                             .setBackgroundTint(requireContext().getColor(R.color.color_error_snackbar))
                             .show()

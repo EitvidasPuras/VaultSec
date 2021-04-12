@@ -2,18 +2,15 @@ package com.vaultsec.vaultsec.di
 
 import android.app.Application
 import android.content.SharedPreferences
-import androidx.room.Room
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.google.gson.GsonBuilder
-import com.vaultsec.vaultsec.database.PasswordManagerDatabase
 import com.vaultsec.vaultsec.network.PasswordManagerApi
 import com.vaultsec.vaultsec.util.exclusion.AnnotationExclusionStrategy
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import net.sqlcipher.database.SupportFactory
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -30,26 +27,6 @@ object AppModule {
     /*
     * @Provides indicates that this function has the instruction how to create something
     * */
-    @Provides
-    @Singleton
-    fun provideDatabase(
-        application: Application, callback: PasswordManagerDatabase.Callback
-    ) =
-        Room.databaseBuilder(
-            application, PasswordManagerDatabase::class.java, "vaultsec-database"
-        )
-            .fallbackToDestructiveMigration()
-            .openHelperFactory(
-                SupportFactory(
-                    "123".toByteArray() // TESTING PURPOSES ONLY. WILL BE REMOVED LATER
-                )
-            )
-//            .addCallback(callback)
-            .build()
-
-    @Provides
-    fun provideNoteDao(database: PasswordManagerDatabase) = database.noteDao()
-
     @Provides
     fun provideBaseUrl() = "http://192.168.0.104:8001/"
 

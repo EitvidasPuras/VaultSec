@@ -16,7 +16,7 @@ import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.databinding.ActivityStartBinding
 import com.vaultsec.vaultsec.util.hideKeyboard
 import com.vaultsec.vaultsec.util.setProgressBarDrawable
-import com.vaultsec.vaultsec.viewmodel.SessionViewModel
+import com.vaultsec.vaultsec.viewmodel.AuthenticationViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlin.math.hypot
@@ -26,10 +26,10 @@ class StartActivity : AppCompatActivity() {
     private lateinit var binding: ActivityStartBinding
     private lateinit var navController: NavController
 
-    private val sessionViewModel: SessionViewModel by viewModels()
+    private val authenticationViewModel: AuthenticationViewModel by viewModels()
 
     companion object {
-        const val EXTRA_LOGOUT = "com.vaultsec.vaultsec.ui.EXTRA_LOGOUT"
+        const val EXTRA_LOGOUT = "com.vaultsec.vaultsec.ui.StartActivity.EXTRA_LOGOUT"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,9 +59,9 @@ class StartActivity : AppCompatActivity() {
         playOpeningAnimation(view)
 
         this.lifecycleScope.launchWhenStarted {
-            sessionViewModel.sessionEvent.collect { event ->
+            authenticationViewModel.authenticationEvent.collect { event ->
                 when (event) {
-                    SessionViewModel.SessionEvent.CurrentlyLoggedIn -> {
+                    AuthenticationViewModel.SessionEvent.CurrentlyLoggedIn -> {
                         navController.navigate(R.id.fragment_master_password)
                     }
                 }
@@ -96,12 +96,7 @@ class StartActivity : AppCompatActivity() {
     }
 
     private fun isUserLoggedIn() {
-        sessionViewModel.isUserLoggedIn()
-//        try {
-//            sessionViewModel.getToken().token
-//            navController.navigate(R.id.fragment_master_password)
-//        } catch (e: NullPointerException) {
-//        }
+        authenticationViewModel.isUserLoggedIn()
     }
 
     override fun onSupportNavigateUp(): Boolean {

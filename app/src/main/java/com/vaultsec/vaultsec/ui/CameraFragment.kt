@@ -37,6 +37,10 @@ class CameraFragment : Fragment(R.layout.fragment_camera) {
     private var flashMode: Int = ImageCapture.FLASH_MODE_OFF
     private var hdrMode: HdrImageCaptureExtender? = null
 
+    companion object {
+        private const val TAG = "com.vaultsec.vaultsec.ui.CameraFragment"
+    }
+
     private val orientationEventList by lazy {
         object : OrientationEventListener(requireContext()) {
             override fun onOrientationChanged(orientation: Int) {
@@ -134,7 +138,7 @@ class CameraFragment : Fragment(R.layout.fragment_camera) {
                     return@setOnTouchListener true
                 }
             } catch (e: Exception) {
-                Log.e("Binding failed", e.message!!)
+                Log.e("$TAG.binding", e.message!!)
             }
         }, ContextCompat.getMainExecutor(requireContext()))
 
@@ -199,7 +203,7 @@ class CameraFragment : Fragment(R.layout.fragment_camera) {
             }
 
             override fun onError(exception: ImageCaptureException) {
-                Log.e("com.vaultsec.vaultsec.ui.CameraActivity", "Failed to capture an image")
+                Log.e("$TAG.takeAPhoto", exception.localizedMessage!!)
             }
         })
     }
@@ -250,7 +254,7 @@ class CameraFragment : Fragment(R.layout.fragment_camera) {
                     }
             }
             .addOnFailureListener {
-                Log.e("Failed", it.message!!)
+                Log.e("$TAG.recognizeTextOnDevice", it.message!!)
             }
     }
 

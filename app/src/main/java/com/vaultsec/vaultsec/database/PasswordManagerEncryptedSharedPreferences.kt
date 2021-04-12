@@ -11,6 +11,11 @@ data class Credentials(val passwordHash: String, val emailHash: String)
 class PasswordManagerEncryptedSharedPreferences @Inject constructor(
     private val encryptedSharedPrefs: SharedPreferences
 ) {
+    companion object {
+        private const val TAG =
+            "com.vaultsec.vaultsec.database.PasswordManagerEncryptedSharedPreferences"
+    }
+
     fun storeCredentials(passHash: String, emailHash: String): Boolean {
         return try {
             if (!encryptedSharedPrefs.contains(EncryptedSharedPreferenceKeys.PASSWORD_KEY)) {
@@ -25,30 +30,7 @@ class PasswordManagerEncryptedSharedPreferences @Inject constructor(
             }
         } catch (e: Exception) {
             Log.e(
-                "com.vaultsec.vaultsec.database.PasswordManagerEncryptedSharedPreferences.storePassword",
-                e.localizedMessage!!
-            )
-            false
-        }
-    }
-
-    fun storeSalt(saltBytes: ByteArray): Boolean {
-        return try {
-            if (!encryptedSharedPrefs.contains(EncryptedSharedPreferenceKeys.SALT_KEY)) {
-                with(encryptedSharedPrefs.edit()) {
-                    putString(
-                        EncryptedSharedPreferenceKeys.SALT_KEY,
-                        String(saltBytes, Charsets.ISO_8859_1)
-                    )
-                    apply()
-                }
-                true
-            } else {
-                false
-            }
-        } catch (e: Exception) {
-            Log.e(
-                "com.vaultsec.vaultsec.database.PasswordManagerEncryptedSharedPreferences.storeSalt",
+                "$TAG.storePassword",
                 e.localizedMessage!!
             )
             false
@@ -71,7 +53,7 @@ class PasswordManagerEncryptedSharedPreferences @Inject constructor(
             }
         } catch (e: Exception) {
             Log.e(
-                "com.vaultsec.vaultsec.database.PasswordManagerEncryptedSharedPreferences.storeAccessToken",
+                "$TAG.storeAccessToken",
                 e.localizedMessage!!
             )
             false
@@ -82,13 +64,11 @@ class PasswordManagerEncryptedSharedPreferences @Inject constructor(
         return try {
             if (encryptedSharedPrefs.contains(EncryptedSharedPreferenceKeys.PASSWORD_KEY)
                 && encryptedSharedPrefs.contains(EncryptedSharedPreferenceKeys.EMAIL_KEY)
-                && encryptedSharedPrefs.contains(EncryptedSharedPreferenceKeys.SALT_KEY)
                 && encryptedSharedPrefs.contains(EncryptedSharedPreferenceKeys.TOKEN_KEY)
             ) {
                 with(encryptedSharedPrefs.edit()) {
                     remove(EncryptedSharedPreferenceKeys.PASSWORD_KEY)
                     remove(EncryptedSharedPreferenceKeys.EMAIL_KEY)
-                    remove(EncryptedSharedPreferenceKeys.SALT_KEY)
                     remove(EncryptedSharedPreferenceKeys.TOKEN_KEY)
                     apply()
                 }
@@ -98,7 +78,7 @@ class PasswordManagerEncryptedSharedPreferences @Inject constructor(
             }
         } catch (e: Exception) {
             Log.e(
-                "com.vaultsec.vaultsec.database.PasswordManagerEncryptedSharedPreferences.deletePassword",
+                "$TAG.deletePassword",
                 e.localizedMessage!!
             )
             false
@@ -122,24 +102,7 @@ class PasswordManagerEncryptedSharedPreferences @Inject constructor(
             }
         } catch (e: Exception) {
             Log.e(
-                "com.vaultsec.vaultsec.database.PasswordManagerEncryptedSharedPreferences.getPassword",
-                e.localizedMessage!!
-            )
-            null
-        }
-    }
-
-    fun getSalt(): ByteArray? {
-        return try {
-            if (encryptedSharedPrefs.contains(EncryptedSharedPreferenceKeys.SALT_KEY)) {
-                encryptedSharedPrefs.getString(EncryptedSharedPreferenceKeys.SALT_KEY, null)
-                    ?.toByteArray(Charsets.ISO_8859_1)
-            } else {
-                null
-            }
-        } catch (e: Exception) {
-            Log.e(
-                "com.vaultsec.vaultsec.database.PasswordManagerEncryptedSharedPreferences.getSalt",
+                "$TAG.getPassword",
                 e.localizedMessage!!
             )
             null
@@ -155,7 +118,7 @@ class PasswordManagerEncryptedSharedPreferences @Inject constructor(
             }
         } catch (e: Exception) {
             Log.e(
-                "com.vaultsec.vaultsec.database.PasswordManagerEncryptedSharedPreferences.getToken",
+                "$TAG.getToken",
                 e.localizedMessage!!
             )
             null
@@ -165,7 +128,6 @@ class PasswordManagerEncryptedSharedPreferences @Inject constructor(
     object EncryptedSharedPreferenceKeys {
         const val PASSWORD_KEY = "UPHed"
         const val EMAIL_KEY = "UEHed"
-        const val SALT_KEY = "EDSalt"
         const val TOKEN_KEY = "AT"
     }
 }

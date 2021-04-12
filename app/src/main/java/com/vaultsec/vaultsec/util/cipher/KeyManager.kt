@@ -17,8 +17,10 @@ class KeyManager @Inject constructor(
 ) {
 
     companion object {
-        private const val SALT_LENGTH = 128
-        private const val ITERATION_COUNT = 30000
+        private const val TAG = "com.vaultsec.vaultsec.util.cipher.KeyManager"
+
+        const val SALT_LENGTH = 128
+        private const val ITERATION_COUNT = 15000
         private const val KEY_LENGTH = 256
 
         private const val SECRET_KEY_FACTORY_ALG = "PBEwithHmacSHA256AndAES_256"
@@ -31,11 +33,13 @@ class KeyManager @Inject constructor(
         return ba
     }
 
-    fun getKey(): SecretKeySpec? {
+    fun getKey(saltBytes: ByteArray?): Wrapper? {
         return try {
+            var saltBytesLocal = byteArrayOf()
+            if (saltBytes == null) {
+                saltBytesLocal = getRandomBytes()
+            }
             val credentials = encryptedSharedPrefs.getCredentials() ?: return null
-            val saltBytes: ByteArray = getRandomBytes()
-            encryptedSharedPrefs.storeSalt(saltBytes)
             val factory: SecretKeyFactory =
                 SecretKeyFactory.getInstance(SECRET_KEY_FACTORY_ALG)
             val spec = PBEKeySpec(
@@ -43,13 +47,21 @@ class KeyManager @Inject constructor(
                     credentials.passwordHash,
                     1
                 )).toCharArray(),
-                encryptedSharedPrefs.getSalt(), ITERATION_COUNT, KEY_LENGTH
+                saltBytes ?: saltBytesLocal, ITERATION_COUNT, KEY_LENGTH
             )
             val secretKey: SecretKey = factory.generateSecret(spec)
             val secretKeySpec = SecretKeySpec(secretKey.encoded, SECRET_KEY_SPEC_ALG)
-            secretKeySpec
+
+//            Log.e("getKey() saltBytes", saltBytes.contentToString())
+//            Log.e("getKey() saltBytesLocal", saltBytesLocal.contentToString())
+//            Log.e("getKey().encoded", secretKeySpec.encoded.contentToString())
+//            Log.e(
+//                "getKey() base64",
+//                Base64.encodeToString(secretKeySpec.encoded, Base64.DEFAULT)
+//            )
+            Wrapper(secretKeySpec, saltBytes ?: saltBytesLocal)
         } catch (e: Exception) {
-            Log.e("com.vaultsec.vaultsec.util.cipher.KeyManager.generateKey", e.message!!)
+            Log.e("$TAG.getKey", e.message!!)
             null
         }
     }

@@ -23,8 +23,7 @@ import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.databinding.ActivityBottomNavigationBinding
 import com.vaultsec.vaultsec.util.hideKeyboard
 import com.vaultsec.vaultsec.util.setProgressBarDrawable
-import com.vaultsec.vaultsec.viewmodel.HTTP_NONE_ERROR
-import com.vaultsec.vaultsec.viewmodel.SessionViewModel
+import com.vaultsec.vaultsec.viewmodel.BottomNavigationViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlin.math.hypot
@@ -33,7 +32,7 @@ import kotlin.math.hypot
 class BottomNavigationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityBottomNavigationBinding
 
-    private val sessionViewModel: SessionViewModel by viewModels()
+    private val bottomNavigationViewModel: BottomNavigationViewModel by viewModels()
 
     private var wasDoubleBackToExitPressed = false
     private lateinit var backToast: Toast
@@ -41,12 +40,23 @@ class BottomNavigationActivity : AppCompatActivity() {
 
     private var defaultStatusBarColor: Int = 0
 
+    companion object {
+        const val EXTRA_LOGIN = "com.vaultsec.vaultsec.ui.BottomNavigationActivity.EXTRA_LOGIN"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityBottomNavigationBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
         setProgressBarDrawable(binding.progressbarBottomNavigation)
+
+        bottomNavigationViewModel.printTokenToConsoleForTesting()
+
+        if (intent.hasExtra(EXTRA_LOGIN) && intent.getBooleanExtra(EXTRA_LOGIN, false)) {
+            binding.fragmentContainerView.visibility = View.INVISIBLE
+            bottomNavigationViewModel.onLogIn()
+        }
 
         val toolbar: androidx.appcompat.widget.Toolbar? =
             findViewById(R.id.toolbar)
@@ -125,31 +135,35 @@ class BottomNavigationActivity : AppCompatActivity() {
         playOpeningAnimation(view)
 
         lifecycleScope.launchWhenStarted {
-            sessionViewModel.sessionEvent.collect { event ->
+            bottomNavigationViewModel.bottomNavigationEvent.collect { event ->
                 when (event) {
-                    is SessionViewModel.SessionEvent.ShowHttpError -> {
-                        when (event.whereToDisplay) {
-                            HTTP_NONE_ERROR -> {
-                                Snackbar.make(view, event.message, Snackbar.LENGTH_LONG)
-                                    .setBackgroundTint(getColor(R.color.color_error_snackbar))
-                                    .show()
-                            }
-                        }
-                    }
-                    is SessionViewModel.SessionEvent.ShowRequestError -> {
-                        Snackbar.make(view, event.message, Snackbar.LENGTH_LONG)
-                            .setBackgroundTint(getColor(R.color.color_error_snackbar))
-                            .show()
-                    }
-                    SessionViewModel.SessionEvent.SuccessfulLogout -> {
+                    BottomNavigationViewModel.BottomNavigationEvent.SuccessfulLogout -> {
                         /*
                         * To prevent the empty recycler view message from briefly flashing on the screen
                         * */
                         binding.fragmentContainerView.visibility = View.INVISIBLE
                         openStartActivity()
                     }
-                    is SessionViewModel.SessionEvent.ShowProgressBar -> {
+                    is BottomNavigationViewModel.BottomNavigationEvent.ShowProgressBar -> {
                         binding.progressbarBottomNavigation.isVisible = event.doShow
+                    }
+                    is BottomNavigationViewModel.BottomNavigationEvent.ShowHttpError -> {
+                        Snackbar.make(view, event.message, Snackbar.LENGTH_LONG)
+                            .setBackgroundTint(getColor(R.color.color_error_snackbar))
+                            .show()
+                    }
+                    is BottomNavigationViewModel.BottomNavigationEvent.ShowRequestError -> {
+                        Snackbar.make(view, event.message, Snackbar.LENGTH_LONG)
+                            .setBackgroundTint(getColor(R.color.color_error_snackbar))
+                            .show()
+                    }
+                    BottomNavigationViewModel.BottomNavigationEvent.SuccessfulLogin -> {
+                        supportFragmentManager.setFragmentResult(
+                            "com.vaultsec.vaultsec.ui.BottomNavigationActivity.seedDatabase",
+                            bundleOf(
+                                "seedDatabase" to true
+                            )
+                        )
                     }
                 }
             }
@@ -241,7 +255,7 @@ class BottomNavigationActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.item_logout -> {
-                sessionViewModel.onLogoutClick()
+                bottomNavigationViewModel.onLogoutClick(this.applicationInfo.dataDir + "/databases")
                 true
             }
             R.id.item_settings -> {

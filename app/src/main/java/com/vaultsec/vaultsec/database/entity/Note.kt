@@ -14,8 +14,8 @@ import java.sql.Timestamp
 @Entity(tableName = "vault_notes")
 @Parcelize // To be able to pass it to edit
 data class Note(
-    @ColumnInfo val title: String?,
-    @ColumnInfo val text: String,
+    @ColumnInfo var title: String?,
+    @ColumnInfo var text: String,
     @ColumnInfo val color: String,
     @SerializedName("font_size")
     @ColumnInfo(name = "font_size") val fontSize: Int,

@@ -9,6 +9,7 @@ import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.network.PasswordManagerApi
 import com.vaultsec.vaultsec.util.Resource
 import com.vaultsec.vaultsec.util.SyncType
+import com.vaultsec.vaultsec.util.cipher.CipherManager
 import com.vaultsec.vaultsec.util.isNetworkAvailable
 import com.vaultsec.vaultsec.util.networkBoundResource
 import kotlinx.coroutines.flow.Flow
@@ -20,18 +21,31 @@ import javax.inject.Inject
 class NoteRepository @Inject constructor(
     private val db: PasswordManagerDatabase,
     private val api: PasswordManagerApi,
-    private val encryptedSharedPrefs: PasswordManagerEncryptedSharedPreferences
+    private val encryptedSharedPrefs: PasswordManagerEncryptedSharedPreferences,
+    private val cm: CipherManager
 ) {
     private val noteDao = db.noteDao()
 
     private var didPerformDeletionAPICall: Boolean = false
     private var apiError = JSONObject()
 
+    companion object {
+        private const val TAG = "com.vaultsec.vaultsec.repository.NoteRepository"
+    }
+
     suspend fun insert(note: Note) {
         if (isNetworkAvailable) {
             try {
-                val id = api.postSingleNote(note, "Bearer ${encryptedSharedPrefs.getToken()}")
-                val newNote = note.copy(
+                var newNote = note.copy(
+                    title = cm.encrypt(note.title),
+                    text = cm.encrypt(note.text)!!,
+                    color = note.color,
+                    fontSize = note.fontSize,
+                    createdAt = note.createdAt,
+                    updatedAt = note.updatedAt
+                )
+                val id = api.postSingleNote(newNote, "Bearer ${encryptedSharedPrefs.getToken()}")
+                newNote = note.copy(
                     title = note.title,
                     text = note.text,
                     color = note.color,
@@ -53,13 +67,13 @@ class NoteRepository @Inject constructor(
                             apiError.toString()
                         )
                         Log.e(
-                            "com.vaultsec.vaultsec.repository.NoteRepository.insert.HTTP",
+                            "$TAG.insert.HTTP",
                             apiError.getString("error")
                         )
                     }
                     else -> {
                         Log.e(
-                            "com.vaultsec.vaultsec.repository.NoteRepository.insert.ELSE",
+                            "$TAG.insert.ELSE",
                             e.localizedMessage!!
                         )
                     }
@@ -78,15 +92,21 @@ class NoteRepository @Inject constructor(
         if (isNetworkAvailable) {
             try {
                 if (note.syncState == SyncType.NOTHING_REQUIRED || note.syncState == SyncType.UPDATE_REQUIRED) {
-                    /*
-                    * The id will stay the same, this is just a security measure
-                    * */
+                    var newNote = note.copy(
+                        title = cm.encrypt(note.title),
+                        text = cm.encrypt(note.text)!!,
+                        color = note.color,
+                        fontSize = note.fontSize,
+                        createdAt = note.createdAt,
+                        updatedAt = note.updatedAt
+                    )
+
                     val id = api.putNoteUpdate(
                         note.id,
-                        note,
+                        newNote,
                         "Bearer ${encryptedSharedPrefs.getToken()}"
                     )
-                    val newNote = note.copy(
+                    newNote = note.copy(
                         title = note.title,
                         text = note.text,
                         color = note.color,
@@ -119,13 +139,13 @@ class NoteRepository @Inject constructor(
                             apiError.toString()
                         )
                         Log.e(
-                            "com.vaultsec.vaultsec.repository.NoteRepository.update.HTTP",
+                            "$TAG.update.HTTP",
                             apiError.getString("error")
                         )
                     }
                     else -> {
                         Log.e(
-                            "com.vaultsec.vaultsec.repository.NoteRepository.update.ELSE",
+                            "$TAG.update.ELSE",
                             e.localizedMessage!!
                         )
                     }
@@ -163,12 +183,16 @@ class NoteRepository @Inject constructor(
                 val combinedNotes = arrayListOf<Note>()
                 combinedNotes.addAll(noteDao.getSyncedUpdatedNotes().first())
                 combinedNotes.addAll(noteDao.getUnsyncedNotes().first())
-                Log.e("combinedNotes", "$combinedNotes")
+//                Log.e("combinedNotes", "$combinedNotes")
+                combinedNotes.map {
+                    it.title = cm.encrypt(it.title)
+                    it.text = cm.encrypt(it.text)!!
+                }
                 val notes = api.postStoreNotes(
                     combinedNotes,
                     "Bearer ${encryptedSharedPrefs.getToken()}"
                 )
-                Log.e("returned notes", "$notes")
+//                Log.e("returned notes", "$notes")
                 notes
             },
             saveFetchResult = { notesApi ->
@@ -176,8 +200,8 @@ class NoteRepository @Inject constructor(
                 notesApi.map {
                     notes.add(
                         Note(
-                            title = it.title,
-                            text = it.text,
+                            title = cm.decrypt(it.title),
+                            text = cm.decrypt(it.text)!!,
                             color = it.color,
                             fontSize = it.font_size,
                             createdAt = it.created_at_device,
@@ -198,9 +222,13 @@ class NoteRepository @Inject constructor(
             },
             shouldFetch = {
                 if (didRefresh) {
-                    noteDao.getUnsyncedNotes().first().isNotEmpty() ||
-                            noteDao.getSyncedDeletedNotesIds().first().isNotEmpty() ||
-                            noteDao.getSyncedUpdatedNotes().first().isNotEmpty()
+                    if (isNetworkAvailable) {
+                        noteDao.getUnsyncedNotes().first().isNotEmpty() ||
+                                noteDao.getSyncedDeletedNotesIds().first().isNotEmpty() ||
+                                noteDao.getSyncedUpdatedNotes().first().isNotEmpty()
+                    } else {
+                        false
+                    }
                 } else {
                     false
                 }
@@ -268,14 +296,14 @@ class NoteRepository @Inject constructor(
                                 apiError.toString()
                             )
                             Log.e(
-                                "com.vaultsec.vaultsec.repository.NoteRepository.deleteSelectedNotes.HTTP",
+                                "$TAG.deleteSelectedNotes.HTTP",
                                 apiError.getString("error")
                             )
                             return Resource.Error()
                         }
                         else -> {
                             Log.e(
-                                "com.vaultsec.vaultsec.repository.NoteRepository.deleteSelectedNotes.ELSE",
+                                "$TAG.deleteSelectedNotes.ELSE",
                                 e.localizedMessage!!
                             )
                             return Resource.Error()
@@ -310,7 +338,7 @@ class NoteRepository @Inject constructor(
                     unsyncedNotes.add(it)
                 }
                 else -> Log.e(
-                    "com.vaultsec.vaultsec.repository.NoteRepository.undoDeletedNotes.WHEN",
+                    "$TAG.undoDeletedNotes.WHEN",
                     "Invalid operation"
                 )
             }
@@ -323,6 +351,10 @@ class NoteRepository @Inject constructor(
                 * */
                 if (didPerformDeletionAPICall) {
                     try {
+                        syncedNotes.map {
+                            it.title = cm.encrypt(it.title)
+                            it.text = cm.encrypt(it.text)!!
+                        }
                         val notesApi = api.postRecoverNotes(
                             syncedNotes,
                             "Bearer ${encryptedSharedPrefs.getToken()}"
@@ -331,8 +363,8 @@ class NoteRepository @Inject constructor(
                         notesApi.map {
                             notes.add(
                                 Note(
-                                    title = it.title,
-                                    text = it.text,
+                                    title = cm.decrypt(it.title),
+                                    text = cm.decrypt(it.text)!!,
                                     color = it.color,
                                     fontSize = it.font_size,
                                     createdAt = it.created_at_device,
@@ -369,13 +401,13 @@ class NoteRepository @Inject constructor(
                                     apiError.toString()
                                 )
                                 Log.e(
-                                    "com.vaultsec.vaultsec.repository.NoteRepository.undoDeletedNotes.HTTP",
+                                    "$TAG.undoDeletedNotes.HTTP",
                                     apiError.getString("error")
                                 )
                             }
                             else -> {
                                 Log.e(
-                                    "com.vaultsec.vaultsec.repository.NoteRepository.undoDeletedNotes.ELSE",
+                                    "$TAG.undoDeletedNotes.ELSE",
                                     e.localizedMessage!!
                                 )
                             }
