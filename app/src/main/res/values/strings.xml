@@ -100,4 +100,7 @@
     <string name="add_edit_camera_permission_title">Camera required</string>
     <string name="add_edit_camera_permission_message">Camera permission is required in order to read the text</string>
 
+    <string name="biometric_fingerprint_dialog_title">Fingerprint authentication</string>
+    <string name="biometric_fingerprint_dialog_subtitle">Unlock the vault with your fingerprint</string>
+    <string name="biometric_fingerprint_cancellation_signal">Authentication was cancelled</string>
 </resources>
