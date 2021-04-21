@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.app.Activity
 import android.content.Context
+import android.content.res.Resources
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ProgressBar
@@ -21,7 +22,7 @@ fun hideKeyboard(activity: Activity) {
     activity.currentFocus?.let {
         inputManager.hideSoftInputFromWindow(
             activity.currentFocus?.windowToken,
-            InputMethodManager.HIDE_NOT_ALWAYS
+            InputMethodManager.RESULT_UNCHANGED_SHOWN
         )
     }
 }
@@ -98,6 +99,12 @@ fun setProgressBarDrawable(progressBar: ProgressBar) {
     }
     progressBar.indeterminateDrawable = drawable
 }
+
+val Int.toDp get() = (this / Resources.getSystem().displayMetrics.density).toInt()
+val Int.toPx get() = (this * Resources.getSystem().displayMetrics.density).toInt()
+
+val Float.toDp get() = (this / Resources.getSystem().displayMetrics.density)
+val Float.toPx get() = (this * Resources.getSystem().displayMetrics.density)
 /*
 * A different way to implement ByteArray to hex conversion
 * */

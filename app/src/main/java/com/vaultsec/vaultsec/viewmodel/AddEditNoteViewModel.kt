@@ -74,18 +74,6 @@ class AddEditNoteViewModel
             state.set("noteDateUpdated", value)
         }
 
-//    var noteIsSynced = state.get<Boolean>("noteIsSynced") ?: note?.isSynced ?: false
-//        set(value) {
-//            field = value
-//            state.set("noteIsSynced", value)
-//        }
-
-//    var noteSyncState = state.get<SyncType>("noteSyncState") ?: note?.syncState ?: SyncType.CREATE
-//        set(value) {
-//            field = value
-//            state.set("noteSyncState", value)
-//        }
-
     var noteSyncStateInt =
         state.get<Int>("noteSyncStateInt") ?: note?.syncState ?: SyncType.CREATE_REQUIRED
         set(value) {

@@ -6,7 +6,9 @@ import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.vaultsec.vaultsec.database.converter.DateConverter
 import com.vaultsec.vaultsec.database.dao.NoteDao
+import com.vaultsec.vaultsec.database.dao.PasswordDao
 import com.vaultsec.vaultsec.database.entity.Note
+import com.vaultsec.vaultsec.database.entity.Password
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -15,11 +17,12 @@ import java.sql.Timestamp
 import javax.inject.Inject
 import javax.inject.Provider
 
-@Database(entities = [Note::class], version = 8)
+@Database(entities = [Note::class, Password::class], version = 8)
 @TypeConverters(DateConverter::class)
 abstract class PasswordManagerDatabase : RoomDatabase() {
 
     abstract fun noteDao(): NoteDao
+    abstract fun passwordDao(): PasswordDao
 
     /*
     * @Inject tells Dagger how it can create this class. Also that this object can be injected

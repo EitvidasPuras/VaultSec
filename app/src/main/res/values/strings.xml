@@ -45,7 +45,7 @@
 
     <string name="title_notes_fragment">Notes</string>
     <string name="title_passwords_fragment">Passwords</string>
-    <string name="title_files_fragment">Files</string>
+    <string name="title_cards_fragment">Cards</string>
     <string name="title_generator_fragment">Generator</string>
 
     <string name="title_logout_dropdown_menu">Logout</string>
@@ -58,26 +58,46 @@
     <string name="title_sort_by_updated_menu_item">Sort by modified date</string>
     <string name="title_sort_by_color_menu_item">Sort by color</string>
     <string name="title_sort_by_font_size">Sort by font size</string>
+    <string name="title_sort_by_category">Sort by category</string>
     <string name="title_multi_select_delete">Delete selected</string>
     <string name="title_multi_select_all">Select all</string>
+    <string name="add_edit_save">Save</string>
+    <string name="add_edit_camera_menu">Camera</string>
+    <string name="add_edit_edit_time_text">Edited %s</string>
+    <string name="add_edit_title_hint">Title</string>
 
-    <string name="add_edit_note_title_hint">Title</string>
     <string name="add_edit_note_text_hint">Note</string>
-    <string name="add_edit_note_save">Save</string>
     <string name="add_edit_note_customize">Font size and note color</string>
-    <string name="add_edit_note_camera_menu">Camera</string>
-    <string name="add_edit_note_camera_permission_title">Camera required</string>
-    <string name="add_edit_note_camera_permission_message">Camera permission is required in order to read the text</string>
     <string name="new_note_fab_description">Add new note</string>
-    <string name="add_edit_note_edit_time_text">Edited %s</string>
     <string name="add_edit_note_text_input_error">Text cannot be empty</string>
     <string name="add_note_confirmation">Note created</string>
     <string name="edit_note_confirmation">Note updated</string>
-
-    <string name="camera_activity_shutter_description">Take a photo</string>
-    <string name="camera_activity_flashlight_description">Flashlight control</string>
-
     <string name="notes_empty_text">There are no notes</string>
     <string name="notes_one_deleted">%d note deleted</string>
     <string name="notes_more_than_one_deleted">%d notes deleted</string>
+
+    <string name="passwords_empty_text">There are no passwords</string>
+    <string name="new_password_fab_description">Add new password</string>
+    <string name="add_edit_password_url_select">URL</string>
+    <string name="add_edit_password_login_hint">Login</string>
+    <string name="add_edit_password_password_hint">Password</string>
+    <string name="add_edit_password_category_hint">Category</string>
+    <string name="add_password_confirmation">Password created</string>
+    <string name="edit_password_confirmation">Password updated</string>
+    <string name="add_edit_password_password_camera_description">Scan password</string>
+    <string name="add_edit_password_login_camera_description">Scan login</string>
+    <string name="add_edit_password_password_copy_description">Copy password</string>
+    <string name="add_edit_password_login_copy_description">Copy login</string>
+    <string name="add_edit_password_password_input_error">Password cannot be empty</string>
+    <string name="password_card_view_category_text">Category: %s</string>
+    <string name="passwords_one_deleted">%d password deleted</string>
+    <string name="passwords_more_than_one_deleted">%d passwords deleted</string>
+    <string name="add_edit_password_login_copied">Login copied to clipboard</string>
+    <string name="add_edit_password_password_copied">Password copied to clipboard</string>
+
+    <string name="camera_activity_shutter_description">Take a photo</string>
+    <string name="camera_activity_flashlight_description">Flashlight control</string>
+    <string name="add_edit_camera_permission_title">Camera required</string>
+    <string name="add_edit_camera_permission_message">Camera permission is required in order to read the text</string>
+
 </resources>

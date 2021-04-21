@@ -1,7 +1,7 @@
 package com.vaultsec.vaultsec.database.dao
 
 import androidx.room.*
-import com.vaultsec.vaultsec.database.SortOrder
+import com.vaultsec.vaultsec.database.NotesSortOrder
 import com.vaultsec.vaultsec.database.entity.Note
 import kotlinx.coroutines.flow.Flow
 
@@ -35,13 +35,17 @@ interface NoteDao {
     @Query("""SELECT * FROM vault_notes WHERE sync_state = 3""")
     fun getSyncedUpdatedNotes(): Flow<List<Note>>
 
-    fun getNotes(searchQuery: String, sortOrder: SortOrder, isAsc: Boolean): Flow<List<Note>> =
-        when (sortOrder) {
-            SortOrder.BY_TITLE -> getNotesSortedByTitle(searchQuery, isAsc)
-            SortOrder.BY_DATE_CREATED -> getNotesSortedByDateCreated(searchQuery, isAsc)
-            SortOrder.BY_DATE_UPDATED -> getNotesSortedByDateUpdated(searchQuery, isAsc)
-            SortOrder.BY_COLOR -> getNotesSortedByColor(searchQuery, isAsc)
-            SortOrder.BY_FONT_SIZE -> getNotesSortedByFontSize(searchQuery, isAsc)
+    fun getNotes(
+        searchQuery: String,
+        notesSortOrder: NotesSortOrder,
+        isAsc: Boolean
+    ): Flow<List<Note>> =
+        when (notesSortOrder) {
+            NotesSortOrder.BY_TITLE -> getNotesSortedByTitle(searchQuery, isAsc)
+            NotesSortOrder.BY_DATE_CREATED -> getNotesSortedByDateCreated(searchQuery, isAsc)
+            NotesSortOrder.BY_DATE_UPDATED -> getNotesSortedByDateUpdated(searchQuery, isAsc)
+            NotesSortOrder.BY_COLOR -> getNotesSortedByColor(searchQuery, isAsc)
+            NotesSortOrder.BY_FONT_SIZE -> getNotesSortedByFontSize(searchQuery, isAsc)
         }
 
     /*

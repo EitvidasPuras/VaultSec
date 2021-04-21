@@ -3,12 +3,11 @@ package com.vaultsec.vaultsec.viewmodel
 import android.util.Log
 import androidx.lifecycle.*
 import com.vaultsec.vaultsec.R
+import com.vaultsec.vaultsec.database.NotesSortOrder
 import com.vaultsec.vaultsec.database.PasswordManagerPreferences
-import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.repository.NoteRepository
 import com.vaultsec.vaultsec.util.Resource
-import com.vaultsec.vaultsec.util.cipher.CipherManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -22,8 +21,7 @@ import javax.inject.Inject
 class NoteViewModel
 @Inject constructor(
     private val noteRepository: NoteRepository,
-    private val prefsManager: PasswordManagerPreferences,
-    private val cipherManager: CipherManager
+    private val prefsManager: PasswordManagerPreferences
 ) : ViewModel() {
     /*
     * In case you want to store search query into the SavedStateArguments
@@ -71,8 +69,8 @@ class NoteViewModel
             noteRepository.synchronizeNotes(
                 didRefresh = (it == Refresh.DID),
                 searchQuery = query,
-                sortOrder = prefs.sortOrder,
-                isAsc = prefs.isAsc,
+                notesSortOrder = prefs.notesSortOrder,
+                isAsc = prefs.isAscNotes,
                 onFetchComplete = {
                     viewModelScope.launch(Dispatchers.IO) {
                         refreshTriggerChannel.send(Refresh.DIDNT)
@@ -92,7 +90,7 @@ class NoteViewModel
 //            noteRepository.synchronizeNotes(
 //                didRefresh = (it == Refresh.DID),
 //                searchQuery = query,
-//                sortOrder = prefs.sortOrder,
+//                notesSortOrder = prefs.notesSortOrder,
 //                isAsc = prefs.isAsc,
 //                onFetchComplete = {
 //                    refreshAction.value = Refresh.DIDNT
@@ -101,24 +99,13 @@ class NoteViewModel
 //        }
 //    }.asLiveData()
 
-    fun update(note: Note) = viewModelScope.launch(Dispatchers.IO) {
-        noteRepository.update(note)
-    }
-
-    fun delete(note: Note) = viewModelScope.launch(Dispatchers.IO) {
-        noteRepository.delete(note)
-    }
-
-    fun deleteAll() = viewModelScope.launch(Dispatchers.IO) {
-        noteRepository.deleteAll()
-    }
-
-    fun onSortOrderSelected(sortOrder: SortOrder) = viewModelScope.launch(Dispatchers.IO) {
-        prefsManager.updateSortOrder(sortOrder)
-    }
+    fun onSortOrderSelected(notesSortOrder: NotesSortOrder) =
+        viewModelScope.launch(Dispatchers.IO) {
+            prefsManager.updateSortOrderForNotes(notesSortOrder)
+        }
 
     fun onSortDirectionSelected(isAsc: Boolean) = viewModelScope.launch(Dispatchers.IO) {
-        prefsManager.updateSortDirection(isAsc)
+        prefsManager.updateSortDirectionForNotes(isAsc)
     }
 
     fun onNoteSelection(note: Note) {

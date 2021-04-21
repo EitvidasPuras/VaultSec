@@ -20,7 +20,10 @@ class KeyManager @Inject constructor(
         private const val TAG = "com.vaultsec.vaultsec.util.cipher.KeyManager"
 
         const val SALT_LENGTH = 128
-        private const val ITERATION_COUNT = 15000
+        /*
+        * Iterations count should be as high as possible as long as it doesn't impact app's performance
+        * */
+        private const val ITERATION_COUNT = 10000
         private const val KEY_LENGTH = 256
 
         private const val SECRET_KEY_FACTORY_ALG = "PBEwithHmacSHA256AndAES_256"

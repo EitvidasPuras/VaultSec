@@ -2,9 +2,9 @@ package com.vaultsec.vaultsec.repository
 
 import android.util.Log
 import androidx.room.withTransaction
+import com.vaultsec.vaultsec.database.NotesSortOrder
 import com.vaultsec.vaultsec.database.PasswordManagerDatabase
 import com.vaultsec.vaultsec.database.PasswordManagerEncryptedSharedPreferences
-import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.network.PasswordManagerApi
 import com.vaultsec.vaultsec.util.Resource
@@ -167,11 +167,14 @@ class NoteRepository @Inject constructor(
 
     fun synchronizeNotes(
         didRefresh: Boolean,
-        searchQuery: String, sortOrder: SortOrder, isAsc: Boolean, onFetchComplete: () -> Unit
+        searchQuery: String,
+        notesSortOrder: NotesSortOrder,
+        isAsc: Boolean,
+        onFetchComplete: () -> Unit
     ): Flow<Resource<List<Note>>> =
         networkBoundResource(
             query = {
-                noteDao.getNotes(searchQuery, sortOrder, isAsc)
+                noteDao.getNotes(searchQuery, notesSortOrder, isAsc)
             },
             fetch = {
                 if (noteDao.getSyncedDeletedNotesIds().first().isNotEmpty()) {

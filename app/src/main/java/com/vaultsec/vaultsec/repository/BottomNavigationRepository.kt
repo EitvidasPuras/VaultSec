@@ -1,9 +1,11 @@
 package com.vaultsec.vaultsec.repository
 
 import android.util.Log
+import androidx.room.withTransaction
 import com.vaultsec.vaultsec.database.PasswordManagerDatabase
 import com.vaultsec.vaultsec.database.PasswordManagerEncryptedSharedPreferences
 import com.vaultsec.vaultsec.database.entity.Note
+import com.vaultsec.vaultsec.database.entity.Password
 import com.vaultsec.vaultsec.network.PasswordManagerApi
 import com.vaultsec.vaultsec.util.ErrorTypes
 import com.vaultsec.vaultsec.util.Resource
@@ -25,6 +27,7 @@ class BottomNavigationRepository @Inject constructor(
     private val cm: CipherManager
 ) {
     private val noteDao = db.noteDao()
+    private val passwordDao = db.passwordDao()
 
     private var apiError = JSONObject()
 
@@ -39,32 +42,40 @@ class BottomNavigationRepository @Inject constructor(
     suspend fun postLogout(databaseDir: String): Resource<*> {
         try {
             val combinedNotes = arrayListOf<Note>()
-            // Sync noted before logout
+            val combinedPasswords = arrayListOf<Password>()
+            // Sync before logout
             val syncedButDeletedIds = noteDao.getSyncedDeletedNotesIds().first()
             if (syncedButDeletedIds.isNotEmpty()) {
                 api.deleteNotes(syncedButDeletedIds as ArrayList<Int>, "Bearer ${getToken()}")
             }
+            val syncedButDeletedPasswordIds = passwordDao.getSyncedDeletedPasswordsIds().first()
+            if (syncedButDeletedPasswordIds.isNotEmpty()) {
+                api.deletePasswords(
+                    syncedButDeletedPasswordIds as ArrayList<Int>,
+                    "Bearer ${getToken()}"
+                )
+            }
 
-            val syncedUpdatedNotes = noteDao.getSyncedUpdatedNotes().first().map {
+            combinedNotes.addAll(noteDao.getUnsyncedNotes().first())
+            combinedNotes.addAll(noteDao.getSyncedUpdatedNotes().first())
+            combinedNotes.map {
                 it.title = cm.encrypt(it.title)
                 it.text = cm.encrypt(it.text)!!
-            } as List<Note>
-            val unsyncedNotes = noteDao.getUnsyncedNotes().first().map {
+            }
+            combinedPasswords.addAll(passwordDao.getUnsyncedPasswords().first())
+            combinedPasswords.addAll(passwordDao.getSyncedUpdatedPasswords().first())
+            combinedPasswords.map {
                 it.title = cm.encrypt(it.title)
-                it.text = cm.encrypt(it.text)!!
-            } as List<Note>
-            combinedNotes.addAll(syncedUpdatedNotes)
-            combinedNotes.addAll(unsyncedNotes)
+                it.login = cm.encrypt(it.login)
+                it.password = cm.encrypt(it.password)!!
+            }
 
             api.postStoreNotes(combinedNotes, "Bearer ${getToken()}")
+            api.postStorePasswords(combinedPasswords, "Bearer ${getToken()}")
             // Actually logout
             api.postLogout("Bearer ${getToken()}")
             // Empty the database
             db.clearAllTables()
-            /*
-            * The database file has to be deleted, because password generated key is slightly different
-            * after each logout because of salt and IV
-            * */
             File(File(databaseDir), "vaultsec-database").delete()
             // Clear encrypted shared preferences
             encryptedSharedPrefs.emptyEncryptedSharedPrefs()
@@ -115,9 +126,16 @@ class BottomNavigationRepository @Inject constructor(
 
     suspend fun onLogIn(): Resource<*> {
         val notesResponse = getUserNotes(getToken())
-        return if (notesResponse is Resource.Success) {
-            noteDao.deleteAll()
-            noteDao.insertList(notesResponse.data as ArrayList<Note>)
+        val passwordsResponse = getUserPasswords(getToken())
+        return if (notesResponse is Resource.Success
+            && passwordsResponse is Resource.Success
+        ) {
+            db.withTransaction {
+                noteDao.deleteAll()
+                passwordDao.deleteAll()
+                noteDao.insertList(notesResponse.data as ArrayList<Note>)
+                passwordDao.insertList(passwordsResponse.data as ArrayList<Password>)
+            }
             Resource.Success<Any>()
         } else {
             notesResponse
@@ -190,7 +208,79 @@ class BottomNavigationRepository @Inject constructor(
         }
     }
 
+    private suspend fun getUserPasswords(token: String): Resource<*> {
+        try {
+            val passwordsResponse = api.getUserPasswords("Bearer $token")
+            val passwords = arrayListOf<Password>()
+            passwordsResponse.map {
+                passwords.add(
+                    Password(
+                        title = cm.decrypt(it.title),
+                        url = it.url,
+                        login = cm.decrypt(it.login),
+                        password = cm.decrypt(it.password)!!,
+                        category = it.category,
+                        color = it.color,
+                        updatedAt = it.updated_at_device,
+                        createdAt = it.created_at_device,
+                        syncState = SyncType.NOTHING_REQUIRED,
+                        id = it.id
+                    )
+                )
+            }
+            return Resource.Success(passwords)
+        } catch (e: Exception) {
+            when (e) {
+                is HttpException -> {
+                    apiError = JSONObject()
+                    apiError = JSONObject(e.response()?.errorBody()?.charStream()!!.readText())
+                    Log.e(
+                        "errorBody",
+                        apiError.toString()
+                    )
+                    Log.e(
+                        "$TAG.getUserPasswords.HTTP",
+                        apiError.getString("error")
+                    )
+                    return Resource.Error<Any>(ErrorTypes.HTTP, apiError.getString("error"))
+                }
+                is SocketTimeoutException -> {
+                    Log.e(
+                        "$TAG.getUserPasswords.TIMEOUT",
+                        e.message.toString()
+                    )
+                    return Resource.Error<Any>(ErrorTypes.SOCKET_TIMEOUT)
+                }
+                is ConnectException -> {
+                    Log.e(
+                        "$TAG.getUserPasswords.CONNECTION",
+                        e.message.toString()
+                    )
+                    return Resource.Error<Any>(ErrorTypes.CONNECTION)
+                }
+                is SocketException -> {
+                    Log.e(
+                        "$TAG.getUserPasswords.SOCKET",
+                        e.message.toString()
+                    )
+                    return Resource.Error<Any>(ErrorTypes.SOCKET)
+                }
+                else -> {
+                    Log.e(
+                        "$TAG.getUserPasswords.GENERAL",
+                        e.message.toString()
+                    )
+                    return Resource.Error<Any>(ErrorTypes.GENERAL)
+                }
+            }
+        }
+    }
+
     fun printTokenToConsoleForTesting() {
         Log.e("ACCESS TOKEN:::", getToken())
+        Log.e(
+            "Database password::: ",
+            (encryptedSharedPrefs.getCredentials()!!.emailHash + encryptedSharedPrefs.getCredentials()!!.passwordHash)
+        )
     }
 }

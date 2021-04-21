@@ -55,7 +55,6 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentAddEditNoteBinding.inflate(inflater, container, false)
-
         setHasOptionsMenu(true)
         // Inflate the layout for this fragment
         return binding.root
@@ -85,7 +84,7 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
 
         binding.apply {
             textviewDateEdited.text = getString(
-                R.string.add_edit_note_edit_time_text,
+                R.string.add_edit_edit_time_text,
                 addEditNoteViewModel.noteDateUpdated.toString().substringBeforeLast(":")
             )
             textfieldNoteTitle.setText(addEditNoteViewModel.noteTitle)
@@ -368,7 +367,7 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
                     is AddEditNoteViewModel.AddEditNoteEvent.NavigateToCameraFragment -> {
                         hideKeyboard(requireActivity())
                         requireActivity().supportFragmentManager.setFragmentResult(
-                            "com.vaultsec.vaultsec.ui.note.AddEditNoteFragment.openCamera",
+                            "com.vaultsec.vaultsec.ui.*.AddEditFragment.openCamera",
                             bundleOf(
                                 "OpenCamera" to true
                             )
@@ -444,8 +443,8 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
                             requireContext(),
                             R.style.ThemeOverlay_App_MaterialAlertDialog
                         )
-                            .setTitle(R.string.add_edit_note_camera_permission_title)
-                            .setMessage(R.string.add_edit_note_camera_permission_message)
+                            .setTitle(R.string.add_edit_camera_permission_title)
+                            .setMessage(R.string.add_edit_camera_permission_message)
                             .setNegativeButton("Cancel") { dialog, _ ->
                                 dialog.cancel()
                             }

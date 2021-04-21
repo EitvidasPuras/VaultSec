@@ -3,8 +3,8 @@ package com.vaultsec.vaultsec.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vaultsec.vaultsec.R
+import com.vaultsec.vaultsec.database.NotesSortOrder
 import com.vaultsec.vaultsec.database.PasswordManagerPreferences
-import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.repository.BottomNavigationRepository
 import com.vaultsec.vaultsec.util.ErrorTypes
 import com.vaultsec.vaultsec.util.Resource
@@ -30,8 +30,8 @@ class BottomNavigationViewModel @Inject constructor(
         bottomNavigationEventChannel.send(BottomNavigationEvent.ShowProgressBar(false))
         if (response is Resource.Success) {
             bottomNavigationEventChannel.send(BottomNavigationEvent.SuccessfulLogout)
-            prefsManager.updateSortOrder(SortOrder.BY_TITLE) // Reset to default
-            prefsManager.updateSortDirection(true) // Reset to default
+            prefsManager.updateSortOrderForNotes(NotesSortOrder.BY_TITLE) // Reset to default
+            prefsManager.updateSortDirectionForNotes(true) // Reset to default
         } else {
             when (response.type) {
                 ErrorTypes.HTTP -> bottomNavigationEventChannel.send(

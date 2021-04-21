@@ -55,6 +55,8 @@ class BottomNavigationActivity : AppCompatActivity() {
 
         if (intent.hasExtra(EXTRA_LOGIN) && intent.getBooleanExtra(EXTRA_LOGIN, false)) {
             binding.fragmentContainerView.visibility = View.INVISIBLE
+            binding.bottomNavShadow.visibility = View.INVISIBLE
+            binding.bottomNavView.visibility = View.INVISIBLE
             bottomNavigationViewModel.onLogIn()
         }
 
@@ -72,7 +74,7 @@ class BottomNavigationActivity : AppCompatActivity() {
             setOf(
                 R.id.fragment_notes,
                 R.id.fragment_passwords,
-                R.id.fragment_files,
+                R.id.fragment_payment_cards,
                 R.id.fragment_generator
             )
         )
@@ -81,7 +83,7 @@ class BottomNavigationActivity : AppCompatActivity() {
         bottomNavigationView.setOnNavigationItemReselectedListener {}
 
         supportFragmentManager.setFragmentResultListener(
-            "com.vaultsec.vaultsec.ui.note.AddEditNoteFragment.openCamera",
+            "com.vaultsec.vaultsec.ui.*.AddEditFragment.openCamera",
             this
         ) { _, bundle ->
             val result = bundle.getBoolean("OpenCamera")

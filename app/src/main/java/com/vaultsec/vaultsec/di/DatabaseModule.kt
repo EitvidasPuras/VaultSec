@@ -35,4 +35,7 @@ object DatabaseModule {
 
     @Provides
     fun provideNoteDao(database: PasswordManagerDatabase) = database.noteDao()
+
+    @Provides
+    fun providePasswordDao(database: PasswordManagerDatabase) = database.passwordDao()
 }

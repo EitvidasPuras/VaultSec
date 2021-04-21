@@ -22,12 +22,20 @@
         android:id="@+id/fragment_passwords"
         android:name="com.vaultsec.vaultsec.ui.password.PasswordsFragment"
         android:label="Passwords"
-        tools:layout="@layout/fragment_passwords" />
+        tools:layout="@layout/fragment_passwords">
+        <action
+            android:id="@+id/action_fragment_passwords_to_fragment_add_edit_password"
+            app:destination="@id/fragment_add_edit_password"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
     <fragment
-        android:id="@+id/fragment_files"
-        android:name="com.vaultsec.vaultsec.FilesFragment"
-        android:label="Files"
-        tools:layout="@layout/fragment_files" />
+        android:id="@+id/fragment_payment_cards"
+        android:name="com.vaultsec.vaultsec.PaymentCardsFragment"
+        android:label="Payment cards"
+        tools:layout="@layout/fragment_payment_cards" />
     <fragment
         android:id="@+id/fragment_generator"
         android:name="com.vaultsec.vaultsec.GeneratorFragment"
@@ -55,4 +63,21 @@
         android:name="com.vaultsec.vaultsec.ui.CameraFragment"
         android:label=""
         tools:layout="@layout/fragment_camera" />
+    <fragment
+        android:id="@+id/fragment_add_edit_password"
+        android:name="com.vaultsec.vaultsec.ui.password.AddEditPasswordFragment"
+        android:label="{title}"
+        tools:layout="@layout/fragment_add_edit_password">
+        <argument
+            android:name="password"
+            android:defaultValue="@null"
+            app:argType="com.vaultsec.vaultsec.database.entity.Password"
+            app:nullable="true" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_fragment_add_edit_password_to_fragment_camera"
+            app:destination="@id/fragment_camera" />
+    </fragment>
 </navigation>

@@ -10,9 +10,9 @@
         android:icon="@drawable/ic_layers"
         android:title="@string/title_passwords_fragment" />
     <item
-        android:id="@+id/fragment_files"
-        android:icon="@drawable/ic_attach_file"
-        android:title="@string/title_files_fragment" />
+        android:id="@+id/fragment_payment_cards"
+        android:icon="@drawable/ic_credit_card"
+        android:title="@string/title_cards_fragment" />
     <item
         android:id="@+id/fragment_generator"
         android:icon="@drawable/ic_vpn_key"

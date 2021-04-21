@@ -14,11 +14,19 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-enum class SortOrder {
+enum class NotesSortOrder {
     BY_TITLE, BY_DATE_CREATED, BY_DATE_UPDATED, BY_COLOR, BY_FONT_SIZE
 }
 
-data class FilterPreferences(val sortOrder: SortOrder, val isAsc: Boolean)
+enum class PasswordsSortOrder {
+    BY_TITLE, BY_DATE_CREATED, BY_DATE_UPDATED, BY_CATEGORY, BY_COLOR
+}
+
+data class FilterPreferencesNotes(
+    val notesSortOrder: NotesSortOrder,
+    val isAscNotes: Boolean, val passwordsSortOrder: PasswordsSortOrder, val isAscPasswords: Boolean
+)
+//data class FilterPreferencesPasswords(val passwordsSortOrder: PasswordsSortOrder, val isAsc: Boolean)
 
 @Singleton
 class PasswordManagerPreferences
@@ -41,28 +49,47 @@ class PasswordManagerPreferences
             }
         }
         .map {
-            val sortOrder = SortOrder.valueOf(
-                it[PreferencesKeys.SORT_ORDER] ?: SortOrder.BY_TITLE.name
+            val sortOrderNotes = NotesSortOrder.valueOf(
+                it[PreferencesKeys.SORT_ORDER_NOTES] ?: NotesSortOrder.BY_TITLE.name
             )
-            val isAsc = it[PreferencesKeys.SORT_DIR] ?: true
-            FilterPreferences(sortOrder, isAsc)
+            val isAscNotes = it[PreferencesKeys.SORT_DIR_NOTES] ?: true
+
+            val sortOrderPasswords = PasswordsSortOrder.valueOf(
+                it[PreferencesKeys.SORT_ORDER_PASSES] ?: PasswordsSortOrder.BY_TITLE.name
+            )
+            val isAscPasswords = it[PreferencesKeys.SORT_DIR_PASSES] ?: true
+            FilterPreferencesNotes(sortOrderNotes, isAscNotes, sortOrderPasswords, isAscPasswords)
         }
 
 
-    suspend fun updateSortOrder(sortOrder: SortOrder) {
+    suspend fun updateSortOrderForNotes(notesSortOrder: NotesSortOrder) {
         dataStore.edit {
-            it[PreferencesKeys.SORT_ORDER] = sortOrder.name
+            it[PreferencesKeys.SORT_ORDER_NOTES] = notesSortOrder.name
         }
     }
 
-    suspend fun updateSortDirection(isAsc: Boolean) {
+    suspend fun updateSortDirectionForNotes(isAsc: Boolean) {
         dataStore.edit {
-            it[PreferencesKeys.SORT_DIR] = isAsc
+            it[PreferencesKeys.SORT_DIR_NOTES] = isAsc
+        }
+    }
+
+    suspend fun updateSortOrderForPasswords(passwordsSortOrder: PasswordsSortOrder) {
+        dataStore.edit {
+            it[PreferencesKeys.SORT_ORDER_PASSES] = passwordsSortOrder.name
+        }
+    }
+
+    suspend fun updateSortDirectionForPasswords(isAsc: Boolean) {
+        dataStore.edit {
+            it[PreferencesKeys.SORT_DIR_PASSES] = isAsc
         }
     }
 
     private object PreferencesKeys {
-        val SORT_ORDER = stringPreferencesKey("so")
-        val SORT_DIR = booleanPreferencesKey("sd")
+        val SORT_ORDER_NOTES = stringPreferencesKey("son")
+        val SORT_DIR_NOTES = booleanPreferencesKey("sdn")
+        val SORT_ORDER_PASSES = stringPreferencesKey("sop")
+        val SORT_DIR_PASSES = booleanPreferencesKey("sdp")
     }
 }

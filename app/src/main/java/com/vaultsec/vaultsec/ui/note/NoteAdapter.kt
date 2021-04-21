@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.entity.Note
+
 //import kotlinx.android.synthetic.main.note_item.view.*
 
 class NoteAdapter(

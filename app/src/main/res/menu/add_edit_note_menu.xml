@@ -5,7 +5,7 @@
     <item
         android:id="@+id/item_camera"
         android:icon="@drawable/ic_camera"
-        android:title="@string/add_edit_note_camera_menu"
+        android:title="@string/add_edit_camera_menu"
         app:showAsAction="ifRoom" />
 
     <item
@@ -17,7 +17,7 @@
     <item
         android:id="@+id/item_save_note"
         android:icon="@drawable/ic_check"
-        android:title="@string/add_edit_note_save"
+        android:title="@string/add_edit_save"
         app:showAsAction="ifRoom" />
 
 </menu>

@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.PasswordManagerPreferences
-import com.vaultsec.vaultsec.database.SortOrder
 import com.vaultsec.vaultsec.network.entity.ApiUser
 import com.vaultsec.vaultsec.repository.AuthenticationRepository
 import com.vaultsec.vaultsec.util.ErrorTypes
@@ -326,38 +325,6 @@ class AuthenticationViewModel
         }
         return noErrors
     }
-
-//    fun onLogoutClick() = viewModelScope.launch(Dispatchers.IO) {
-//        authenticationEventChannel.send(SessionEvent.ShowProgressBar(true))
-//        val response: Resource<*> = authenticationRepository.postLogout()
-//        authenticationEventChannel.send(SessionEvent.ShowProgressBar(false))
-//        if (response is Resource.Success) {
-//            authenticationEventChannel.send(SessionEvent.SuccessfulLogout)
-//            prefsManager.updateSortOrder(SortOrder.BY_TITLE) // Reset to default
-//            prefsManager.updateSortDirection(true) // Reset to default
-//        } else {
-//            when (response.type) {
-//                ErrorTypes.HTTP -> authenticationEventChannel.send(
-//                    SessionEvent.ShowHttpError(
-//                        response.message!!,
-//                        whereToDisplayHttpError(response)
-//                    )
-//                )
-//                ErrorTypes.SOCKET_TIMEOUT -> authenticationEventChannel.send(
-//                    SessionEvent.ShowRequestError(R.string.error_connection_timed_out)
-//                )
-//                ErrorTypes.CONNECTION -> authenticationEventChannel.send(
-//                    SessionEvent.ShowRequestError(R.string.error_connection_timed_out)
-//                )
-//                ErrorTypes.SOCKET -> authenticationEventChannel.send(
-//                    SessionEvent.ShowRequestError(R.string.error_connection_lost)
-//                )
-//                ErrorTypes.GENERAL -> authenticationEventChannel.send(
-//                    SessionEvent.ShowRequestError(R.string.error_generic_connection)
-//                )
-//            }
-//        }
-//    }
 
     fun isUserLoggedIn() = viewModelScope.launch {
         if (authenticationRepository.isUserLoggedIn()) {

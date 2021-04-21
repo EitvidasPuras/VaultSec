@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.vaultsec.vaultsec.R
-import com.vaultsec.vaultsec.database.SortOrder
+import com.vaultsec.vaultsec.database.NotesSortOrder
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.databinding.FragmentNotesBinding
 import com.vaultsec.vaultsec.util.*
@@ -28,9 +28,6 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-/**
- * A simple [Fragment] subclass.
- */
 @AndroidEntryPoint
 class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClickListener {
 
@@ -144,7 +141,12 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
             viewLifecycleOwner
         ) { _, _ ->
             val fragmentHolder = requireActivity().findViewById<View>(R.id.fragment_container_view)
+            val bottomNavigationView = requireActivity().findViewById<View>(R.id.bottom_nav_view)
+            val bottomNavigationShadow =
+                requireActivity().findViewById<View>(R.id.bottom_nav_shadow)
             noteViewModel.onManualNoteSync()
+            bottomNavigationShadow.visibility = View.VISIBLE
+            bottomNavigationView.visibility = View.VISIBLE
             fragmentHolder.visibility = View.VISIBLE
         }
 
@@ -244,19 +246,18 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
 
         viewLifecycleOwner.lifecycleScope.launch {
             val direction = menu.findItem(R.id.item_sort_direction)
-            if (noteViewModel.preferencesFlow.first().isAsc) {
+            if (noteViewModel.preferencesFlow.first().isAscNotes) {
                 direction.setIcon(R.drawable.ic_baseline_vertical_align_bottom)
             } else {
                 direction.setIcon(R.drawable.ic_baseline_vertical_align_top)
             }
         }
-
     }
 
     private val mActionModeCallBack = object : ActionMode.Callback {
         override fun onCreateActionMode(p0: ActionMode?, p1: Menu?): Boolean {
             p1?.clear()
-            p0?.menuInflater?.inflate(R.menu.notes_fragment_multi_select_menu, p1)
+            p0?.menuInflater?.inflate(R.menu.multi_select_menu, p1)
             return true
         }
 
@@ -294,28 +295,28 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.item_sort_by_title -> {
-                noteViewModel.onSortOrderSelected(SortOrder.BY_TITLE)
+                noteViewModel.onSortOrderSelected(NotesSortOrder.BY_TITLE)
                 true
             }
             R.id.item_sort_by_created_date -> {
-                noteViewModel.onSortOrderSelected(SortOrder.BY_DATE_CREATED)
+                noteViewModel.onSortOrderSelected(NotesSortOrder.BY_DATE_CREATED)
                 true
             }
             R.id.item_sort_by_updated_date -> {
-                noteViewModel.onSortOrderSelected(SortOrder.BY_DATE_UPDATED)
+                noteViewModel.onSortOrderSelected(NotesSortOrder.BY_DATE_UPDATED)
                 true
             }
             R.id.item_sort_by_color -> {
-                noteViewModel.onSortOrderSelected(SortOrder.BY_COLOR)
+                noteViewModel.onSortOrderSelected(NotesSortOrder.BY_COLOR)
                 true
             }
             R.id.item_sort_by_font_size -> {
-                noteViewModel.onSortOrderSelected(SortOrder.BY_FONT_SIZE)
+                noteViewModel.onSortOrderSelected(NotesSortOrder.BY_FONT_SIZE)
                 true
             }
             R.id.item_sort_direction -> {
                 viewLifecycleOwner.lifecycleScope.launch {
-                    if (noteViewModel.preferencesFlow.first().isAsc) {
+                    if (noteViewModel.preferencesFlow.first().isAscNotes) {
                         noteViewModel.onSortDirectionSelected(false)
                         item.setIcon(R.drawable.ic_baseline_vertical_align_top)
                     } else {
