@@ -97,6 +97,9 @@ class PasswordAdapter(
                     holder.textViewTitle.requestLayout()
                 } else {
                     holder.textViewLogin.visibility = View.VISIBLE
+                    val params = holder.textViewTitle.layoutParams as ViewGroup.MarginLayoutParams
+                    params.setMargins(0, 0, 0, 2.toPx)
+                    holder.textViewTitle.requestLayout()
                 }
             } else {
                 holder.container.alpha = 1.0f
@@ -123,6 +126,9 @@ class PasswordAdapter(
                     holder.textViewTitle.requestLayout()
                 } else {
                     holder.textViewLogin.visibility = View.VISIBLE
+                    val params = holder.textViewTitle.layoutParams as ViewGroup.MarginLayoutParams
+                    params.setMargins(0, 0, 0, 2.toPx)
+                    holder.textViewTitle.requestLayout()
                 }
             }
         }

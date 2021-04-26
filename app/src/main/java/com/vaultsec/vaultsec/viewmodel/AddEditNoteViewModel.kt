@@ -31,8 +31,8 @@ class AddEditNoteViewModel
     private val addEditNoteEventChannel = Channel<AddEditNoteEvent>()
     val addEditTaskEvent = addEditNoteEventChannel.receiveAsFlow()
 
-    var noteColorOnExit = -1
-    var noteFontSizeOnExit = -1f
+    var noteColorOnExit = -999
+    var noteFontSizeOnExit = -999f
 
     var noteTitle: String? = state.get<String>("noteTitle") ?: note?.title ?: ""
         set(value) {

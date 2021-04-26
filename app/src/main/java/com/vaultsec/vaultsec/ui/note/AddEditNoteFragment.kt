@@ -121,7 +121,7 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
         ) { _, bundle ->
             val result = bundle.getBoolean("RestoreSettings")
             if (result) {
-                if (addEditNoteViewModel.noteColorOnExit != -1 && addEditNoteViewModel.noteFontSizeOnExit != -1f) {
+                if (addEditNoteViewModel.noteColorOnExit != -999 && addEditNoteViewModel.noteFontSizeOnExit != -999f) {
                     binding.textfieldNoteText.textSize = addEditNoteViewModel.noteFontSizeOnExit
 
                     binding.textfieldNoteText.backgroundTintList = ColorStateList.valueOf(

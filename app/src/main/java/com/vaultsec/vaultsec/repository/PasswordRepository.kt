@@ -332,13 +332,15 @@ class PasswordRepository @Inject constructor(
             if (syncedPasses.isNotEmpty()) {
                 if (didPerformDeletionAPICall) {
                     try {
-                        syncedPasses.map {
+                        bothPassesCombinedForSmoothInsertion.addAll(unsyncedPasses)
+                        bothPassesCombinedForSmoothInsertion.addAll(syncedPasses)
+                        bothPassesCombinedForSmoothInsertion.map {
                             it.title = cm.encrypt(it.title)
                             it.login = cm.encrypt(it.login)
                             it.password = cm.encrypt(it.password)!!
                         }
                         val passwordsApi = api.postRecoverPasswords(
-                            syncedPasses,
+                            bothPassesCombinedForSmoothInsertion,
                             "Bearer ${encryptedSharedPrefs.getToken()}"
                         )
                         val passwords = arrayListOf<Password>()
@@ -358,9 +360,7 @@ class PasswordRepository @Inject constructor(
                                 )
                             )
                         }
-                        bothPassesCombinedForSmoothInsertion.addAll(unsyncedPasses)
-                        bothPassesCombinedForSmoothInsertion.addAll(passwords)
-                        passwordDao.insertList(bothPassesCombinedForSmoothInsertion)
+                        passwordDao.insertList(passwords)
                     } catch (e: Exception) {
                         if (didPerformDeletionAPICall) {
                             syncedPasses.map {
@@ -403,7 +403,35 @@ class PasswordRepository @Inject constructor(
                     passwordDao.insertList(bothPassesCombinedForSmoothInsertion)
                 }
             } else {
-                passwordDao.insertList(unsyncedPasses)
+                if (unsyncedPasses.isNotEmpty()) {
+                    syncedPasses.map {
+                        it.title = cm.encrypt(it.title)
+                        it.login = cm.encrypt(it.login)
+                        it.password = cm.encrypt(it.password)!!
+                    }
+                    val passwordsApi = api.postRecoverPasswords(
+                        unsyncedPasses,
+                        "Bearer ${encryptedSharedPrefs.getToken()}"
+                    )
+                    val passwords = arrayListOf<Password>()
+                    passwordsApi.map {
+                        passwords.add(
+                            Password(
+                                title = cm.decrypt(it.title),
+                                url = it.url,
+                                login = cm.decrypt(it.login),
+                                password = cm.decrypt(it.password)!!,
+                                category = it.category,
+                                color = it.color,
+                                updatedAt = it.updated_at_device,
+                                createdAt = it.created_at_device,
+                                syncState = SyncType.NOTHING_REQUIRED,
+                                id = it.id
+                            )
+                        )
+                    }
+                    passwordDao.insertList(passwords)
+                }
             }
         } else {
             if (syncedPasses.isNotEmpty()) {

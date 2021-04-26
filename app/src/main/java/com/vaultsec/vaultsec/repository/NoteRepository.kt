@@ -354,12 +354,14 @@ class NoteRepository @Inject constructor(
                 * */
                 if (didPerformDeletionAPICall) {
                     try {
-                        syncedNotes.map {
+                        bothNotesCombinedForSmoothInsertion.addAll(unsyncedNotes)
+                        bothNotesCombinedForSmoothInsertion.addAll(syncedNotes)
+                        bothNotesCombinedForSmoothInsertion.map {
                             it.title = cm.encrypt(it.title)
                             it.text = cm.encrypt(it.text)!!
                         }
                         val notesApi = api.postRecoverNotes(
-                            syncedNotes,
+                            bothNotesCombinedForSmoothInsertion,
                             "Bearer ${encryptedSharedPrefs.getToken()}"
                         )
                         val notes = arrayListOf<Note>()
@@ -377,9 +379,7 @@ class NoteRepository @Inject constructor(
                                 )
                             )
                         }
-                        bothNotesCombinedForSmoothInsertion.addAll(unsyncedNotes)
-                        bothNotesCombinedForSmoothInsertion.addAll(notes)
-                        noteDao.insertList(bothNotesCombinedForSmoothInsertion)
+                        noteDao.insertList(notes)
                     } catch (e: Exception) {
                         if (didPerformDeletionAPICall) {
                             syncedNotes.map {
@@ -422,7 +422,32 @@ class NoteRepository @Inject constructor(
                     noteDao.insertList(bothNotesCombinedForSmoothInsertion)
                 }
             } else {
-                noteDao.insertList(unsyncedNotes)
+                if (unsyncedNotes.isNotEmpty()) {
+                    unsyncedNotes.map {
+                        it.title = cm.encrypt(it.title)
+                        it.text = cm.encrypt(it.text)!!
+                    }
+                    val notesApi = api.postRecoverNotes(
+                        unsyncedNotes,
+                        "Bearer ${encryptedSharedPrefs.getToken()}"
+                    )
+                    val notes = arrayListOf<Note>()
+                    notesApi.map {
+                        notes.add(
+                            Note(
+                                title = cm.decrypt(it.title),
+                                text = cm.decrypt(it.text)!!,
+                                color = it.color,
+                                fontSize = it.font_size,
+                                createdAt = it.created_at_device,
+                                updatedAt = it.updated_at_device,
+                                syncState = SyncType.NOTHING_REQUIRED,
+                                id = it.id
+                            )
+                        )
+                    }
+                    noteDao.insertList(notes)
+                }
             }
         } else {
             if (syncedNotes.isNotEmpty()) {

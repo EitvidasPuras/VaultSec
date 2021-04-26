@@ -21,9 +21,9 @@ class KeyManager @Inject constructor(
 
         const val SALT_LENGTH = 128
         /*
-        * Iterations count should be as high as possible as long as it doesn't impact app's performance
+        * Iterations count should be as high as possible, as long as it doesn't impact app's performance
         * */
-        private const val ITERATION_COUNT = 10000
+        private const val ITERATION_COUNT = 7000
         private const val KEY_LENGTH = 256
 
         private const val SECRET_KEY_FACTORY_ALG = "PBEwithHmacSHA256AndAES_256"
