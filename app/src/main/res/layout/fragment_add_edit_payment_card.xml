@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp"
+    tools:context=".ui.paymentcard.AddEditPaymentCardFragment">
+
+    <ProgressBar
+        android:id="@+id/progressbar_add_edit_card"
+        android:layout_width="104dp"
+        android:layout_height="104dp"
+        android:elevation="15dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <TextView
+        android:id="@+id/textview_date_edited"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:gravity="center"
+        android:text="@string/add_edit_edit_time_text"
+        android:textColor="@color/color_black"
+        app:layout_constraintHorizontal_bias="0.50"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textfield_card_title_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="@color/color_note_01"
+        android:textAlignment="textStart"
+        app:boxBackgroundColor="@color/color_note_01"
+        app:errorEnabled="false"
+        app:helperTextTextColor="@color/color_accent"
+        app:hintEnabled="false"
+        app:hintTextColor="@color/color_accent"
+        app:layout_constraintTop_toBottomOf="@id/textview_date_edited">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/textfield_card_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints="@string/add_edit_title_hint"
+            android:background="@color/color_note_01"
+            android:backgroundTint="@color/color_note_01"
+            android:ellipsize="end"
+            android:hint="@string/add_edit_title_hint"
+            android:inputType="textCapSentences"
+            android:maxLength="30"
+            android:paddingStart="12dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="4dp"
+            android:textSize="22sp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textfield_card_number_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="56dp"
+        android:layout_marginEnd="6dp"
+        android:backgroundTint="@color/color_note_01"
+        android:textAlignment="textStart"
+        app:boxBackgroundColor="@color/color_note_01"
+        app:errorEnabled="false"
+        app:helperTextTextColor="@color/color_accent"
+        app:hintEnabled="false"
+        app:hintTextColor="@color/color_accent"
+        app:layout_constraintEnd_toStartOf="@id/imageview_card_number_camera"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textfield_card_title_layout">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/textfield_card_number"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints="@string/add_edit_card_number_hint"
+            android:background="@color/color_note_01"
+            android:backgroundTint="@color/color_note_01"
+            android:ellipsize="end"
+            android:hint="@string/add_edit_card_number_hint"
+            android:inputType="text"
+            android:maxLength="19"
+            android:paddingStart="12dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="4dp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <ImageView
+        android:id="@+id/imageview_card_number_camera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/add_edit_card_number_camera_description"
+        android:focusable="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_camera"
+        app:layout_constraintBottom_toBottomOf="@id/textfield_card_number_layout"
+        app:layout_constraintEnd_toStartOf="@id/imageview_card_number_copy"
+        app:layout_constraintTop_toTopOf="@id/textfield_card_number_layout"
+        app:tint="@color/color_accent" />
+
+    <ImageView
+        android:id="@+id/imageview_card_number_copy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/add_edit_card_number_copy_description"
+        android:focusable="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_content_copy"
+        app:layout_constraintBottom_toBottomOf="@id/textfield_card_number_layout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/textfield_card_number_layout"
+        app:tint="@color/color_accent" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textfield_card_mm_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="38dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="6dp"
+        android:backgroundTint="@color/color_note_01"
+        android:textAlignment="textStart"
+        app:boxBackgroundColor="@color/color_note_01"
+        app:errorEnabled="false"
+        app:helperTextTextColor="@color/color_accent"
+        app:hintEnabled="false"
+        app:hintTextColor="@color/color_accent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textfield_card_number_layout">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/textfield_card_mm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints="@string/add_edit_card_mm_hint"
+            android:background="@color/color_note_01"
+            android:backgroundTint="@color/color_note_01"
+            android:ellipsize="end"
+            android:hint="@string/add_edit_card_mm_hint"
+            android:inputType="numberSigned"
+            android:maxLength="2"
+            android:paddingStart="12dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="4dp"
+            android:textAlignment="center" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:id="@+id/textview_card_expiration_divider"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="6dp"
+        android:gravity="center"
+        android:text="/"
+        android:textColor="@color/color_black"
+        android:textSize="22sp"
+        app:layout_constraintHorizontal_bias="0.50"
+        app:layout_constraintStart_toEndOf="@id/textfield_card_mm_layout"
+        app:layout_constraintTop_toBottomOf="@id/textfield_card_number_layout"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textfield_card_yy_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:backgroundTint="@color/color_note_01"
+        android:textAlignment="textStart"
+        app:boxBackgroundColor="@color/color_note_01"
+        app:errorEnabled="false"
+        app:helperTextTextColor="@color/color_accent"
+        app:hintEnabled="false"
+        app:hintTextColor="@color/color_accent"
+        app:layout_constraintStart_toEndOf="@id/textview_card_expiration_divider"
+        app:layout_constraintTop_toBottomOf="@id/textfield_card_number_layout">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/textfield_card_yy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints="@string/add_edit_card_yy_hint"
+            android:background="@color/color_note_01"
+            android:backgroundTint="@color/color_note_01"
+            android:ellipsize="end"
+            android:hint="@string/add_edit_card_yy_hint"
+            android:inputType="numberSigned"
+            android:maxLength="2"
+            android:paddingStart="12dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="4dp"
+            android:textAlignment="center" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <ImageView
+        android:id="@+id/imageview_expiration_copy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="40dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/add_edit_card_expiration_copy_description"
+        android:focusable="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_content_copy"
+        app:layout_constraintBottom_toBottomOf="@id/textfield_card_yy_layout"
+        app:layout_constraintEnd_toStartOf="@id/textfield_card_cvv_layout"
+        app:layout_constraintStart_toEndOf="@id/textfield_card_yy_layout"
+        app:layout_constraintTop_toTopOf="@id/textfield_card_yy_layout"
+        app:tint="@color/color_accent" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textfield_card_cvv_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:backgroundTint="@color/color_note_01"
+        android:textAlignment="center"
+        app:boxBackgroundColor="@color/color_note_01"
+        app:errorEnabled="false"
+        app:helperTextTextColor="@color/color_accent"
+        app:hintEnabled="false"
+        app:hintTextColor="@color/color_accent"
+        app:layout_constraintEnd_toStartOf="@id/imageview_card_cvv_copy"
+        app:layout_constraintStart_toEndOf="@id/imageview_expiration_copy"
+        app:layout_constraintTop_toBottomOf="@id/textfield_card_number_layout">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/textfield_card_cvv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints="@string/add_edit_card_cvv_hint"
+            android:background="@color/color_note_01"
+            android:backgroundTint="@color/color_note_01"
+            android:ellipsize="end"
+            android:hint="@string/add_edit_card_cvv_hint"
+            android:inputType="numberSigned"
+            android:maxLength="3"
+            android:paddingStart="12dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="4dp"
+            android:textAlignment="center" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <ImageView
+        android:id="@+id/imageview_card_cvv_copy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/add_edit_card_cvv_copy_description"
+        android:focusable="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_content_copy"
+        app:layout_constraintBottom_toBottomOf="@id/textfield_card_cvv_layout"
+        app:layout_constraintEnd_toEndOf="@id/textfield_card_number_layout"
+        app:layout_constraintStart_toEndOf="@id/textfield_card_cvv_layout"
+        app:layout_constraintTop_toTopOf="@id/textfield_card_cvv_layout"
+        app:tint="@color/color_accent" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textfield_card_pin_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="6dp"
+        android:backgroundTint="@color/color_note_01"
+        android:textAlignment="textStart"
+        app:boxBackgroundColor="@color/color_note_01"
+        app:endIconMode="password_toggle"
+        app:endIconTint="@color/color_accent"
+        app:errorEnabled="false"
+        app:helperTextTextColor="@color/color_accent"
+        app:hintEnabled="false"
+        app:hintTextColor="@color/color_accent"
+        app:layout_constraintEnd_toStartOf="@id/imageview_card_pin_camera"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textfield_card_cvv_layout">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/textfield_card_pin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints="@string/add_edit_card_pin_hint"
+            android:background="@color/color_note_01"
+            android:backgroundTint="@color/color_note_01"
+            android:ellipsize="end"
+            android:hint="@string/add_edit_card_pin_hint"
+            android:inputType="numberPassword"
+            android:maxLength="4"
+            android:paddingStart="12dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="4dp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <ImageView
+        android:id="@+id/imageview_card_pin_camera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/add_edit_card_number_camera_description"
+        android:focusable="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_camera"
+        app:layout_constraintBottom_toBottomOf="@id/textfield_card_pin_layout"
+        app:layout_constraintEnd_toStartOf="@id/imageview_card_pin_copy"
+        app:layout_constraintTop_toTopOf="@id/textfield_card_pin_layout"
+        app:tint="@color/color_accent" />
+
+    <ImageView
+        android:id="@+id/imageview_card_pin_copy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/add_edit_card_number_copy_description"
+        android:focusable="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_content_copy"
+        app:layout_constraintBottom_toBottomOf="@id/textfield_card_pin_layout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/textfield_card_pin_layout"
+        app:tint="@color/color_accent" />
+
+    <ImageView
+        android:id="@+id/imageview_card_type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="40dp"
+        android:contentDescription="@string/add_edit_card_type_description"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_credit_card_bigger"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textfield_card_pin_layout" />
+
+    <!--    <ImageView-->
+    <!--        android:id="@+id/imageview_card_type2"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:contentDescription="@string/add_edit_card_type_description"-->
+    <!--        android:scaleType="fitCenter"-->
+    <!--        android:src="@drawable/ic_mc_symbol"-->
+    <!--        app:layout_constraintTop_toBottomOf="@id/imageview_card_type"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        android:layout_gravity="center"-->
+    <!--        android:layout_marginEnd="48dp" />-->
+
+    <!--    <ImageView-->
+    <!--        android:id="@+id/imageview_card_type3"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:contentDescription="@string/add_edit_card_type_description"-->
+    <!--        android:scaleType="fitCenter"-->
+    <!--        android:src="@drawable/ic_visa"-->
+    <!--        android:layout_gravity="center"-->
+    <!--        app:layout_constraintTop_toBottomOf="@id/imageview_card_type2"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        android:layout_marginEnd="48dp" />-->
+
+</androidx.constraintlayout.widget.ConstraintLayout>

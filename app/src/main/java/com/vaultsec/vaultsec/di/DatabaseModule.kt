@@ -38,4 +38,7 @@ object DatabaseModule {
 
     @Provides
     fun providePasswordDao(database: PasswordManagerDatabase) = database.passwordDao()
+
+    @Provides
+    fun providePaymentCardDao(database: PasswordManagerDatabase) = database.paymentCardDao()
 }

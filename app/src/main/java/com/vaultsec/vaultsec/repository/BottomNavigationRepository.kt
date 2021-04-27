@@ -6,6 +6,7 @@ import com.vaultsec.vaultsec.database.PasswordManagerDatabase
 import com.vaultsec.vaultsec.database.PasswordManagerEncryptedSharedPreferences
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.database.entity.Password
+import com.vaultsec.vaultsec.database.entity.PaymentCard
 import com.vaultsec.vaultsec.network.PasswordManagerApi
 import com.vaultsec.vaultsec.util.ErrorTypes
 import com.vaultsec.vaultsec.util.Resource
@@ -28,6 +29,7 @@ class BottomNavigationRepository @Inject constructor(
 ) {
     private val noteDao = db.noteDao()
     private val passwordDao = db.passwordDao()
+    private val paymentCardDao = db.paymentCardDao()
 
     private var apiError = JSONObject()
 
@@ -43,6 +45,7 @@ class BottomNavigationRepository @Inject constructor(
         try {
             val combinedNotes = arrayListOf<Note>()
             val combinedPasswords = arrayListOf<Password>()
+            val combinedCards = arrayListOf<PaymentCard>()
             // Sync before logout
             val syncedButDeletedIds = noteDao.getSyncedDeletedNotesIds().first()
             if (syncedButDeletedIds.isNotEmpty()) {
@@ -52,6 +55,13 @@ class BottomNavigationRepository @Inject constructor(
             if (syncedButDeletedPasswordIds.isNotEmpty()) {
                 api.deletePasswords(
                     syncedButDeletedPasswordIds as ArrayList<Int>,
+                    "Bearer ${getToken()}"
+                )
+            }
+            val syncedButDeletedCardsIds = paymentCardDao.getSyncedDeletedPaymentCardsIds().first()
+            if (syncedButDeletedCardsIds.isNotEmpty()) {
+                api.deletePaymentCards(
+                    syncedButDeletedCardsIds as ArrayList<Int>,
                     "Bearer ${getToken()}"
                 )
             }
@@ -69,9 +79,19 @@ class BottomNavigationRepository @Inject constructor(
                 it.login = cm.encrypt(it.login)
                 it.password = cm.encrypt(it.password)!!
             }
+            combinedCards.addAll(paymentCardDao.getUnsyncedPaymentCards().first())
+            combinedCards.addAll(paymentCardDao.getSyncedUpdatedPaymentCards().first())
+            combinedCards.map {
+                it.cardNumber = cm.encrypt(it.cardNumber)!!
+                it.mm = cm.encrypt(it.mm)!!
+                it.yy = cm.encrypt(it.yy)!!
+                it.cvv = cm.encrypt(it.cvv)!!
+                it.pin = cm.encrypt(it.pin)!!
+            }
 
             api.postStoreNotes(combinedNotes, "Bearer ${getToken()}")
             api.postStorePasswords(combinedPasswords, "Bearer ${getToken()}")
+            api.postStorePaymentCards(combinedCards, "Bearer ${getToken()}")
             // Actually logout
             api.postLogout("Bearer ${getToken()}")
             // Empty the database
@@ -127,14 +147,18 @@ class BottomNavigationRepository @Inject constructor(
     suspend fun onLogIn(): Resource<*> {
         val notesResponse = getUserNotes(getToken())
         val passwordsResponse = getUserPasswords(getToken())
+        val paymentCardsResponse = getUserPaymentCards(getToken())
         return if (notesResponse is Resource.Success
             && passwordsResponse is Resource.Success
+            && paymentCardsResponse is Resource.Success
         ) {
             db.withTransaction {
                 noteDao.deleteAll()
                 passwordDao.deleteAll()
+                paymentCardDao.deleteAll()
                 noteDao.insertList(notesResponse.data as ArrayList<Note>)
                 passwordDao.insertList(passwordsResponse.data as ArrayList<Password>)
+                paymentCardDao.insertList(paymentCardsResponse.data as ArrayList<PaymentCard>)
             }
             Resource.Success<Any>()
         } else {
@@ -268,6 +292,75 @@ class BottomNavigationRepository @Inject constructor(
                 else -> {
                     Log.e(
                         "$TAG.getUserPasswords.GENERAL",
+                        e.message.toString()
+                    )
+                    return Resource.Error<Any>(ErrorTypes.GENERAL)
+                }
+            }
+        }
+    }
+
+    private suspend fun getUserPaymentCards(token: String): Resource<*> {
+        try {
+            val paymentCardsResponse = api.getUserPaymentCards("Bearer $token")
+            val cards = arrayListOf<PaymentCard>()
+            paymentCardsResponse.map {
+                cards.add(
+                    PaymentCard(
+                        title = it.title,
+                        cardNumber = cm.decrypt(it.card_number)!!,
+                        mm = cm.decrypt(it.expiration_mm)!!,
+                        yy = cm.decrypt(it.expiration_yy)!!,
+                        type = it.type,
+                        cvv = cm.decrypt(it.cvv)!!,
+                        pin = cm.decrypt(it.pin)!!,
+                        updatedAt = it.updated_at_device,
+                        createdAt = it.created_at_device,
+                        syncState = SyncType.NOTHING_REQUIRED,
+                        id = it.id
+                    )
+                )
+            }
+            return Resource.Success(cards)
+        } catch (e: Exception) {
+            when (e) {
+                is HttpException -> {
+                    apiError = JSONObject()
+                    apiError = JSONObject(e.response()?.errorBody()?.charStream()!!.readText())
+                    Log.e(
+                        "errorBody",
+                        apiError.toString()
+                    )
+                    Log.e(
+                        "$TAG.getUserPaymentCards.HTTP",
+                        apiError.getString("error")
+                    )
+                    return Resource.Error<Any>(ErrorTypes.HTTP, apiError.getString("error"))
+                }
+                is SocketTimeoutException -> {
+                    Log.e(
+                        "$TAG.getUserPaymentCards.TIMEOUT",
+                        e.message.toString()
+                    )
+                    return Resource.Error<Any>(ErrorTypes.SOCKET_TIMEOUT)
+                }
+                is ConnectException -> {
+                    Log.e(
+                        "$TAG.getUserPaymentCards.CONNECTION",
+                        e.message.toString()
+                    )
+                    return Resource.Error<Any>(ErrorTypes.CONNECTION)
+                }
+                is SocketException -> {
+                    Log.e(
+                        "$TAG.getUserPaymentCards.SOCKET",
+                        e.message.toString()
+                    )
+                    return Resource.Error<Any>(ErrorTypes.SOCKET)
+                }
+                else -> {
+                    Log.e(
+                        "$TAG.getUserPaymentCards.GENERAL",
                         e.message.toString()
                     )
                     return Resource.Error<Any>(ErrorTypes.GENERAL)

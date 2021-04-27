@@ -404,7 +404,7 @@ class PasswordRepository @Inject constructor(
                 }
             } else {
                 if (unsyncedPasses.isNotEmpty()) {
-                    syncedPasses.map {
+                    unsyncedPasses.map {
                         it.title = cm.encrypt(it.title)
                         it.login = cm.encrypt(it.login)
                         it.password = cm.encrypt(it.password)!!

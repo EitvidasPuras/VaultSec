@@ -1,4 +1,4 @@
-package com.vaultsec.vaultsec.ui.password
+package com.vaultsec.vaultsec.ui.paymentcard
 
 import android.os.Bundle
 import android.util.Log
@@ -17,38 +17,38 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.vaultsec.vaultsec.R
-import com.vaultsec.vaultsec.database.PasswordsSortOrder
-import com.vaultsec.vaultsec.database.entity.Password
-import com.vaultsec.vaultsec.databinding.FragmentPasswordsBinding
+import com.vaultsec.vaultsec.database.PaymentCardsSortOrder
+import com.vaultsec.vaultsec.database.entity.PaymentCard
+import com.vaultsec.vaultsec.databinding.FragmentPaymentCardsBinding
 import com.vaultsec.vaultsec.util.*
-import com.vaultsec.vaultsec.viewmodel.PasswordViewModel
+import com.vaultsec.vaultsec.viewmodel.PaymentCardViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class PasswordsFragment : Fragment(R.layout.fragment_passwords),
-    PasswordAdapter.OnItemClickListener {
+class PaymentCardsFragment : Fragment(R.layout.fragment_payment_cards),
+    PaymentCardAdapter.OnItemClickListener {
 
-    private val passwordViewModel: PasswordViewModel by viewModels()
+    private val paymentCardViewModel: PaymentCardViewModel by viewModels()
 
-    private lateinit var passwordAdapter: PasswordAdapter
+    private lateinit var paymentCardAdapter: PaymentCardAdapter
     var tracker: SelectionTracker<Long>? = null
     var mActionMode: ActionMode? = null
 
-    private var _binding: FragmentPasswordsBinding? = null
+    private var _binding: FragmentPaymentCardsBinding? = null
     private val binding get() = _binding!!
 
     companion object {
-        const val TAG = "com.vaultsec.vaultsec.ui.password.PasswordsFragment"
+        const val TAG = "com.vaultsec.vaultsec.ui.paymentcard.PaymentCardsFragment"
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentPasswordsBinding.inflate(inflater, container, false)
+        _binding = FragmentPaymentCardsBinding.inflate(inflater, container, false)
         setHasOptionsMenu(true)
         // Inflate the layout for this fragment
         return binding.root
@@ -59,16 +59,16 @@ class PasswordsFragment : Fragment(R.layout.fragment_passwords),
         playSlidingAnimation(true, requireActivity())
 
         val layoutM = StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL)
-        passwordAdapter = PasswordAdapter(this)
-        passwordAdapter.stateRestorationPolicy =
+        paymentCardAdapter = PaymentCardAdapter(this)
+        paymentCardAdapter.stateRestorationPolicy =
             RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
         binding.apply {
-            recyclerviewPasswords.apply {
+            recyclerviewCards.apply {
                 recycledViewPool.clear()
-                adapter = passwordAdapter
+                adapter = paymentCardAdapter
                 layoutManager = layoutM
                 setHasFixedSize(true)
-                addItemDecoration(PasswordOffsetDecoration(resources.getInteger(R.integer.staggered_grid_layout_offset_spacing)))
+                addItemDecoration(PaymentCardOffsetDecoration(resources.getInteger(R.integer.staggered_grid_layout_offset_spacing)))
                 addOnScrollListener(object : RecyclerView.OnScrollListener() {
                     override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                         super.onScrollStateChanged(recyclerView, newState)
@@ -76,27 +76,27 @@ class PasswordsFragment : Fragment(R.layout.fragment_passwords),
                     }
                 })
             }
-            swiperefreshlayoutPasswords.setOnRefreshListener {
-                passwordViewModel.onManualPasswordSync()
+            swiperefreshlayoutCards.setOnRefreshListener {
+                paymentCardViewModel.onManualPaymentCardSync()
             }
-            fabPasswords.setOnClickListener {
-                passwordViewModel.onAddNewPasswordClick()
+            fabCards.setOnClickListener {
+                paymentCardViewModel.onAddNewPaymentCardClick()
                 playSlidingAnimation(false, requireActivity())
             }
         }
 
         tracker = SelectionTracker.Builder(
-            "com.vaultsec.vaultsec.ui.password",
-            binding.recyclerviewPasswords,
-            StableIdKeyProvider(binding.recyclerviewPasswords),
-            PasswordAdapter.PasswordDetailsLookup(binding.recyclerviewPasswords),
+            "com.vaultsec.vaultsec.ui.paymentcard",
+            binding.recyclerviewCards,
+            StableIdKeyProvider(binding.recyclerviewCards),
+            PaymentCardAdapter.PaymentCardDetailsLookup(binding.recyclerviewCards),
             StorageStrategy.createLongStorage()
         ).withSelectionPredicate(object : SelectionTracker.SelectionPredicate<Long>() {
             override fun canSetStateForKey(key: Long, nextState: Boolean): Boolean =
-                key != PasswordAdapter.PasswordDetailsLookup.EMPTY_ITEM.selectionKey
+                key != PaymentCardAdapter.PaymentCardDetailsLookup.EMPTY_ITEM.selectionKey
 
             override fun canSetStateAtPosition(position: Int, nextState: Boolean): Boolean =
-                position != PasswordAdapter.PasswordDetailsLookup.EMPTY_ITEM.position
+                position != PaymentCardAdapter.PaymentCardDetailsLookup.EMPTY_ITEM.position
 
             override fun canSelectMultiple(): Boolean = true
         }).build()
@@ -108,11 +108,11 @@ class PasswordsFragment : Fragment(R.layout.fragment_passwords),
                     if (!tracker?.selection!!.isEmpty) {
                         if (selected) {
                             if (tracker?.selection!!.contains(key)) {
-                                passwordViewModel.onPasswordSelection(passwordAdapter.currentList[key.toInt()])
+                                paymentCardViewModel.onCardSelection(paymentCardAdapter.currentList[key.toInt()])
                             }
                         } else {
                             if (!tracker?.selection!!.contains(key)) {
-                                passwordViewModel.onPasswordDeselection(passwordAdapter.currentList[key.toInt()])
+                                paymentCardViewModel.onCardDeselection(paymentCardAdapter.currentList[key.toInt()])
                             }
                         }
                     }
@@ -123,18 +123,18 @@ class PasswordsFragment : Fragment(R.layout.fragment_passwords),
 
             override fun onSelectionChanged() {
                 super.onSelectionChanged()
-                val passwordAmount = tracker?.selection!!.size()
+                val cardAmount = tracker?.selection!!.size()
                 if (mActionMode == null) {
                     mActionMode = activity?.startActionMode(mActionModeCallBack)
                 }
-                mActionMode!!.title = "$passwordAmount selected"
+                mActionMode!!.title = "$cardAmount selected"
 
-                if (passwordAmount <= 0) {
+                if (cardAmount <= 0) {
                     mActionMode?.finish()
                 }
             }
         })
-        passwordAdapter.tracker = tracker
+        paymentCardAdapter.tracker = tracker
 
         requireActivity().supportFragmentManager.setFragmentResultListener(
             "com.vaultsec.vaultsec.ui.BottomNavigationActivity.seedDatabase",
@@ -144,98 +144,93 @@ class PasswordsFragment : Fragment(R.layout.fragment_passwords),
             val bottomNavigationView = requireActivity().findViewById<View>(R.id.bottom_nav_view)
             val bottomNavigationShadow =
                 requireActivity().findViewById<View>(R.id.bottom_nav_shadow)
-            passwordViewModel.onManualPasswordSync()
+            paymentCardViewModel.onManualPaymentCardSync()
             bottomNavigationShadow.visibility = View.VISIBLE
             bottomNavigationView.visibility = View.VISIBLE
             fragmentHolder.visibility = View.VISIBLE
         }
 
-        setFragmentResultListener("com.vaultsec.vaultsec.ui.password.AddEditPasswordFragment") { _, bundle ->
+        setFragmentResultListener("com.vaultsec.vaultsec.ui.paymentcard.AddEditPaymentCardFragment") { _, bundle ->
             val result = bundle.getInt("AddEditResult")
-            passwordViewModel.onAddEditResult(result)
+            paymentCardViewModel.onAddEditResult(result)
         }
 
-        passwordViewModel.passwords.observe(viewLifecycleOwner) {
-            if (it.data?.equals(passwordAdapter.currentList) == false) {
-                passwordAdapter.submitList(null)
-                passwordAdapter.submitList(it.data) {
-                    binding.recyclerviewPasswords.scheduleLayoutAnimation()
+        paymentCardViewModel.paymentCards.observe(viewLifecycleOwner) {
+            Log.e("Resource.data", "${it.data}")
+            if (it.data?.equals(paymentCardAdapter.currentList) == false) {
+                paymentCardAdapter.submitList(null)
+                paymentCardAdapter.submitList(it.data) {
+                    binding.recyclerviewCards.scheduleLayoutAnimation()
                 }
             }
-            binding.swiperefreshlayoutPasswords.isRefreshing = it is Resource.Loading
+            binding.swiperefreshlayoutCards.isRefreshing = it is Resource.Loading
 
-//            val fragmentHolder = requireActivity().findViewById<View>(R.id.fragment_container_view)
-            binding.recyclerviewPasswords.isVisible = !it.data.isNullOrEmpty()
-            binding.textviewEmptyPasswords.isVisible =
+            binding.recyclerviewCards.isVisible = !it.data.isNullOrEmpty()
+            binding.textviewEmptyCards.isVisible =
                 it.data.isNullOrEmpty() && it !is Resource.Loading
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            passwordViewModel.passwordsEvent.collect { event ->
+            paymentCardViewModel.paymentCardsEvent.collect { event ->
                 when (event) {
-                    is PasswordViewModel.PasswordEvent.NavigateToAddPasswordFragment -> {
+                    is PaymentCardViewModel.PaymentCardEvent.NavigateToAddPaymentCardFragment -> {
                         val action =
-                            PasswordsFragmentDirections.actionFragmentPasswordsToFragmentAddEditPassword(
-                                title = "New password"
+                            PaymentCardsFragmentDirections.actionFragmentPaymentCardsToFragmentAddEditPaymentCard(
+                                title = "New card"
                             )
                         findNavController().navigate(action)
                     }
-                    is PasswordViewModel.PasswordEvent.NavigateToEditPasswordFragment -> {
+                    is PaymentCardViewModel.PaymentCardEvent.NavigateToEditPaymentCardFragment -> {
                         val action =
-                            PasswordsFragmentDirections.actionFragmentPasswordsToFragmentAddEditPassword(
-                                event.password,
-                                "Edit password"
+                            PaymentCardsFragmentDirections.actionFragmentPaymentCardsToFragmentAddEditPaymentCard(
+                                event.card,
+                                "Edit card"
                             )
                         findNavController().navigate(action)
                     }
-                    is PasswordViewModel.PasswordEvent.ShowUndoDeletePasswordMessage -> {
+                    is PaymentCardViewModel.PaymentCardEvent.ShowUndoDeleteCardMessage -> {
                         Snackbar.make(
                             requireView(),
-                            if (event.passwordList.size == 1) {
+                            if (event.cardList.size == 1) {
                                 getString(
-                                    R.string.passwords_one_deleted,
-                                    event.passwordList.size
+                                    R.string.cards_one_deleted,
+                                    event.cardList.size
                                 )
                             } else {
                                 getString(
-                                    R.string.passwords_more_than_one_deleted,
-                                    event.passwordList.size
+                                    R.string.cards_more_than_one_deleted,
+                                    event.cardList.size
                                 )
                             },
                             Snackbar.LENGTH_LONG
                         ).setAction("UNDO") {
-                            passwordViewModel.onUndoDeleteClick(event.passwordList)
+                            paymentCardViewModel.onUndoDeleteClick(event.cardList)
                         }.show()
                     }
-                    is PasswordViewModel.PasswordEvent.ShowPasswordSavedConfirmationMessage -> {
+                    is PaymentCardViewModel.PaymentCardEvent.ShowCardSavedConfimationMessage -> {
                         Snackbar.make(requireView(), event.message, Snackbar.LENGTH_LONG)
-                            .setAnchorView(binding.fabPasswords)
+                            .setAnchorView(binding.fabCards)
                             .show()
                     }
-                    is PasswordViewModel.PasswordEvent.DoShowRefreshing -> {
-                        binding.swiperefreshlayoutPasswords.isRefreshing = event.visible
+                    is PaymentCardViewModel.PaymentCardEvent.DoShowRefreshing -> {
+                        binding.swiperefreshlayoutCards.isRefreshing = event.visible
                     }
                 }
             }
         }
     }
 
-    override fun onItemClick(password: Password) {
-        passwordViewModel.onPasswordClicked(password)
-        playSlidingAnimation(false, requireActivity())
-    }
-
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.passwords_fragment_menu, menu)
+        inflater.inflate(R.menu.payment_cards_fragment_menu, menu)
 
-        val searchItem = menu.findItem(R.id.item_search_pass)
+        val searchItem = menu.findItem(R.id.item_search_card)
         val searchView = searchItem.actionView as androidx.appcompat.widget.SearchView
         searchView.maxWidth = Int.MAX_VALUE
-        setSearchViewListeners(searchView, searchItem, menu)
+        setSearchViewListener(searchView, searchItem, menu)
 
         viewLifecycleOwner.lifecycleScope.launch {
-            val direction = menu.findItem(R.id.item_sort_direction_pass)
-            if (passwordViewModel.preferencesFlow.first().isAscPasswords) {
+            val direction = menu.findItem(R.id.item_sort_direction_card)
+            if (paymentCardViewModel.preferencesFlow.first().isAscPaymentCards) {
                 direction.setIcon(R.drawable.ic_baseline_vertical_align_bottom)
             } else {
                 direction.setIcon(R.drawable.ic_baseline_vertical_align_top)
@@ -258,15 +253,15 @@ class PasswordsFragment : Fragment(R.layout.fragment_passwords),
             return when (p1?.itemId) {
                 R.id.item_multi_select_all -> {
                     val mutableListIds = arrayListOf<Long>()
-                    for (i in 0 until passwordAdapter.itemCount) {
-                        val longId = passwordAdapter.getItemId(i)
+                    for (i in 0 until paymentCardAdapter.itemCount) {
+                        val longId = paymentCardAdapter.getItemId(i)
                         mutableListIds.add(longId)
                     }
                     tracker?.setItemsSelected(mutableListIds.asIterable(), true)
                     true
                 }
                 R.id.item_multi_select_delete -> {
-                    passwordViewModel.onDeleteSelectedPasswordsClick()
+                    paymentCardViewModel.onDeleteSelectedCardsClick()
                     tracker?.clearSelection()
                     true
                 }
@@ -275,7 +270,7 @@ class PasswordsFragment : Fragment(R.layout.fragment_passwords),
         }
 
         override fun onDestroyActionMode(p0: ActionMode?) {
-            passwordViewModel.onMultiSelectActionModeClose()
+            paymentCardViewModel.onMultiSelectActionModeClose()
             tracker?.clearSelection()
             mActionMode = null
         }
@@ -283,33 +278,33 @@ class PasswordsFragment : Fragment(R.layout.fragment_passwords),
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.item_sort_by_title_pass -> {
-                passwordViewModel.onSortOrderSelected(PasswordsSortOrder.BY_TITLE)
+            R.id.item_sort_by_title_card -> {
+                paymentCardViewModel.onSortOrderSelected(PaymentCardsSortOrder.BY_TITLE)
                 true
             }
-            R.id.item_sort_by_created_date_pass -> {
-                passwordViewModel.onSortOrderSelected(PasswordsSortOrder.BY_DATE_CREATED)
+            R.id.item_sort_by_created_date_card -> {
+                paymentCardViewModel.onSortOrderSelected(PaymentCardsSortOrder.BY_DATE_CREATED)
                 true
             }
-            R.id.item_sort_by_updated_date_pass -> {
-                passwordViewModel.onSortOrderSelected(PasswordsSortOrder.BY_DATE_UPDATED)
+            R.id.item_sort_by_updated_date_card -> {
+                paymentCardViewModel.onSortOrderSelected(PaymentCardsSortOrder.BY_DATE_UPDATED)
                 true
             }
-            R.id.item_sort_by_color_pass -> {
-                passwordViewModel.onSortOrderSelected(PasswordsSortOrder.BY_COLOR)
+            R.id.item_sort_by_expiration_card -> {
+                paymentCardViewModel.onSortOrderSelected(PaymentCardsSortOrder.BY_DATE_EXPIRATION)
                 true
             }
-            R.id.item_sort_by_category_pass -> {
-                passwordViewModel.onSortOrderSelected(PasswordsSortOrder.BY_CATEGORY)
+            R.id.item_sort_by_type_card -> {
+                paymentCardViewModel.onSortOrderSelected(PaymentCardsSortOrder.BY_TYPE)
                 true
             }
-            R.id.item_sort_direction_pass -> {
+            R.id.item_sort_direction_card -> {
                 viewLifecycleOwner.lifecycleScope.launch {
-                    if (passwordViewModel.preferencesFlow.first().isAscPasswords) {
-                        passwordViewModel.onSortDirectionSelected(false)
+                    if (paymentCardViewModel.preferencesFlow.first().isAscPaymentCards) {
+                        paymentCardViewModel.onSortDirectionSelected(false)
                         item.setIcon(R.drawable.ic_baseline_vertical_align_top)
                     } else {
-                        passwordViewModel.onSortDirectionSelected(true)
+                        paymentCardViewModel.onSortDirectionSelected(true)
                         item.setIcon(R.drawable.ic_baseline_vertical_align_bottom)
                     }
                 }
@@ -317,6 +312,11 @@ class PasswordsFragment : Fragment(R.layout.fragment_passwords),
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun onItemClick(card: PaymentCard) {
+        paymentCardViewModel.onPaymentCardClicked(card)
+        playSlidingAnimation(false, requireActivity())
     }
 
     private fun setItemsVisibility(
@@ -332,7 +332,7 @@ class PasswordsFragment : Fragment(R.layout.fragment_passwords),
         }
     }
 
-    private fun setSearchViewListeners(
+    private fun setSearchViewListener(
         searchView: androidx.appcompat.widget.SearchView,
         searchItem: MenuItem,
         menu: Menu
@@ -357,7 +357,7 @@ class PasswordsFragment : Fragment(R.layout.fragment_passwords),
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                passwordViewModel.searchQuery.value = newText.orEmpty()
+                paymentCardViewModel.searchQuery.value = newText.orEmpty()
                 return true
             }
         })
@@ -379,6 +379,6 @@ class PasswordsFragment : Fragment(R.layout.fragment_passwords),
                 }
             }
         })
-        passwordViewModel.onStart()
+        paymentCardViewModel.onStart()
     }
 }

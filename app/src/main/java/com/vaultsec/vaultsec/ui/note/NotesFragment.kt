@@ -272,8 +272,8 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
                     for (i in 0 until noteAdapter.itemCount) {
                         val longId = noteAdapter.getItemId(i)
                         mutableListIds.add(longId)
-                        tracker?.setItemsSelected(mutableListIds.asIterable(), true)
                     }
+                    tracker?.setItemsSelected(mutableListIds.asIterable(), true)
                     true
                 }
                 R.id.item_multi_select_delete -> {

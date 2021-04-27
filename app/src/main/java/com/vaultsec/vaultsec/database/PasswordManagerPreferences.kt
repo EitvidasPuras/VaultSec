@@ -22,9 +22,17 @@ enum class PasswordsSortOrder {
     BY_TITLE, BY_DATE_CREATED, BY_DATE_UPDATED, BY_CATEGORY, BY_COLOR
 }
 
+enum class PaymentCardsSortOrder {
+    BY_TITLE, BY_DATE_CREATED, BY_DATE_UPDATED, BY_DATE_EXPIRATION, BY_TYPE
+}
+
 data class FilterPreferencesNotes(
     val notesSortOrder: NotesSortOrder,
-    val isAscNotes: Boolean, val passwordsSortOrder: PasswordsSortOrder, val isAscPasswords: Boolean
+    val isAscNotes: Boolean,
+    val passwordsSortOrder: PasswordsSortOrder,
+    val isAscPasswords: Boolean,
+    val paymentCardsSortOrder: PaymentCardsSortOrder,
+    val isAscPaymentCards: Boolean
 )
 //data class FilterPreferencesPasswords(val passwordsSortOrder: PasswordsSortOrder, val isAsc: Boolean)
 
@@ -58,7 +66,15 @@ class PasswordManagerPreferences
                 it[PreferencesKeys.SORT_ORDER_PASSES] ?: PasswordsSortOrder.BY_TITLE.name
             )
             val isAscPasswords = it[PreferencesKeys.SORT_DIR_PASSES] ?: true
-            FilterPreferencesNotes(sortOrderNotes, isAscNotes, sortOrderPasswords, isAscPasswords)
+
+            val sortOrderPaymentCards = PaymentCardsSortOrder.valueOf(
+                it[PreferencesKeys.SORT_ORDER_CARDS] ?: PaymentCardsSortOrder.BY_DATE_CREATED.name
+            )
+            val isAscPaymentCards = it[PreferencesKeys.SORT_DIR_CARDS] ?: true
+            FilterPreferencesNotes(
+                sortOrderNotes, isAscNotes, sortOrderPasswords, isAscPasswords,
+                sortOrderPaymentCards, isAscPaymentCards
+            )
         }
 
 
@@ -86,10 +102,24 @@ class PasswordManagerPreferences
         }
     }
 
+    suspend fun updateSortOrderForPaymentCards(paymentCardsSortOrder: PaymentCardsSortOrder) {
+        dataStore.edit {
+            it[PreferencesKeys.SORT_ORDER_CARDS] = paymentCardsSortOrder.name
+        }
+    }
+
+    suspend fun updateSortDirectionForPaymentCards(isAsc: Boolean) {
+        dataStore.edit {
+            it[PreferencesKeys.SORT_DIR_CARDS] = isAsc
+        }
+    }
+
     private object PreferencesKeys {
         val SORT_ORDER_NOTES = stringPreferencesKey("son")
         val SORT_DIR_NOTES = booleanPreferencesKey("sdn")
         val SORT_ORDER_PASSES = stringPreferencesKey("sop")
         val SORT_DIR_PASSES = booleanPreferencesKey("sdp")
+        val SORT_ORDER_CARDS = stringPreferencesKey("sopc")
+        val SORT_DIR_CARDS = booleanPreferencesKey("sdpc")
     }
 }

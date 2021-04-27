@@ -3,8 +3,10 @@ package com.vaultsec.vaultsec.network
 import com.google.gson.JsonObject
 import com.vaultsec.vaultsec.database.entity.Note
 import com.vaultsec.vaultsec.database.entity.Password
+import com.vaultsec.vaultsec.database.entity.PaymentCard
 import com.vaultsec.vaultsec.network.entity.ApiNote
 import com.vaultsec.vaultsec.network.entity.ApiPassword
+import com.vaultsec.vaultsec.network.entity.ApiPaymentCard
 import com.vaultsec.vaultsec.network.entity.ApiUser
 import retrofit2.http.*
 
@@ -100,5 +102,47 @@ interface PasswordManagerApi {
     ): Int
     /*
     * ----- PASSWORDS -----
+    * */
+
+    /*
+    * ----- PAYMENT CARDS -----
+    * */
+    @POST("api/cards")
+    suspend fun postStorePaymentCards(
+        @Body cards: List<PaymentCard>,
+        @Header("Authorization") header: String
+    ): ArrayList<ApiPaymentCard>
+
+    @POST("api/cards/recover")
+    suspend fun postRecoverPaymentCards(
+        @Body cards: List<PaymentCard>,
+        @Header("Authorization") header: String
+    ): ArrayList<ApiPaymentCard>
+
+    @GET("api/cards")
+    suspend fun getUserPaymentCards(
+        @Header("Authorization") header: String
+    ): ArrayList<ApiPaymentCard>
+
+    @HTTP(method = "DELETE", hasBody = true, path = "api/cards/delete")
+    suspend fun deletePaymentCards(
+        @Body syncedPaymentCardsIds: ArrayList<Int>,
+        @Header("Authorization") header: String
+    ): JsonObject
+
+    @POST("api/cards/singular")
+    suspend fun postSinglePaymentCard(
+        @Body card: PaymentCard,
+        @Header("Authorization") header: String
+    ): Int
+
+    @PUT("api/cards/{id}")
+    suspend fun putPaymentCardUpdate(
+        @Path("id") id: Int,
+        @Body card: PaymentCard,
+        @Header("Authorization") header: String
+    ): Int
+    /*
+    * ----- PAYMENT CARDS -----
     * */
 }

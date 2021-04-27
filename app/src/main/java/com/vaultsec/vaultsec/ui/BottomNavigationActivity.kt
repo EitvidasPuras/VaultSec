@@ -74,8 +74,9 @@ class BottomNavigationActivity : AppCompatActivity() {
             setOf(
                 R.id.fragment_notes,
                 R.id.fragment_passwords,
-                R.id.fragment_payment_cards,
-                R.id.fragment_generator
+                R.id.fragment_payment_cards
+//                ,
+//                R.id.fragment_generator
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)

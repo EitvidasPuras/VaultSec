@@ -33,14 +33,17 @@
     </fragment>
     <fragment
         android:id="@+id/fragment_payment_cards"
-        android:name="com.vaultsec.vaultsec.PaymentCardsFragment"
-        android:label="Payment cards"
-        tools:layout="@layout/fragment_payment_cards" />
-    <fragment
-        android:id="@+id/fragment_generator"
-        android:name="com.vaultsec.vaultsec.GeneratorFragment"
-        android:label="Generator"
-        tools:layout="@layout/fragment_generator" />
+        android:name="com.vaultsec.vaultsec.ui.paymentcard.PaymentCardsFragment"
+        android:label="Cards"
+        tools:layout="@layout/fragment_payment_cards">
+        <action
+            android:id="@+id/action_fragment_payment_cards_to_fragment_add_edit_payment_card"
+            app:destination="@id/fragment_add_edit_payment_card"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
     <fragment
         android:id="@+id/fragment_add_edit_note"
         android:name="com.vaultsec.vaultsec.ui.note.AddEditNoteFragment"
@@ -78,6 +81,23 @@
             app:argType="string" />
         <action
             android:id="@+id/action_fragment_add_edit_password_to_fragment_camera"
+            app:destination="@id/fragment_camera" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragment_add_edit_payment_card"
+        android:name="com.vaultsec.vaultsec.ui.paymentcard.AddEditPaymentCardFragment"
+        android:label="{title}"
+        tools:layout="@layout/fragment_add_edit_payment_card">
+        <argument
+            android:name="card"
+            android:defaultValue="@null"
+            app:argType="com.vaultsec.vaultsec.database.entity.PaymentCard"
+            app:nullable="true" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_fragment_add_edit_payment_card_to_fragment_camera"
             app:destination="@id/fragment_camera" />
     </fragment>
 </navigation>

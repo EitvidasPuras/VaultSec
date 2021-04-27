@@ -51,7 +51,7 @@ class RegistrationFragment : Fragment(R.layout.fragment_registration) {
 //            WindowManager.LayoutParams.FLAG_SECURE
 //        )
 
-        populateTestingData()
+//        populateTestingData()
 
         binding.textviewRegistrationLogin.setOnClickListener {
             findNavController().popBackStack()
@@ -174,13 +174,13 @@ class RegistrationFragment : Fragment(R.layout.fragment_registration) {
         }
     }
 
-    private fun populateTestingData() {
-        binding.textfieldRegistrationFirstname.setText("First")
-        binding.textfieldRegistrationLastname.setText("Last")
-        binding.textfieldRegistrationEmail.setText("email@gmail.com")
-        binding.textfieldRegistrationPassword.setText("123456789*aA")
-        binding.textfieldRegistrationPasswordRetype.setText("123456789*aA")
-    }
+//    private fun populateTestingData() {
+//        binding.textfieldRegistrationFirstname.setText("First")
+//        binding.textfieldRegistrationLastname.setText("Last")
+//        binding.textfieldRegistrationEmail.setText("email@gmail.com")
+//        binding.textfieldRegistrationPassword.setText("123456789*aA")
+//        binding.textfieldRegistrationPasswordRetype.setText("123456789*aA")
+//    }
 
     override fun onStop() {
         super.onStop()

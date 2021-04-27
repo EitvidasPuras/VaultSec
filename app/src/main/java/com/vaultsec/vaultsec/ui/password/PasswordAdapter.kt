@@ -45,7 +45,6 @@ class PasswordAdapter(
         var textViewCategory: TextView = itemView.findViewById(R.id.textview_password_category)
         var context = itemView.context
 
-        var textViewSynced: TextView = itemView.findViewById(R.id.textview_test_synced)
 
         init {
             itemView.setOnClickListener {
@@ -82,7 +81,6 @@ class PasswordAdapter(
                 )
                 holder.container.setCardBackgroundColor(Color.parseColor(currentPassword.color))
 
-                holder.textViewSynced.text = "State : ${currentPassword.syncState}"
 
                 if (holder.textViewTitle.text.isNullOrEmpty()) {
                     holder.textViewTitle.visibility = View.GONE
@@ -110,8 +108,6 @@ class PasswordAdapter(
                     currentPassword.category
                 )
                 holder.container.setCardBackgroundColor(Color.parseColor(currentPassword.color))
-
-                holder.textViewSynced.text = "State : ${currentPassword.syncState}"
 
                 if (holder.textViewTitle.text.isNullOrEmpty()) {
                     holder.textViewTitle.visibility = View.GONE

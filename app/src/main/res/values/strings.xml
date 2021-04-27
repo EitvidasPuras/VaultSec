@@ -59,6 +59,8 @@
     <string name="title_sort_by_color_menu_item">Sort by color</string>
     <string name="title_sort_by_font_size">Sort by font size</string>
     <string name="title_sort_by_category">Sort by category</string>
+    <string name="title_sort_by_expiration_menu_item">Sort by expiration date</string>
+    <string name="title_sort_by_type_menu_item">Sort by type</string>
     <string name="title_multi_select_delete">Delete selected</string>
     <string name="title_multi_select_all">Select all</string>
     <string name="add_edit_save">Save</string>
@@ -95,6 +97,37 @@
     <string name="add_edit_password_login_copied">Login copied to clipboard</string>
     <string name="add_edit_password_password_copied">Password copied to clipboard</string>
 
+    <string name="cards_empty_text">There are no payment cards</string>
+    <string name="new_card_fab_description">Add new password</string>
+    <string name="cards_image_view_content_description">Card type</string>
+    <string name="cards_one_deleted">%d card deleted</string>
+    <string name="cards_more_than_one_deleted">%d cards deleted</string>
+    <string name="add_edit_card_number_hint">Card number</string>
+    <string name="add_edit_card_mm_hint">MM</string>
+    <string name="add_edit_card_yy_hint">YY</string>
+    <string name="add_edit_card_cvv_hint">CVV</string>
+    <string name="add_edit_card_pin_hint">PIN</string>
+    <string name="add_edit_card_number_camera_description">Scan card number</string>
+    <string name="add_edit_card_number_copy_description">Copy card number</string>
+    <string name="add_edit_card_expiration_copy_description">Copy expiration date</string>
+    <string name="add_edit_card_cvv_copy_description">Copy CVV number</string>
+    <string name="add_edit_card_pin_camera_description">Scan PIN</string>
+    <string name="add_edit_card_pin_copy_description">Copy PIN</string>
+    <string name="add_edit_card_type_description">Card type</string>
+    <string name="add_payment_card_confirmation">Payment card created</string>
+    <string name="edit_payment_card_confirmation">Payment card updated</string>
+    <string name="add_edit_card_number_input_error_empty">Card number cannot be empty</string>
+    <string name="add_edit_card_number_input_error_invalid">Card number is invalid</string>
+    <string name="add_edit_card_expiration_input_error_invalid">Card expiration date is invalid</string>
+    <string name="add_edit_card_cvv_input_error_empty">Card CVV cannot be empty</string>
+    <string name="add_edit_card_cvv_input_error_invalid">Card CVV is invalid</string>
+    <string name="add_edit_card_pin_input_error_empty">Card PIN cannot be empty</string>
+    <string name="add_edit_card_pin_input_error_invalid">Card PIN is invalid</string>
+    <string name="add_edit_card_number_copied">Card number copied to clipboard</string>
+    <string name="add_edit_card_expiration_copied">Card expiration copied to clipboard</string>
+    <string name="add_edit_card_cvv_copied">Card CVV to clipboard</string>
+    <string name="add_edit_card_pin_copied">Card PIN copied to clipboard</string>
+
     <string name="camera_activity_shutter_description">Take a photo</string>
     <string name="camera_activity_flashlight_description">Flashlight control</string>
     <string name="add_edit_camera_permission_title">Camera required</string>
@@ -103,4 +136,5 @@
     <string name="biometric_fingerprint_dialog_title">Fingerprint authentication</string>
     <string name="biometric_fingerprint_dialog_subtitle">Unlock the vault with your fingerprint</string>
     <string name="biometric_fingerprint_cancellation_signal">Authentication was cancelled</string>
+
 </resources>

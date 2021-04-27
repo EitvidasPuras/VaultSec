@@ -44,7 +44,6 @@ class NoteAdapter(
         var container: MaterialCardView = itemView.findViewById(R.id.cardview_note)
         var textViewTitle: TextView = itemView.findViewById(R.id.textview_note_title)
         var textViewText: TextView = itemView.findViewById(R.id.textview_note_text)
-        var textViewSynced: TextView = itemView.findViewById(R.id.textview_test_synced)
 
         init {
             itemView.setOnClickListener {
@@ -76,7 +75,6 @@ class NoteAdapter(
                 holder.textViewTitle.text = currentNote.title
                 holder.textViewText.text = currentNote.text
                 holder.textViewText.textSize = currentNote.fontSize.toFloat()
-                holder.textViewSynced.text = "State : ${currentNote.syncState}"
 
                 holder.container.setCardBackgroundColor(Color.parseColor(currentNote.color))
                 if (holder.textViewTitle.text.isNullOrEmpty()) {
@@ -89,7 +87,6 @@ class NoteAdapter(
                 holder.textViewTitle.text = currentNote.title
                 holder.textViewText.text = currentNote.text
                 holder.textViewText.textSize = currentNote.fontSize.toFloat()
-                holder.textViewSynced.text = "State : ${currentNote.syncState}"
 
                 holder.container.setCardBackgroundColor(Color.parseColor(currentNote.color))
                 if (holder.textViewTitle.text.isNullOrEmpty()) {

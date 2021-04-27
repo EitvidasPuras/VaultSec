@@ -9,5 +9,3 @@ import dagger.hilt.android.HiltAndroidApp
 * */
 @HiltAndroidApp
 class VaultSecApplication : Application()
-
-// TODO: 2021-01-25 Explore Keystore to store token or user password

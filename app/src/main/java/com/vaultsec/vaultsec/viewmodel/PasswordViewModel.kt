@@ -23,8 +23,7 @@ import javax.inject.Inject
 class PasswordViewModel
 @Inject constructor(
     private val passwordRepository: PasswordRepository,
-    private val prefsManager: PasswordManagerPreferences,
-    private val cipherManager: CipherManager
+    private val prefsManager: PasswordManagerPreferences
 ) : ViewModel() {
 
     val searchQuery = MutableStateFlow("")
