@@ -1,5 +1,6 @@
 package com.vaultsec.vaultsec.viewmodel
 
+import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -59,6 +60,7 @@ class AuthenticationViewModel
                     email = emailInput,
                     password = hashString(passInput, 1)
                 )
+                Log.e("PASSWORD FOR TESTING PURPOSES", user.password)
                 val response: Resource<*> = authenticationRepository.postLogin(user)
                 authenticationEventChannel.send(SessionEvent.ShowProgressBar(false))
                 if (response is Resource.Success) {

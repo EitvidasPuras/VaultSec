@@ -156,7 +156,6 @@ class PaymentCardsFragment : Fragment(R.layout.fragment_payment_cards),
         }
 
         paymentCardViewModel.paymentCards.observe(viewLifecycleOwner) {
-            Log.e("Resource.data", "${it.data}")
             if (it.data?.equals(paymentCardAdapter.currentList) == false) {
                 paymentCardAdapter.submitList(null)
                 paymentCardAdapter.submitList(it.data) {
