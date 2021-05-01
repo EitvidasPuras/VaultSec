@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.vaultsec.vaultsec.R
 import com.vaultsec.vaultsec.database.NotesSortOrder
 import com.vaultsec.vaultsec.database.PasswordManagerPreferences
+import com.vaultsec.vaultsec.database.PasswordsSortOrder
+import com.vaultsec.vaultsec.database.PaymentCardsSortOrder
 import com.vaultsec.vaultsec.repository.BottomNavigationRepository
 import com.vaultsec.vaultsec.util.ErrorTypes
 import com.vaultsec.vaultsec.util.Resource
@@ -32,6 +34,10 @@ class BottomNavigationViewModel @Inject constructor(
             bottomNavigationEventChannel.send(BottomNavigationEvent.SuccessfulLogout)
             prefsManager.updateSortOrderForNotes(NotesSortOrder.BY_TITLE) // Reset to default
             prefsManager.updateSortDirectionForNotes(true) // Reset to default
+            prefsManager.updateSortOrderForPasswords(PasswordsSortOrder.BY_TITLE)
+            prefsManager.updateSortDirectionForPasswords(true)
+            prefsManager.updateSortOrderForPaymentCards(PaymentCardsSortOrder.BY_TITLE)
+            prefsManager.updateSortDirectionForPaymentCards(true)
         } else {
             when (response.type) {
                 ErrorTypes.HTTP -> bottomNavigationEventChannel.send(
