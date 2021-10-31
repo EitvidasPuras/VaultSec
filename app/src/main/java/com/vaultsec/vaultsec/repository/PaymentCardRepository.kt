@@ -413,36 +413,51 @@ class PaymentCardRepository @Inject constructor(
                 }
             } else {
                 if (unsyncedCards.isNotEmpty()) {
-                    unsyncedCards.map {
-                        it.cardNumber = cm.encrypt(it.cardNumber)!!
-                        it.mm = cm.encrypt(it.mm)!!
-                        it.yy = cm.encrypt(it.yy)!!
-                        it.cvv = cm.encrypt(it.cvv)!!
-                        it.pin = cm.encrypt(it.pin)!!
-                    }
-                    val cardsApi = api.postRecoverPaymentCards(
-                        unsyncedCards,
-                        "Bearer ${encryptedSharedPrefs.getToken()}"
-                    )
-                    val cards = arrayListOf<PaymentCard>()
-                    cardsApi.map {
-                        cards.add(
-                            PaymentCard(
-                                title = it.title,
-                                cardNumber = cm.decrypt(it.card_number)!!,
-                                mm = cm.decrypt(it.expiration_mm)!!,
-                                yy = cm.decrypt(it.expiration_yy)!!,
-                                type = it.type,
-                                cvv = cm.decrypt(it.cvv)!!,
-                                pin = cm.decrypt(it.pin)!!,
-                                updatedAt = it.updated_at_device,
-                                createdAt = it.created_at_device,
-                                syncState = SyncType.NOTHING_REQUIRED,
-                                id = it.id
+                    try {
+                        unsyncedCards.map {
+                            it.cardNumber = cm.encrypt(it.cardNumber)!!
+                            it.mm = cm.encrypt(it.mm)!!
+                            it.yy = cm.encrypt(it.yy)!!
+                            it.cvv = cm.encrypt(it.cvv)!!
+                            it.pin = cm.encrypt(it.pin)!!
+                        }
+                        val cardsApi = api.postRecoverPaymentCards(
+                            unsyncedCards,
+                            "Bearer ${encryptedSharedPrefs.getToken()}"
+                        )
+                        val cards = arrayListOf<PaymentCard>()
+                        cardsApi.map {
+                            cards.add(
+                                PaymentCard(
+                                    title = it.title,
+                                    cardNumber = cm.decrypt(it.card_number)!!,
+                                    mm = cm.decrypt(it.expiration_mm)!!,
+                                    yy = cm.decrypt(it.expiration_yy)!!,
+                                    type = it.type,
+                                    cvv = cm.decrypt(it.cvv)!!,
+                                    pin = cm.decrypt(it.pin)!!,
+                                    updatedAt = it.updated_at_device,
+                                    createdAt = it.created_at_device,
+                                    syncState = SyncType.NOTHING_REQUIRED,
+                                    id = it.id
+                                )
                             )
+                        }
+                        paymentCardDao.insertList(cards)
+                    } catch (e: Exception) {
+                        unsyncedCards.map {
+                            it.cardNumber = cm.decrypt(it.cardNumber)!!
+                            it.mm = cm.decrypt(it.mm)!!
+                            it.yy = cm.decrypt(it.yy)!!
+                            it.cvv = cm.decrypt(it.cvv)!!
+                            it.pin = cm.decrypt(it.pin)!!
+                        }
+                        paymentCardDao.insertList(unsyncedCards)
+                        Log.e(
+                            "$TAG.undoDeletedPaymentCards.UNSYNCEDCARDS",
+                            e.localizedMessage!!
                         )
                     }
-                    paymentCardDao.insertList(cards)
                 }
             }
         } else {

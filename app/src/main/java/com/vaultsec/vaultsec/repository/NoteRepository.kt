@@ -423,30 +423,42 @@ class NoteRepository @Inject constructor(
                 }
             } else {
                 if (unsyncedNotes.isNotEmpty()) {
-                    unsyncedNotes.map {
-                        it.title = cm.encrypt(it.title)
-                        it.text = cm.encrypt(it.text)!!
-                    }
-                    val notesApi = api.postRecoverNotes(
-                        unsyncedNotes,
-                        "Bearer ${encryptedSharedPrefs.getToken()}"
-                    )
-                    val notes = arrayListOf<Note>()
-                    notesApi.map {
-                        notes.add(
-                            Note(
-                                title = cm.decrypt(it.title),
-                                text = cm.decrypt(it.text)!!,
-                                color = it.color,
-                                fontSize = it.font_size,
-                                createdAt = it.created_at_device,
-                                updatedAt = it.updated_at_device,
-                                syncState = SyncType.NOTHING_REQUIRED,
-                                id = it.id
+                    try {
+                        unsyncedNotes.map {
+                            it.title = cm.encrypt(it.title)
+                            it.text = cm.encrypt(it.text)!!
+                        }
+                        val notesApi = api.postRecoverNotes(
+                            unsyncedNotes,
+                            "Bearer ${encryptedSharedPrefs.getToken()}"
+                        )
+                        val notes = arrayListOf<Note>()
+                        notesApi.map {
+                            notes.add(
+                                Note(
+                                    title = cm.decrypt(it.title),
+                                    text = cm.decrypt(it.text)!!,
+                                    color = it.color,
+                                    fontSize = it.font_size,
+                                    createdAt = it.created_at_device,
+                                    updatedAt = it.updated_at_device,
+                                    syncState = SyncType.NOTHING_REQUIRED,
+                                    id = it.id
+                                )
                             )
+                        }
+                        noteDao.insertList(notes)
+                    } catch (e: Exception) {
+                        unsyncedNotes.map {
+                            it.title = cm.decrypt(it.title)
+                            it.text = cm.decrypt(it.text)!!
+                        }
+                        noteDao.insertList(unsyncedNotes)
+                        Log.e(
+                            "$TAG.undoDeletedNotes.UNSYNCEDNOTES",
+                            e.localizedMessage!!
                         )
                     }
-                    noteDao.insertList(notes)
                 }
             }
         } else {

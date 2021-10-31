@@ -33,7 +33,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder()
-        .connectTimeout(2, TimeUnit.SECONDS)
+        .connectTimeout(1, TimeUnit.SECONDS)
         .readTimeout(4, TimeUnit.SECONDS)
         .writeTimeout(3, TimeUnit.SECONDS)
         .build()
