@@ -242,10 +242,10 @@ class CameraFragment : Fragment(R.layout.fragment_camera) {
                 findNavController().popBackStack()
                 languageIdentifier.identifyPossibleLanguages(it.text)
                     .addOnSuccessListener { identifiedLanguages ->
-                        for (language in identifiedLanguages) {
+                        identifiedLanguages.forEach { language ->
                             val lang = language.languageTag
                             val confidence = language.confidence
-                            Log.e(lang, "$confidence")
+                            Log.e("Recognized language", "$lang : $confidence")
                         }
                     }
             }
