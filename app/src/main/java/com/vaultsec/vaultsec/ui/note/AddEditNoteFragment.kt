@@ -33,6 +33,7 @@ import com.vaultsec.vaultsec.viewmodel.AddEditNoteViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import java.sql.Timestamp
+import kotlin.math.roundToInt
 
 @AndroidEntryPoint
 class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
@@ -492,7 +493,7 @@ class AddEditNoteFragment : Fragment(R.layout.fragment_add_edit_note) {
             fontSizeSlider.valueFrom = 12f
             fontSizeSlider.valueTo = 22f
             fontSizeSlider.value =
-                binding.textfieldNoteText.textSize / resources.displayMetrics.scaledDensity
+                (binding.textfieldNoteText.textSize / resources.displayMetrics.scaledDensity).roundToInt().toFloat()
             fontSizeSlider.stepSize = 1f
         }
     }
