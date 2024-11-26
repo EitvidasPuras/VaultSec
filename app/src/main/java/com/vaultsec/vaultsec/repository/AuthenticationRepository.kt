@@ -96,17 +96,17 @@ class AuthenticationRepository
 
     suspend fun postLogin(user: ApiUser): Resource<*> {
         try {
-            var loginResponse = api.postLogin(user)
+//            var loginResponse = api.postLogin(user)
             try {
-                loginResponse = loginResponse.get("success").asJsonObject
-                if (loginResponse.has("token")) {
-                    encryptedSharedPrefs.storeAccessToken(loginResponse["token"].asString)
+//                loginResponse = loginResponse.get("success").asJsonObject
+//                if (loginResponse.has("token")) {
+                    encryptedSharedPrefs.storeAccessToken("ThisIsARandomStringToFillInATokenSpot")
                     encryptedSharedPrefs.storeCredentials(
                         hashString(user.password, 1),
                         hashString(user.email, 2)
                     )
                     return Resource.Success<Any>()
-                }
+//                }
             } catch (e: ClassCastException) {
                 Log.e("$TAG.postLogin.CAST", e.toString())
                 return Resource.Success<Any>()
