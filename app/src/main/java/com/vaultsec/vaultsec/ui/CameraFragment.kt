@@ -102,7 +102,7 @@ class CameraFragment : Fragment(R.layout.fragment_camera) {
                 )
 
                 val listener = object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
-                    override fun onScale(detector: ScaleGestureDetector?): Boolean {
+                    override fun onScale(detector: ScaleGestureDetector): Boolean {
                         if (camera != null) {
                             val scale =
                                 camera!!.cameraInfo.zoomState.value?.zoomRatio?.times(detector!!.scaleFactor)

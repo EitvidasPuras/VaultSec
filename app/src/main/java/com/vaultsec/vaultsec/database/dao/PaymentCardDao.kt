@@ -18,10 +18,10 @@ interface PaymentCardDao {
     suspend fun update(card: PaymentCard)
 
     @Query("""DELETE FROM vault_cards""")
-    suspend fun deleteAll()
+    fun deleteAll()
 
     @Query("""DELETE FROM vault_cards WHERE id IN (:idList)""")
-    suspend fun deleteSelectedPaymentCards(idList: ArrayList<Int>)
+    fun deleteSelectedPaymentCards(idList: ArrayList<Int>)
 
     @Query("""SELECT * FROM vault_cards WHERE sync_state = 1""")
     fun getUnsyncedPaymentCards(): Flow<List<PaymentCard>>

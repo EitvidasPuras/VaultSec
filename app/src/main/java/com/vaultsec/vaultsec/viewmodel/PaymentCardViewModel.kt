@@ -135,6 +135,11 @@ class PaymentCardViewModel
                                 )
                                 cancel()
                             }
+
+                            else -> {
+                                cancel()
+                                return@collect
+                            }
                         }
                     }
                 }

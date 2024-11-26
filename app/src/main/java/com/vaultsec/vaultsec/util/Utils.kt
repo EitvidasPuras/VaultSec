@@ -55,13 +55,13 @@ fun playSlidingAnimation(reveal: Boolean, activity: Activity) {
     } else {
         shadow.animate().translationX(-shadow.width.toFloat()).setDuration(400)
             .setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(p0: Animator?) {
+                override fun onAnimationEnd(p0: Animator) {
                     shadow.visibility = View.GONE
                 }
             })
         navbar.animate().translationX(-navbar.width.toFloat()).setDuration(400)
             .setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(p0: Animator?) {
+                override fun onAnimationEnd(p0: Animator) {
                     navbar.visibility = View.GONE
                 }
             })

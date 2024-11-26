@@ -182,8 +182,8 @@ class PaymentCardsFragment : Fragment(R.layout.fragment_payment_cards),
                     is PaymentCardViewModel.PaymentCardEvent.NavigateToEditPaymentCardFragment -> {
                         val action =
                             PaymentCardsFragmentDirections.actionFragmentPaymentCardsToFragmentAddEditPaymentCard(
-                                event.card,
-                                "Edit card"
+                                card = event.card,
+                                title = "Edit card"
                             )
                         findNavController().navigate(action)
                     }
@@ -337,12 +337,12 @@ class PaymentCardsFragment : Fragment(R.layout.fragment_payment_cards),
         menu: Menu
     ) {
         searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
-            override fun onMenuItemActionExpand(p0: MenuItem?): Boolean {
+            override fun onMenuItemActionExpand(p0: MenuItem): Boolean {
                 setItemsVisibility(menu, searchItem, false)
                 return true
             }
 
-            override fun onMenuItemActionCollapse(p0: MenuItem?): Boolean {
+            override fun onMenuItemActionCollapse(p0: MenuItem): Boolean {
                 setItemsVisibility(menu, searchItem, true)
                 return true
             }

@@ -169,6 +169,8 @@ class RegistrationFragment : Fragment(R.layout.fragment_registration) {
                             .setBackgroundTint(requireContext().getColor(R.color.color_error_snackbar))
                             .show()
                     }
+
+                    else -> { return@collect }
                 }
             }
         }

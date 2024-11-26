@@ -18,10 +18,10 @@ interface PasswordDao {
     suspend fun update(password: Password)
 
     @Query("""DELETE FROM vault_passwords""")
-    suspend fun deleteAll()
+    fun deleteAll()
 
     @Query("""DELETE FROM vault_passwords WHERE id IN (:idList)""")
-    suspend fun deleteSelectedPasswords(idList: ArrayList<Int>)
+    fun deleteSelectedPasswords(idList: ArrayList<Int>)
 
     @Query("""SELECT * FROM vault_passwords WHERE sync_state = 1""")
     fun getUnsyncedPasswords(): Flow<List<Password>>

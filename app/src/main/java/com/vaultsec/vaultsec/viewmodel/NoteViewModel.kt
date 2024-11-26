@@ -152,6 +152,11 @@ class NoteViewModel
                             notesEventChannel.send(NotesEvent.DoShowRefreshing(false))
                             cancel()
                         }
+
+                        else -> {
+                            cancel()
+                            return@collect
+                        }
                     }
                 }
             }

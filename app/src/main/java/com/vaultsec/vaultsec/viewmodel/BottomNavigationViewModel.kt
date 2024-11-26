@@ -58,6 +58,8 @@ class BottomNavigationViewModel @Inject constructor(
                 ErrorTypes.GENERAL -> bottomNavigationEventChannel.send(
                     BottomNavigationEvent.ShowRequestError(R.string.error_generic_connection)
                 )
+
+                else -> { return@launch }
             }
         }
     }

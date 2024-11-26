@@ -126,6 +126,11 @@ class PasswordViewModel
                                 passwordsEventChannel.send(PasswordEvent.DoShowRefreshing(false))
                                 cancel()
                             }
+
+                            else -> {
+                                cancel()
+                                return@collect
+                            }
                         }
                     }
                 }

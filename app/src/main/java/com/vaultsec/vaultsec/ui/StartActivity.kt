@@ -64,6 +64,8 @@ class StartActivity : AppCompatActivity() {
                     AuthenticationViewModel.SessionEvent.CurrentlyLoggedIn -> {
                         navController.navigate(R.id.fragment_master_password)
                     }
+
+                    else -> { return@collect }
                 }
             }
         }

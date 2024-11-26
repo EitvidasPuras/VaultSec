@@ -210,8 +210,8 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
                     is NoteViewModel.NotesEvent.NavigateToEditNoteFragment -> {
                         val action =
                             NotesFragmentDirections.actionFragmentNotesToFragmentAddEditNote(
-                                event.note,
-                                "Edit note"
+                                note = event.note,
+                                title = "Edit note"
                             )
                         findNavController().navigate(action)
                     }
@@ -354,15 +354,16 @@ class NotesFragment : Fragment(R.layout.fragment_notes), NoteAdapter.OnItemClick
         menu: Menu
     ) {
         searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
-            override fun onMenuItemActionExpand(p0: MenuItem?): Boolean {
+            override fun onMenuItemActionExpand(p0: MenuItem): Boolean {
                 setItemsVisibility(menu, searchItem, false)
                 return true
             }
 
-            override fun onMenuItemActionCollapse(p0: MenuItem?): Boolean {
+            override fun onMenuItemActionCollapse(p0: MenuItem): Boolean {
                 setItemsVisibility(menu, searchItem, true)
                 return true
             }
+
         })
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {

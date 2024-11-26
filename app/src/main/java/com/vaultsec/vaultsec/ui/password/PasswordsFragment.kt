@@ -183,8 +183,8 @@ class PasswordsFragment : Fragment(R.layout.fragment_passwords),
                     is PasswordViewModel.PasswordEvent.NavigateToEditPasswordFragment -> {
                         val action =
                             PasswordsFragmentDirections.actionFragmentPasswordsToFragmentAddEditPassword(
-                                event.password,
-                                "Edit password"
+                                password = event.password,
+                                title = "Edit password"
                             )
                         findNavController().navigate(action)
                     }
@@ -338,12 +338,12 @@ class PasswordsFragment : Fragment(R.layout.fragment_passwords),
         menu: Menu
     ) {
         searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
-            override fun onMenuItemActionExpand(p0: MenuItem?): Boolean {
+            override fun onMenuItemActionExpand(p0: MenuItem): Boolean {
                 setItemsVisibility(menu, searchItem, false)
                 return true
             }
 
-            override fun onMenuItemActionCollapse(p0: MenuItem?): Boolean {
+            override fun onMenuItemActionCollapse(p0: MenuItem): Boolean {
                 setItemsVisibility(menu, searchItem, true)
                 return true
             }

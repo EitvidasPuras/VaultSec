@@ -147,6 +147,8 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                     AuthenticationViewModel.SessionEvent.SuccessfulLogin -> {
                         openBottomNavigationActivity()
                     }
+
+                    else -> { return@collect }
                 }
             }
         }

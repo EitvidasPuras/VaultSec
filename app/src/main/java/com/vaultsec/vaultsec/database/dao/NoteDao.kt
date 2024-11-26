@@ -21,10 +21,10 @@ interface NoteDao {
     suspend fun update(note: Note)
 
     @Query("""DELETE FROM vault_notes""")
-    suspend fun deleteAll()
+    fun deleteAll()
 
     @Query("""DELETE FROM vault_notes WHERE id IN (:idList)""")
-    suspend fun deleteSelectedNotes(idList: ArrayList<Int>)
+    fun deleteSelectedNotes(idList: ArrayList<Int>)
 
     @Query("""SELECT * FROM vault_notes WHERE sync_state = 1""")
     fun getUnsyncedNotes(): Flow<List<Note>>

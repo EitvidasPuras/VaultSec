@@ -85,6 +85,8 @@ class AuthenticationViewModel
                         ErrorTypes.GENERAL -> authenticationEventChannel.send(
                             SessionEvent.ShowRequestError(R.string.error_generic_connection)
                         )
+
+                        else -> { return@launch }
                     }
                 }
             }
@@ -193,6 +195,8 @@ class AuthenticationViewModel
                         ErrorTypes.GENERAL -> authenticationEventChannel.send(
                             SessionEvent.ShowRequestError(R.string.error_generic_connection)
                         )
+
+                        else -> { return@launch }
                     }
                 }
             }
