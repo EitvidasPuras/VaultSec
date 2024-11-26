@@ -226,10 +226,6 @@ class CameraFragment : Fragment(R.layout.fragment_camera) {
         return detector.process(image)
             .addOnSuccessListener {
                 if (it.text.isNotEmpty()) {
-                    /*
-                    * PROBABLY according to MVVM the text should be sent over the viewmodel and so
-                    * it could immediately be read in the AddEditNoteFragment
-                    * */
                     setFragmentResult(
                         "com.vaultsec.vaultsec.ui.CameraFragment.recognizedText",
                         bundleOf(
